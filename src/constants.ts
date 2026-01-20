@@ -1,5 +1,68 @@
 import { ChartDataPoint, LeadActivity, MetricData, AttentionLead, LiveConversation, Conversation, LeadDetail, PipelineLead, PipelineColumn } from './types'
 
+// ============ MÉTRICAS GLOBALES UNIFICADAS ============
+// Fuente única de verdad para todos los módulos
+
+export const GLOBAL_STATS = {
+  leads: {
+    total: 1247,
+    thisMonth: 352,
+    thisWeek: 89,
+    today: 28,
+    nuevo: 405,
+    contactado: 318,
+    calificado: 524,
+    visita: 156,
+    reserva: 47,
+  },
+  conversaciones: {
+    total: 3842,
+    activas: 42,
+    hoy: 156,
+    cerradas: 3644,
+  },
+  tasas: {
+    conversion: 42.0, // calificados/total = 524/1247
+    contacto: 71.5, // contactados/total = 892/1247
+    visita: 12.5, // visitas/total = 156/1247
+    reserva: 3.8, // reservas/total = 47/1247
+  },
+  agentes: {
+    emprendimientos: { conversations: 2156, qualified: 342, successRate: 94, avgTime: '1.2s' },
+    inmuebles: { conversations: 1042, qualified: 126, successRate: 89, avgTime: '1.5s' },
+    tasaciones: { conversations: 644, qualified: 56, successRate: 92, avgTime: '2.1s' },
+  },
+  fuentes: [
+    { source: 'Instagram Ads', leads: 542, percentage: 43.5 },
+    { source: 'Facebook Ads', leads: 312, percentage: 25.0 },
+    { source: 'Google Ads', leads: 198, percentage: 15.9 },
+    { source: 'Orgánico', leads: 124, percentage: 9.9 },
+    { source: 'Referidos', leads: 71, percentage: 5.7 },
+  ],
+  proyectos: [
+    { name: 'Roccatagliata', leads: 245, qualified: 98, reservas: 12, color: 'bg-blue-500' },
+    { name: 'Voie Cañitas', leads: 189, qualified: 82, reservas: 8, color: 'bg-purple-500' },
+    { name: 'Huergo 475', leads: 267, qualified: 112, reservas: 15, color: 'bg-emerald-500' },
+    { name: 'Human Abasto', leads: 198, qualified: 86, reservas: 5, color: 'bg-amber-500' },
+    { name: 'Joy Patagonia', leads: 156, qualified: 72, reservas: 4, color: 'bg-rose-500' },
+    { name: 'BTN Pinamar', leads: 112, qualified: 48, reservas: 2, color: 'bg-cyan-500' },
+    { name: 'Puerto Quetzal', leads: 80, qualified: 26, reservas: 1, color: 'bg-indigo-500' },
+  ],
+  semanal: [
+    { week: 'Sem 1', leads: 280, qualified: 112, reservas: 8 },
+    { week: 'Sem 2', leads: 320, qualified: 138, reservas: 12 },
+    { week: 'Sem 3', leads: 295, qualified: 125, reservas: 10 },
+    { week: 'Sem 4', leads: 352, qualified: 149, reservas: 17 },
+  ],
+  embudo: [
+    { label: 'Leads', value: 1247, color: 'bg-blue-500' },
+    { label: 'Contactados', value: 892, color: 'bg-purple-500' },
+    { label: 'Calificados', value: 524, color: 'bg-emerald-500' },
+    { label: 'Visitas', value: 156, color: 'bg-amber-500' },
+    { label: 'Reservas', value: 47, color: 'bg-rose-500' },
+  ],
+}
+
 // ============ EMPRENDIMIENTOS REALES ============
 
 export const EMPRENDIMIENTOS = {
@@ -103,42 +166,44 @@ export const EMPRENDIMIENTOS = {
   },
 }
 
+// ============ MÉTRICAS DASHBOARD (usando GLOBAL_STATS) ============
+
 export const METRICS: MetricData[] = [
   {
     title: "Leads Totales",
-    value: "127,482",
-    change: "+23%",
+    value: GLOBAL_STATS.leads.total.toLocaleString(),
+    change: "+12.5%",
     isPositive: true,
   },
   {
     title: "Conversaciones Activas",
-    value: "42",
-    change: "+4%",
+    value: GLOBAL_STATS.conversaciones.activas.toString(),
+    change: "+8.3%",
     isPositive: true,
   },
   {
     title: "Tasa de Conversión",
-    value: "68.7%",
-    change: "+0.4%",
+    value: `${GLOBAL_STATS.tasas.conversion}%`,
+    change: "+2.1%",
     isPositive: true,
   },
   {
     title: "Calificados Hoy",
-    value: "18",
+    value: GLOBAL_STATS.leads.today.toString(),
     change: "",
     isPositive: true,
   },
 ]
 
 export const CHART_DATA: ChartDataPoint[] = [
-  { date: 'Ene 13', total: 4000, qualified: 2400 },
-  { date: 'Ene 14', total: 5800, qualified: 3200 },
-  { date: 'Ene 15', total: 4200, qualified: 3800 },
-  { date: 'Ene 16', total: 2800, qualified: 2100 },
-  { date: 'Ene 17', total: 5100, qualified: 2800 },
-  { date: 'Ene 18', total: 4500, qualified: 2100 },
-  { date: 'Ene 19', total: 6800, qualified: 4200 },
-  { date: 'Ene 20', total: 5900, qualified: 5100 },
+  { date: 'Ene 13', total: 145, qualified: 58 },
+  { date: 'Ene 14', total: 168, qualified: 72 },
+  { date: 'Ene 15', total: 142, qualified: 61 },
+  { date: 'Ene 16', total: 128, qualified: 52 },
+  { date: 'Ene 17', total: 175, qualified: 78 },
+  { date: 'Ene 18', total: 156, qualified: 65 },
+  { date: 'Ene 19', total: 189, qualified: 82 },
+  { date: 'Ene 20', total: 144, qualified: 56 },
 ]
 
 export const ATTENTION_LEADS: AttentionLead[] = [

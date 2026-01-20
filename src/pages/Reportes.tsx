@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BarChart3, TrendingUp, TrendingDown, Users, MessageCircle, Target, DollarSign, Calendar, Download, ChevronDown, Building2, Bot } from 'lucide-react'
+import { GLOBAL_STATS } from '../constants'
 
 type Period = '7d' | '30d' | '90d' | 'year'
 
@@ -12,48 +13,24 @@ interface MetricCard {
   color: string
 }
 
+// Usando datos de GLOBAL_STATS
 const METRICS: MetricCard[] = [
-  { label: 'Leads totales', value: '1,247', change: 12.5, changeLabel: 'vs mes anterior', icon: Users, color: 'blue' },
-  { label: 'Conversaciones', value: '3,842', change: 8.3, changeLabel: 'vs mes anterior', icon: MessageCircle, color: 'purple' },
-  { label: 'Leads calificados', value: '524', change: 15.2, changeLabel: 'vs mes anterior', icon: Target, color: 'emerald' },
-  { label: 'Reservas', value: '47', change: -3.1, changeLabel: 'vs mes anterior', icon: DollarSign, color: 'amber' },
-]
-
-const LEADS_BY_PROJECT = [
-  { name: 'Roccatagliata', leads: 245, qualified: 98, reservas: 12, color: 'bg-blue-500' },
-  { name: 'Voie Cañitas', leads: 312, qualified: 125, reservas: 8, color: 'bg-purple-500' },
-  { name: 'Huergo 475', leads: 189, qualified: 72, reservas: 15, color: 'bg-emerald-500' },
-  { name: 'Human Abasto', leads: 156, qualified: 68, reservas: 5, color: 'bg-amber-500' },
-  { name: 'Joy Patagonia', leads: 198, qualified: 89, reservas: 4, color: 'bg-rose-500' },
-  { name: 'BTN Pinamar', leads: 87, qualified: 42, reservas: 2, color: 'bg-cyan-500' },
-  { name: 'Puerto Quetzal', leads: 60, qualified: 30, reservas: 1, color: 'bg-indigo-500' },
+  { label: 'Leads totales', value: GLOBAL_STATS.leads.total.toLocaleString(), change: 12.5, changeLabel: 'vs mes anterior', icon: Users, color: 'blue' },
+  { label: 'Conversaciones', value: GLOBAL_STATS.conversaciones.total.toLocaleString(), change: 8.3, changeLabel: 'vs mes anterior', icon: MessageCircle, color: 'purple' },
+  { label: 'Leads calificados', value: GLOBAL_STATS.leads.calificado.toLocaleString(), change: 15.2, changeLabel: 'vs mes anterior', icon: Target, color: 'emerald' },
+  { label: 'Reservas', value: GLOBAL_STATS.leads.reserva.toString(), change: 5.8, changeLabel: 'vs mes anterior', icon: DollarSign, color: 'amber' },
 ]
 
 const AGENTS_PERFORMANCE = [
-  { name: 'Agente Emprendimientos', conversations: 1842, qualified: 312, successRate: 94, avgTime: '1.2s' },
-  { name: 'Agente Inmuebles', conversations: 1156, qualified: 156, successRate: 89, avgTime: '1.5s' },
-  { name: 'Agente Tasaciones', conversations: 844, qualified: 56, successRate: 92, avgTime: '2.1s' },
-]
-
-const WEEKLY_DATA = [
-  { week: 'Sem 1', leads: 280, qualified: 112, reservas: 8 },
-  { week: 'Sem 2', leads: 320, qualified: 138, reservas: 12 },
-  { week: 'Sem 3', leads: 295, qualified: 125, reservas: 10 },
-  { week: 'Sem 4', leads: 352, qualified: 149, reservas: 17 },
-]
-
-const LEAD_SOURCES = [
-  { source: 'Instagram Ads', leads: 542, percentage: 43.5 },
-  { source: 'Facebook Ads', leads: 312, percentage: 25.0 },
-  { source: 'Google Ads', leads: 198, percentage: 15.9 },
-  { source: 'Orgánico', leads: 124, percentage: 9.9 },
-  { source: 'Referidos', leads: 71, percentage: 5.7 },
+  { name: 'Agente Emprendimientos', ...GLOBAL_STATS.agentes.emprendimientos },
+  { name: 'Agente Inmuebles', ...GLOBAL_STATS.agentes.inmuebles },
+  { name: 'Agente Tasaciones', ...GLOBAL_STATS.agentes.tasaciones },
 ]
 
 export const Reportes = () => {
   const [period, setPeriod] = useState<Period>('30d')
 
-  const maxLeads = Math.max(...LEADS_BY_PROJECT.map(p => p.leads))
+  const maxLeads = Math.max(...GLOBAL_STATS.proyectos.map(p => p.leads))
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
@@ -147,7 +124,7 @@ export const Reportes = () => {
               </div>
             </div>
             <div className="h-52 flex items-end gap-6">
-              {WEEKLY_DATA.map((data) => (
+              {GLOBAL_STATS.semanal.map((data) => (
                 <div key={data.week} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex gap-1 items-end h-44">
                     <div
@@ -173,7 +150,7 @@ export const Reportes = () => {
           <div className="bg-white rounded-xl border border-gray-100 p-5">
             <h3 className="font-semibold text-gray-900 mb-4">Fuentes de leads</h3>
             <div className="space-y-3">
-              {LEAD_SOURCES.map((source) => (
+              {GLOBAL_STATS.fuentes.map((source) => (
                 <div key={source.source}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-gray-700">{source.source}</span>
@@ -199,7 +176,7 @@ export const Reportes = () => {
               <h3 className="font-semibold text-gray-900">Leads por proyecto</h3>
             </div>
             <div className="space-y-3">
-              {LEADS_BY_PROJECT.map((project) => (
+              {GLOBAL_STATS.proyectos.map((project) => (
                 <div key={project.name} className="flex items-center gap-3">
                   <div className={`w-1 h-8 ${project.color} rounded-full`} />
                   <div className="flex-1">
@@ -262,13 +239,7 @@ export const Reportes = () => {
         <div className="mt-6 bg-white rounded-xl border border-gray-100 p-5">
           <h3 className="font-semibold text-gray-900 mb-4">Embudo de conversión</h3>
           <div className="flex items-center justify-between gap-4">
-            {[
-              { label: 'Leads', value: 1247, color: 'bg-blue-500' },
-              { label: 'Contactados', value: 892, color: 'bg-purple-500' },
-              { label: 'Calificados', value: 524, color: 'bg-emerald-500' },
-              { label: 'Visitas', value: 156, color: 'bg-amber-500' },
-              { label: 'Reservas', value: 47, color: 'bg-rose-500' },
-            ].map((step, index) => (
+            {GLOBAL_STATS.embudo.map((step, index) => (
               <div key={step.label} className="flex-1 flex flex-col items-center">
                 <div
                   className={`w-full ${step.color} rounded-lg flex items-center justify-center text-white font-bold transition-all`}
@@ -277,15 +248,9 @@ export const Reportes = () => {
                   {step.value.toLocaleString()}
                 </div>
                 <p className="text-xs text-gray-600 mt-2 font-medium">{step.label}</p>
-                {index < 4 && (
+                {index < GLOBAL_STATS.embudo.length - 1 && (
                   <p className="text-[10px] text-gray-400 mt-0.5">
-                    {Math.round(([
-                      { label: 'Leads', value: 1247 },
-                      { label: 'Contactados', value: 892 },
-                      { label: 'Calificados', value: 524 },
-                      { label: 'Visitas', value: 156 },
-                      { label: 'Reservas', value: 47 },
-                    ][index + 1].value / step.value) * 100)}% conversión
+                    {Math.round((GLOBAL_STATS.embudo[index + 1].value / step.value) * 100)}% conversión
                   </p>
                 )}
               </div>
