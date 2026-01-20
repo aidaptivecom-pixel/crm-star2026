@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, Search, Filter, MapPin, Bed, Bath, Square, Eye, Heart, Share2, ChevronRight, X } from 'lucide-react'
+import { Building2, Search, Filter, MapPin, Bed, Square, Eye, Heart, Share2, X } from 'lucide-react'
 
 type PropertyStatus = 'en_pozo' | 'en_construccion' | 'entrega_inmediata'
 type PropertyType = 'departamento' | 'local' | 'cochera'
