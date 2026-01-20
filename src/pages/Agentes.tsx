@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bot, Activity, MessageCircle, Clock, CheckCircle, AlertTriangle, Settings, Play, Pause, TrendingUp, Users, Zap, Brain, BarChart3 } from 'lucide-react'
+import { Bot, MessageCircle, Clock, CheckCircle, AlertTriangle, Settings, Play, Pause, TrendingUp, Users, Zap, Brain, BarChart3 } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 
 type AgentType = 'emprendimientos' | 'inmuebles' | 'tasaciones'
@@ -331,7 +331,7 @@ export const Agentes = () => {
             </div>
           </div>
           <div className="h-48 flex items-end gap-2">
-            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day, i) => (
+            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
               <div key={day} className="flex-1 flex flex-col items-center gap-1">
                 <div className="w-full flex gap-0.5 h-40">
                   <div className="flex-1 bg-blue-500 rounded-t" style={{ height: `${30 + Math.random() * 70}%` }} />
