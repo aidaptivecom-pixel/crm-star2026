@@ -55,7 +55,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Agentes</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" disabled />
+            <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" />
           </nav>
         </div>
 

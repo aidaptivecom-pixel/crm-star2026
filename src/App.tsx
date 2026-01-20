@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar'
 import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
 import { Pipeline } from './pages/Pipeline'
+import { Agentes } from './pages/Agentes'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/inbox/:conversationId" element={<Inbox />} />
           <Route path="/pipeline" element={<Pipeline />} />
+          <Route path="/agentes" element={<Agentes />} />
         </Routes>
       </div>
     </div>
