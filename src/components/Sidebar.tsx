@@ -13,7 +13,7 @@ import {
 
 export const Sidebar = () => {
   return (
-    <aside className="w-[240px] fixed top-0 left-0 h-full bg-white border-r border-gray-100 flex flex-col z-20">
+    <aside className="w-[240px] fixed top-4 left-4 h-[calc(100vh-32px)] bg-white border-r border-gray-100 flex flex-col z-20 rounded-l-3xl">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 gap-2">
         <div className="w-8 h-8 bg-[#D4A745] rounded-lg flex items-center justify-center shadow-sm">
