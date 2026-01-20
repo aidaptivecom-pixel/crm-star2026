@@ -7,15 +7,15 @@ import { METRICS } from './constants'
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#D1D5DB] p-4 font-sans">
+    <div className="h-screen bg-[#D1D5DB] p-4 font-sans overflow-hidden">
       {/* Main Container with rounded corners */}
-      <div className="flex min-h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-3xl overflow-hidden shadow-xl">
+      <div className="flex h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-3xl overflow-hidden shadow-xl">
         
-        {/* Sidebar - inside the container */}
+        {/* Sidebar - fixed inside container */}
         <Sidebar />
         
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto bg-[#F8F9FA]">
+        {/* Main Content - scrollable */}
+        <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
           <div className="max-w-[1400px] mx-auto p-8">
             
             <Header />
