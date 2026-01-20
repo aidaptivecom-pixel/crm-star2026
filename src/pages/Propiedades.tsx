@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight, LayoutGrid, List, Table2 } from 'lucide-react'
+import { Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight, LayoutGrid, Table2 } from 'lucide-react'
 
 type PropertyStatus = 'en_pozo' | 'en_construccion' | 'entrega_inmediata'
 type PropertyType = 'departamento' | 'local' | 'cochera' | 'lote'
@@ -195,7 +195,7 @@ export const Propiedades = () => {
     setActiveIndex(index)
     
     if (carouselRef.current) {
-      const scrollAmount = index * 200 // Approximate width of each item
+      const scrollAmount = index * 200
       carouselRef.current.scrollTo({ left: scrollAmount - 100, behavior: 'smooth' })
     }
   }
