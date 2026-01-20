@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronRight, User, TrendingUp, Clock } from 'lucide-react'
+import { ChevronRight, User, TrendingUp, Clock } from 'lucide-react'
 import { ATTENTION_LEADS } from '../constants'
 import { AttentionLead } from '../types'
 
