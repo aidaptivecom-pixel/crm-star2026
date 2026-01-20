@@ -1,5 +1,6 @@
 import { Phone, Mail, Calendar, MessageCircle, Check, Clock, ExternalLink } from 'lucide-react'
 import { LeadDetail } from '../../types'
+import { Avatar } from '../Avatar'
 
 interface LeadPanelProps {
   lead: LeadDetail
@@ -39,6 +40,9 @@ export const LeadPanel = ({ lead }: LeadPanelProps) => {
       <div className="p-6">
         {/* Header */}
         <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <Avatar name={lead.name} size="lg" />
+          </div>
           <h3 className="font-bold text-lg text-gray-900 mb-1">{lead.name}</h3>
           <p className="text-sm text-gray-500">{lead.project}</p>
           <div className="flex justify-center mt-2">

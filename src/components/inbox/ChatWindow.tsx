@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Hand, Bot, User } from 'lucide-react'
 import { Conversation } from '../../types'
+import { Avatar } from '../Avatar'
 
 interface ChatWindowProps {
   conversation: Conversation
@@ -72,11 +73,7 @@ export const ChatWindow = ({ conversation }: ChatWindowProps) => {
       <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src={conversation.avatar}
-              alt={conversation.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <Avatar name={conversation.name} size="md" />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-900">{conversation.name}</span>

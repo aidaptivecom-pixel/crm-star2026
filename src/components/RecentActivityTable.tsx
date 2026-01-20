@@ -1,76 +1,67 @@
-import { ChevronRight, Bot, User } from 'lucide-react'
+import { ArrowRight, Bot, User } from 'lucide-react'
 import { RECENT_ACTIVITY } from '../constants'
-
-const getScoreColor = (score: number) => {
-  if (score >= 80) return 'bg-emerald-100 text-emerald-700'
-  if (score >= 60) return 'bg-amber-100 text-amber-700'
-  return 'bg-red-100 text-red-700'
-}
+import { Avatar } from './Avatar'
 
 export const RecentActivityTable = () => {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'bg-emerald-100 text-emerald-700'
+    if (score >= 60) return 'bg-amber-100 text-amber-700'
+    return 'bg-red-100 text-red-700'
+  }
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-      <div className="flex justify-between items-center p-6 border-b border-gray-100">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Actividad Reciente</h2>
-          <p className="text-sm text-gray-500 mt-1">Últimas interacciones de leads</p>
-        </div>
-        <a href="#" className="flex items-center gap-1 text-sm font-medium text-[#D4A745] hover:text-[#B8923D] transition-colors">
+    <div className="bg-white rounded-xl border border-gray-100">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h3 className="font-bold text-gray-900">Actividad Reciente</h3>
+        <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors">
           Ver Todo
-          <ChevronRight className="w-4 h-4" />
-        </a>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
-      
+
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50/50">
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Lead</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Acción</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Agente</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Duración</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Score</th>
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3">Lead</th>
+              <th className="px-6 py-3">Acción</th>
+              <th className="px-6 py-3">Agente</th>
+              <th className="px-6 py-3">Duración</th>
+              <th className="px-6 py-3 text-right">Score</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-50">
             {RECENT_ACTIVITY.map((activity) => (
-              <tr key={activity.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
+              <tr key={activity.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={activity.avatar} 
-                      alt={activity.name} 
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
+                    <Avatar name={activity.name} size="sm" />
                     <div>
-                      <span className="text-sm font-medium text-gray-900">{activity.name}</span>
+                      <p className="font-medium text-sm text-gray-900">{activity.name}</p>
                       <p className="text-xs text-gray-500">{activity.project}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-600">{activity.action}</span>
+                  <span className="text-sm text-gray-700">{activity.action}</span>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {activity.agent.type === 'ai' ? (
-                      <span className="flex items-center gap-1.5 text-sm">
-                        <Bot className="w-4 h-4 text-blue-500" />
-                        <span className="text-gray-600">{activity.agent.name}</span>
-                      </span>
+                      <Bot className="w-4 h-4 text-blue-500" />
                     ) : (
-                      <span className="flex items-center gap-1.5 text-sm">
-                        <User className="w-4 h-4 text-[#D4A745]" />
-                        <span className="text-gray-600">{activity.agent.name}</span>
-                      </span>
+                      <User className="w-4 h-4 text-gray-500" />
                     )}
+                    <span className="text-sm text-gray-600">{activity.agent.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-600">{activity.duration}</span>
+                  <span className="text-sm text-gray-500">{activity.duration}</span>
                 </td>
-                <td className="px-6 py-4">
-                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${getScoreColor(activity.score)}`}>
+                <td className="px-6 py-4 text-right">
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${getScoreColor(activity.score)}`}>
                     {activity.score}
                   </span>
                 </td>

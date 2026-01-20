@@ -1,4 +1,5 @@
 import { Conversation } from '../../types'
+import { Avatar } from '../Avatar'
 
 interface ConversationListProps {
   conversations: Conversation[]
@@ -73,11 +74,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
               <div className="flex items-start gap-3">
                 {/* Avatar with status */}
                 <div className="relative flex-shrink-0">
-                  <img
-                    src={conv.avatar}
-                    alt={conv.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                  <Avatar name={conv.name} size="md" />
                   {conv.unread && (
                     <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#D4A745] rounded-full border-2 border-white" />
                   )}
