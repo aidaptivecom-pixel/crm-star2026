@@ -102,7 +102,7 @@ export interface LeadDetail {
 
 // ============ PIPELINE TYPES ============
 
-export type PipelineStage = 'nuevo' | 'calificado' | 'contactado' | 'visita' | 'cierre' | 'perdido'
+export type PipelineStage = 'nuevo' | 'calificado' | 'contactado' | 'visita' | 'cierre'
 
 export interface PipelineLead {
   id: string
@@ -112,16 +112,14 @@ export interface PipelineLead {
   project: string
   agentType: AgentType
   channel: ChannelType
-  stage: PipelineStage
   score: number
   budget?: string
   budgetCurrency?: 'USD' | 'ARS'
   interest: string
+  stage: PipelineStage
+  createdAt: string
   lastActivity: string
   assignedTo?: string
-  createdAt: string
-  updatedAt: string
-  scheduledDate?: string
   notes?: string
 }
 
