@@ -11,10 +11,11 @@ function App() {
       {/* Main Container with rounded corners */}
       <div className="flex min-h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-3xl overflow-hidden shadow-xl">
         
+        {/* Sidebar - inside the container */}
         <Sidebar />
         
         {/* Main Content */}
-        <main className="flex-1 ml-[240px] overflow-auto">
+        <main className="flex-1 overflow-auto bg-[#F8F9FA]">
           <div className="max-w-[1400px] mx-auto p-8">
             
             <Header />
