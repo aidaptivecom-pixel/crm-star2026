@@ -1,3 +1,4 @@
+import { NavLink, useLocation } from 'react-router-dom'
 import { 
   Search, 
   Home, 
@@ -10,8 +11,12 @@ import {
   HelpCircle,
   Star
 } from 'lucide-react'
+import { CONVERSATIONS } from '../constants'
 
 export const Sidebar = () => {
+  const location = useLocation()
+  const unreadCount = CONVERSATIONS.filter(c => c.unread).length
+
   return (
     <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
@@ -41,9 +46,9 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Principal</h3>
           <nav className="space-y-0.5">
-            <NavItem icon={Home} label="Inicio" active />
-            <NavItem icon={Inbox} label="Inbox" badge="5" />
-            <NavItem icon={Trello} label="Pipeline" />
+            <NavItem to="/" icon={Home} label="Inicio" />
+            <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} />
+            <NavItem to="/pipeline" icon={Trello} label="Pipeline" disabled />
           </nav>
         </div>
 
@@ -51,7 +56,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Agentes</h3>
           <nav className="space-y-0.5">
-            <NavItem icon={Bot} label="Monitoreo IA" />
+            <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" disabled />
           </nav>
         </div>
 
@@ -59,7 +64,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Catálogo</h3>
           <nav className="space-y-0.5">
-            <NavItem icon={Building2} label="Propiedades" />
+            <NavItem to="/propiedades" icon={Building2} label="Propiedades" disabled />
           </nav>
         </div>
 
@@ -67,7 +72,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Analytics</h3>
           <nav className="space-y-0.5">
-            <NavItem icon={BarChart3} label="Reportes" />
+            <NavItem to="/reportes" icon={BarChart3} label="Reportes" disabled />
           </nav>
         </div>
 
@@ -76,8 +81,8 @@ export const Sidebar = () => {
       {/* Bottom Actions */}
       <div className="px-4 pb-4 mt-auto">
         <div className="border-t border-gray-100 pt-4 mb-4 space-y-0.5">
-           <NavItem icon={Settings} label="Configuración" />
-           <NavItem icon={HelpCircle} label="Ayuda" />
+           <NavItem to="/configuracion" icon={Settings} label="Configuración" disabled />
+           <NavItem to="/ayuda" icon={HelpCircle} label="Ayuda" disabled />
         </div>
         
         {/* User Profile */}
@@ -94,26 +99,50 @@ export const Sidebar = () => {
 }
 
 interface NavItemProps {
+  to: string
   icon: React.ElementType
   label: string
-  active?: boolean
   badge?: string
+  disabled?: boolean
 }
 
-const NavItem = ({ icon: Icon, label, active, badge }: NavItemProps) => (
-  <a href="#" className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-    active 
-      ? 'bg-gray-100 text-gray-900' 
-      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-  }`}>
-    <div className="flex items-center gap-3">
-      <Icon className={`w-4 h-4 ${active ? 'text-[#D4A745]' : 'text-gray-400'}`} />
-      <span>{label}</span>
-    </div>
-    {badge && (
-      <span className="bg-[#D4A745] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-        {badge}
+const NavItem = ({ to, icon: Icon, label, badge, disabled }: NavItemProps) => {
+  if (disabled) {
+    return (
+      <span className="flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed">
+        <div className="flex items-center gap-3">
+          <Icon className="w-4 h-4 text-gray-300" />
+          <span>{label}</span>
+        </div>
+        <span className="text-[9px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">Pronto</span>
       </span>
-    )}
-  </a>
-)
+    )
+  }
+
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+          isActive
+            ? 'bg-gray-100 text-gray-900'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <div className="flex items-center gap-3">
+            <Icon className={`w-4 h-4 ${isActive ? 'text-[#D4A745]' : 'text-gray-400'}`} />
+            <span>{label}</span>
+          </div>
+          {badge && (
+            <span className="bg-[#D4A745] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+        </>
+      )}
+    </NavLink>
+  )
+}

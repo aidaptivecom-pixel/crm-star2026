@@ -1,11 +1,7 @@
+import { Routes, Route } from 'react-router-dom'
 import { Sidebar } from './components/Sidebar'
-import { Header } from './components/Header'
-import { MetricCard } from './components/MetricCard'
-import { AttentionAlerts } from './components/AttentionAlerts'
-import { LeadsChart } from './components/LeadsChart'
-import { LiveConversations } from './components/LiveConversations'
-import { RecentActivityTable } from './components/RecentActivityTable'
-import { METRICS } from './constants'
+import { Dashboard } from './pages/Dashboard'
+import { Inbox } from './pages/Inbox'
 
 function App() {
   return (
@@ -16,39 +12,12 @@ function App() {
         {/* Sidebar - fixed inside container */}
         <Sidebar />
         
-        {/* Main Content - scrollable */}
-        <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
-          <div className="max-w-[1400px] mx-auto p-8">
-            
-            <Header />
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {METRICS.map((metric, index) => (
-                <MetricCard key={index} data={metric} />
-              ))}
-            </div>
-
-            {/* Attention Alerts */}
-            <AttentionAlerts />
-
-            {/* Chart + Live Conversations */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="lg:col-span-2">
-                <LeadsChart />
-              </div>
-              <div className="lg:col-span-1">
-                <LiveConversations />
-              </div>
-            </div>
-
-            {/* Activity Table */}
-            <div>
-              <RecentActivityTable />
-            </div>
-
-          </div>
-        </main>
+        {/* Main Content - Routes */}
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/inbox/:conversationId" element={<Inbox />} />
+        </Routes>
       </div>
     </div>
   )

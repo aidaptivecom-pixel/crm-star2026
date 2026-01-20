@@ -47,3 +47,55 @@ export interface LiveConversation {
   lastActivity: string
   agentType: 'emprendimientos' | 'inmuebles' | 'tasaciones'
 }
+
+// ============ INBOX TYPES ============
+
+export type AgentType = 'emprendimientos' | 'inmuebles' | 'tasaciones'
+export type ConversationStatus = 'ai_active' | 'needs_human' | 'closed'
+export type ChannelType = 'whatsapp' | 'instagram' | 'facebook'
+
+export interface Message {
+  id: string
+  content: string
+  sender: 'lead' | 'ai' | 'human'
+  senderName?: string
+  timestamp: string
+  status?: 'sent' | 'delivered' | 'read'
+}
+
+export interface Conversation {
+  id: string
+  leadId: string
+  avatar: string
+  name: string
+  phone: string
+  project: string
+  agentType: AgentType
+  status: ConversationStatus
+  channel: ChannelType
+  lastMessage: string
+  lastMessageTime: string
+  unread: boolean
+  isTyping: boolean
+  messages: Message[]
+}
+
+export interface LeadDetail {
+  id: string
+  name: string
+  phone: string
+  email?: string
+  score: number
+  interest: string
+  budget?: string
+  budgetCurrency?: 'USD' | 'ARS'
+  project: string
+  agentType: AgentType
+  channel: ChannelType
+  createdAt: string
+  history: {
+    action: string
+    date: string
+    completed: boolean
+  }[]
+}
