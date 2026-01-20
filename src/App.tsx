@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { Sidebar } from './components/Sidebar'
 import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
+import { Pipeline } from './pages/Pipeline'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/inbox/:conversationId" element={<Inbox />} />
+          <Route path="/pipeline" element={<Pipeline />} />
         </Routes>
       </div>
     </div>

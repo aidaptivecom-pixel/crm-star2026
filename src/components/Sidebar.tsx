@@ -47,7 +47,7 @@ export const Sidebar = () => {
           <nav className="space-y-0.5">
             <NavItem to="/" icon={Home} label="Inicio" />
             <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} />
-            <NavItem to="/pipeline" icon={Trello} label="Pipeline" disabled />
+            <NavItem to="/pipeline" icon={Trello} label="Pipeline" />
           </nav>
         </div>
 
@@ -121,6 +121,7 @@ const NavItem = ({ to, icon: Icon, label, badge, disabled }: NavItemProps) => {
   return (
     <NavLink
       to={to}
+      end={to === '/'}
       className={({ isActive }) =>
         `flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
           isActive
