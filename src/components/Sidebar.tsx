@@ -63,7 +63,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Catálogo</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/propiedades" icon={Building2} label="Propiedades" disabled />
+            <NavItem to="/propiedades" icon={Building2} label="Propiedades" />
           </nav>
         </div>
 
