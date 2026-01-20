@@ -1,7 +1,9 @@
 import { Sidebar } from './components/Sidebar'
 import { Header } from './components/Header'
 import { MetricCard } from './components/MetricCard'
+import { AttentionAlerts } from './components/AttentionAlerts'
 import { LeadsChart } from './components/LeadsChart'
+import { LiveConversations } from './components/LiveConversations'
 import { RecentActivityTable } from './components/RecentActivityTable'
 import { METRICS } from './constants'
 
@@ -27,9 +29,17 @@ function App() {
               ))}
             </div>
 
-            {/* Chart Section */}
-            <div className="mb-8">
-              <LeadsChart />
+            {/* Attention Alerts */}
+            <AttentionAlerts />
+
+            {/* Chart + Live Conversations */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-2">
+                <LeadsChart />
+              </div>
+              <div className="lg:col-span-1">
+                <LiveConversations />
+              </div>
             </div>
 
             {/* Activity Table */}
