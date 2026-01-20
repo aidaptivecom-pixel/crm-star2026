@@ -13,7 +13,7 @@ import {
 
 export const Sidebar = () => {
   return (
-    <aside className="w-[240px] min-w-[240px] bg-white border-r border-gray-100 flex flex-col">
+    <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 gap-2">
         <div className="w-8 h-8 bg-[#D4A745] rounded-lg flex items-center justify-center shadow-sm">
@@ -29,11 +29,8 @@ export const Sidebar = () => {
           <input 
             type="text" 
             placeholder="Buscar..." 
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745] transition-all"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745] transition-all"
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400 border border-gray-200 rounded px-1.5 py-0.5 bg-white">
-            ⌘K
-          </span>
         </div>
       </div>
 
