@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { 
   Search, 
   Home, 
@@ -14,7 +14,6 @@ import {
 import { CONVERSATIONS } from '../constants'
 
 export const Sidebar = () => {
-  const location = useLocation()
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
   return (
