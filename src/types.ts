@@ -121,11 +121,11 @@ export interface PipelineLead {
   lastActivity: string
   assignedTo?: string
   notes?: string
+  scheduledDate?: string
 }
 
 export interface PipelineColumn {
   id: PipelineStage
   title: string
   color: string
-  leads: PipelineLead[]
 }

@@ -1,4 +1,4 @@
-import { ChartDataPoint, LeadActivity, MetricData, AttentionLead, LiveConversation, Conversation, LeadDetail, PipelineLead } from './types'
+import { ChartDataPoint, LeadActivity, MetricData, AttentionLead, LiveConversation, Conversation, LeadDetail, PipelineLead, PipelineColumn, PipelineStage } from './types'
 
 // ============ EMPRENDIMIENTOS REALES ============
 
@@ -522,8 +522,16 @@ export const LEAD_DETAILS: Record<string, LeadDetail> = {
 
 // ============ PIPELINE DATA ============
 
+export const PIPELINE_COLUMNS: PipelineColumn[] = [
+  { id: 'nuevo', title: 'Nuevo', color: 'bg-gray-500' },
+  { id: 'calificado', title: 'Calificado', color: 'bg-blue-500' },
+  { id: 'contactado', title: 'Contactado', color: 'bg-purple-500' },
+  { id: 'visita', title: 'Visita', color: 'bg-amber-500' },
+  { id: 'cierre', title: 'Cierre', color: 'bg-emerald-500' },
+]
+
 export const PIPELINE_LEADS: PipelineLead[] = [
-  // NUEVO (12)
+  // NUEVO (5)
   {
     id: 'pl-1',
     name: 'Martín Aguirre',
@@ -589,7 +597,7 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     createdAt: '19 Ene 2026',
     lastActivity: 'Hace 3 horas',
   },
-  // CALIFICADO (8)
+  // CALIFICADO (5)
   {
     id: 'pl-6',
     name: 'Juan Martinez',
@@ -671,7 +679,7 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     createdAt: '18 Ene 2026',
     lastActivity: 'Hace 1 día',
   },
-  // CONTACTADO (5)
+  // CONTACTADO (3)
   {
     id: 'pl-11',
     name: 'Carlos Ruiz',
@@ -741,7 +749,8 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     createdAt: '20 Ene 2026',
     lastActivity: 'Hoy',
     assignedTo: 'Jony',
-    notes: 'Visita jueves 23 Ene 15hs',
+    scheduledDate: '23 Ene 15:00',
+    notes: 'Visita confirmada',
   },
   {
     id: 'pl-15',
@@ -757,6 +766,7 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     createdAt: '20 Ene 2026',
     lastActivity: 'Hace 8 min',
     assignedTo: 'Pablo',
+    scheduledDate: '22 Ene 10:00',
     notes: 'Coordinar visita tasación',
   },
   {
@@ -775,6 +785,7 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     createdAt: '16 Ene 2026',
     lastActivity: 'Ayer',
     assignedTo: 'Jony',
+    scheduledDate: '24 Ene 16:00',
     notes: 'Segunda visita programada',
   },
   // CIERRE (2)
@@ -807,7 +818,7 @@ export const PIPELINE_LEADS: PipelineLead[] = [
     score: 96,
     budget: '520,000',
     budgetCurrency: 'USD',
-    interest: '4 amb vista panoramica',
+    interest: '4 amb vista panorámica',
     stage: 'cierre',
     createdAt: '8 Ene 2026',
     lastActivity: 'Ayer',

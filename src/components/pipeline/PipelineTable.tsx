@@ -1,5 +1,5 @@
 import { ArrowUpDown, Phone, Mail, Calendar } from 'lucide-react'
-import { PipelineLead } from '../../types'
+import { PipelineLead, PipelineStage } from '../../types'
 import { Avatar } from '../Avatar'
 import { PIPELINE_COLUMNS } from '../../constants'
 
@@ -14,8 +14,8 @@ export const PipelineTable = ({ leads }: PipelineTableProps) => {
     return 'bg-red-100 text-red-700'
   }
 
-  const getStageBadge = (stage: PipelineLead['stage']) => {
-    const col = PIPELINE_COLUMNS.find(c => c.id === stage)
+  const getStageBadge = (stage: PipelineStage) => {
+    const col = PIPELINE_COLUMNS.find((c: { id: PipelineStage; title: string; color: string }) => c.id === stage)
     if (!col) return null
     return (
       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-opacity-20`}>
