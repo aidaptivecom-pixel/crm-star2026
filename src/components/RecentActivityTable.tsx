@@ -1,39 +1,10 @@
-import { MessageCircle, Instagram, ChevronRight, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { ChevronRight, Bot, User } from 'lucide-react'
 import { RECENT_ACTIVITY } from '../constants'
-import { LeadActivity } from '../types'
 
-const getChannelIcon = (channel: string) => {
-  switch (channel) {
-    case 'WhatsApp':
-      return <MessageCircle className="w-4 h-4 text-green-500" />
-    case 'Instagram':
-      return <Instagram className="w-4 h-4 text-pink-500" />
-    default:
-      return <MessageCircle className="w-4 h-4 text-gray-400" />
-  }
-}
-
-const getStatusBadge = (status: LeadActivity['status']) => {
-  switch (status) {
-    case 'Qualified':
-      return (
-        <span className="flex items-center gap-1 text-emerald-600">
-          <CheckCircle className="w-4 h-4" />
-        </span>
-      )
-    case 'Pending':
-      return (
-        <span className="flex items-center gap-1 text-amber-500">
-          <Clock className="w-4 h-4" />
-        </span>
-      )
-    case 'NotInterested':
-      return (
-        <span className="flex items-center gap-1 text-red-500">
-          <XCircle className="w-4 h-4" />
-        </span>
-      )
-  }
+const getScoreColor = (score: number) => {
+  if (score >= 80) return 'bg-emerald-100 text-emerald-700'
+  if (score >= 60) return 'bg-amber-100 text-amber-700'
+  return 'bg-red-100 text-red-700'
 }
 
 export const RecentActivityTable = () => {
@@ -55,15 +26,15 @@ export const RecentActivityTable = () => {
           <thead>
             <tr className="bg-gray-50/50">
               <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Lead</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Proyecto</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Canal</th>
+              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Acción</th>
+              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Agente</th>
               <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Duración</th>
-              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Estado</th>
+              <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Score</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {RECENT_ACTIVITY.map((activity) => (
-              <tr key={activity.id} className="hover:bg-gray-50/50 transition-colors">
+              <tr key={activity.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <img 
@@ -71,23 +42,37 @@ export const RecentActivityTable = () => {
                       alt={activity.name} 
                       className="w-8 h-8 rounded-full object-cover"
                     />
-                    <span className="text-sm font-medium text-gray-900">{activity.name}</span>
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">{activity.name}</span>
+                      <p className="text-xs text-gray-500">{activity.project}</p>
+                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-600">{activity.project}</span>
+                  <span className="text-sm text-gray-600">{activity.action}</span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    {getChannelIcon(activity.channel)}
-                    <span className="text-sm text-gray-600">{activity.channel}</span>
+                    {activity.agent.type === 'ai' ? (
+                      <span className="flex items-center gap-1.5 text-sm">
+                        <Bot className="w-4 h-4 text-blue-500" />
+                        <span className="text-gray-600">{activity.agent.name}</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-sm">
+                        <User className="w-4 h-4 text-[#D4A745]" />
+                        <span className="text-gray-600">{activity.agent.name}</span>
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-gray-600">{activity.duration}</span>
                 </td>
                 <td className="px-6 py-4">
-                  {getStatusBadge(activity.status)}
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${getScoreColor(activity.score)}`}>
+                    {activity.score}
+                  </span>
                 </td>
               </tr>
             ))}
