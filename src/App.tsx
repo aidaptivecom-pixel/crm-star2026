@@ -6,6 +6,7 @@ import { Pipeline } from './pages/Pipeline'
 import { Agentes } from './pages/Agentes'
 import { Propiedades } from './pages/Propiedades'
 import { Reportes } from './pages/Reportes'
+import { Configuracion } from './pages/Configuracion'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/agentes" element={<Agentes />} />
           <Route path="/propiedades" element={<Propiedades />} />
           <Route path="/reportes" element={<Reportes />} />
+          <Route path="/configuracion" element={<Configuracion />} />
         </Routes>
       </div>
     </div>

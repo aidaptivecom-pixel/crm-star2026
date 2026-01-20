@@ -80,7 +80,7 @@ export const Sidebar = () => {
       {/* Bottom Actions */}
       <div className="px-4 pb-4 mt-auto">
         <div className="border-t border-gray-100 pt-4 mb-4 space-y-0.5">
-           <NavItem to="/configuracion" icon={Settings} label="Configuración" disabled />
+           <NavItem to="/configuracion" icon={Settings} label="Configuración" />
            <NavItem to="/ayuda" icon={HelpCircle} label="Ayuda" disabled />
         </div>
         
