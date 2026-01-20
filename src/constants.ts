@@ -1,4 +1,4 @@
-import { ChartDataPoint, LeadActivity, MetricData, AttentionLead, LiveConversation, Conversation, LeadDetail, PipelineLead, PipelineColumn, PipelineStage } from './types'
+import { ChartDataPoint, LeadActivity, MetricData, AttentionLead, LiveConversation, Conversation, LeadDetail, PipelineLead, PipelineColumn } from './types'
 
 // ============ EMPRENDIMIENTOS REALES ============
 
