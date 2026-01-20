@@ -72,6 +72,7 @@ const AGENTS: Agent[] = [
     recentActivity: [
       { id: '1', leadName: 'Pedro García', action: 'Fotos enviadas', time: 'Hace 8 min', status: 'success' },
       { id: '2', leadName: 'Laura Fernández', action: 'Visita agendada', time: 'Hace 20 min', status: 'success' },
+      { id: '3', leadName: 'Diego Romero', action: 'Info enviada', time: 'Hace 35 min', status: 'success' },
     ],
   },
   {
@@ -93,8 +94,20 @@ const AGENTS: Agent[] = [
     recentActivity: [
       { id: '1', leadName: 'Miguel Fernández', action: 'Datos recopilados', time: 'Hace 8 min', status: 'success' },
       { id: '2', leadName: 'Roberto Sánchez', action: 'Visita coordinada', time: 'Hace 1 hora', status: 'success' },
+      { id: '3', leadName: 'Carolina Paz', action: 'Consulta inicial', time: 'Hace 2 horas', status: 'success' },
     ],
   },
+]
+
+// Fixed chart data to avoid random values on re-render
+const CHART_DATA = [
+  { day: 'Lun', emp: 85, inm: 60, tas: 40 },
+  { day: 'Mar', emp: 70, inm: 75, tas: 35 },
+  { day: 'Mié', emp: 90, inm: 50, tas: 55 },
+  { day: 'Jue', emp: 65, inm: 80, tas: 45 },
+  { day: 'Vie', emp: 75, inm: 65, tas: 60 },
+  { day: 'Sáb', emp: 55, inm: 70, tas: 50 },
+  { day: 'Dom', emp: 80, inm: 55, tas: 70 },
 ]
 
 export const Agentes = () => {
@@ -186,12 +199,12 @@ export const Agentes = () => {
           </div>
         </div>
 
-        {/* Agents Grid */}
+        {/* Agents Grid - Equal Height Cards */}
         <div className="grid grid-cols-3 gap-6">
           {agents.map((agent) => (
             <div
               key={agent.id}
-              className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
             >
               {/* Agent Header */}
               <div className={`${agent.bgColor} px-4 py-3`}>
@@ -276,8 +289,8 @@ export const Agentes = () => {
                 </div>
               </div>
 
-              {/* Recent Activity */}
-              <div className="px-4 pb-4">
+              {/* Recent Activity - Fixed Height */}
+              <div className="px-4 pb-4 flex-1">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Actividad reciente</h4>
                 <div className="space-y-2">
                   {agent.recentActivity.slice(0, 3).map((activity) => (
@@ -288,7 +301,7 @@ export const Agentes = () => {
                           {activity.leadName}
                         </span>
                       </div>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap ${
                         activity.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
                         activity.status === 'pending' ? 'bg-blue-100 text-blue-700' :
                         'bg-amber-100 text-amber-700'
@@ -301,7 +314,7 @@ export const Agentes = () => {
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 mt-auto">
                 <button
                   onClick={() => setSelectedAgent(agent)}
                   className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -314,7 +327,7 @@ export const Agentes = () => {
           ))}
         </div>
 
-        {/* Performance Chart Placeholder */}
+        {/* Performance Chart */}
         <div className="mt-6 bg-white rounded-xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Rendimiento semanal</h3>
@@ -330,15 +343,24 @@ export const Agentes = () => {
               </span>
             </div>
           </div>
-          <div className="h-48 flex items-end gap-2">
-            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
-              <div key={day} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full flex gap-0.5 h-40">
-                  <div className="flex-1 bg-blue-500 rounded-t" style={{ height: `${30 + Math.random() * 70}%` }} />
-                  <div className="flex-1 bg-purple-500 rounded-t" style={{ height: `${20 + Math.random() * 50}%` }} />
-                  <div className="flex-1 bg-amber-500 rounded-t" style={{ height: `${10 + Math.random() * 40}%` }} />
+          <div className="h-48 flex items-end gap-4">
+            {CHART_DATA.map((data) => (
+              <div key={data.day} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full flex gap-1 items-end h-40">
+                  <div 
+                    className="flex-1 bg-blue-500 rounded-t transition-all" 
+                    style={{ height: `${data.emp}%` }} 
+                  />
+                  <div 
+                    className="flex-1 bg-purple-500 rounded-t transition-all" 
+                    style={{ height: `${data.inm}%` }} 
+                  />
+                  <div 
+                    className="flex-1 bg-amber-500 rounded-t transition-all" 
+                    style={{ height: `${data.tas}%` }} 
+                  />
                 </div>
-                <span className="text-xs text-gray-500">{day}</span>
+                <span className="text-xs text-gray-500">{data.day}</span>
               </div>
             ))}
           </div>
