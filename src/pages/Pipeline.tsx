@@ -58,11 +58,11 @@ export const Pipeline = () => {
   const getAgentBadge = (type: PipelineLead['agentType']) => {
     switch (type) {
       case 'emprendimientos':
-        return <span className="w-2 h-2 rounded-full bg-blue-500" />
+        return <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
       case 'inmuebles':
-        return <span className="w-2 h-2 rounded-full bg-purple-500" />
+        return <span className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
       case 'tasaciones':
-        return <span className="w-2 h-2 rounded-full bg-amber-500" />
+        return <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
     }
   }
 
@@ -83,7 +83,7 @@ export const Pipeline = () => {
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Trello className="w-6 h-6 text-[#D4A745]" />
             <h1 className="text-xl font-bold text-gray-900">Pipeline</h1>
@@ -104,7 +104,7 @@ export const Pipeline = () => {
                 placeholder="Buscar lead..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-56 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                className="w-48 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
               />
             </div>
 
@@ -145,82 +145,82 @@ export const Pipeline = () => {
 
       {/* Content */}
       {viewMode === 'kanban' ? (
-        <div className="flex-1 overflow-x-auto p-6">
-          <div className="flex gap-4 h-full min-w-max">
+        <div className="flex-1 overflow-hidden p-4">
+          <div className="grid grid-cols-5 gap-3 h-full">
             {STAGES.map((stage) => {
               const stageLeads = getLeadsByStage(stage.id)
               return (
                 <div
                   key={stage.id}
-                  className="w-80 flex flex-col bg-gray-100 rounded-xl"
+                  className="flex flex-col bg-gray-100 rounded-xl min-w-0 overflow-hidden"
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(stage.id)}
                 >
                   {/* Column Header */}
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-3 h-3 rounded-full ${stage.color}`} />
-                      <h3 className="font-semibold text-gray-700">{stage.title}</h3>
-                      <span className="bg-white text-gray-500 text-xs font-medium px-2 py-0.5 rounded-full">
+                  <div className="flex items-center justify-between px-3 py-2.5 flex-shrink-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`w-2.5 h-2.5 rounded-full ${stage.color} flex-shrink-0`} />
+                      <h3 className="font-semibold text-sm text-gray-700 truncate">{stage.title}</h3>
+                      <span className="bg-white text-gray-500 text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0">
                         {stageLeads.length}
                       </span>
                     </div>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded">
+                    <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded flex-shrink-0">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Cards */}
-                  <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
+                  <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
                     {stageLeads.map((lead) => (
                       <div
                         key={lead.id}
                         draggable
                         onDragStart={() => handleDragStart(lead)}
                         onClick={() => setSelectedLead(lead)}
-                        className={`bg-white rounded-lg p-3 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all ${
+                        className={`bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all ${
                           draggedLead?.id === lead.id ? 'opacity-50' : ''
                         }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="cursor-grab text-gray-300 hover:text-gray-400">
-                            <GripVertical className="w-4 h-4" />
+                        <div className="flex items-start gap-2">
+                          <div className="cursor-grab text-gray-300 hover:text-gray-400 flex-shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
                                 <Avatar name={lead.name} size="sm" />
-                                <span className="font-medium text-sm text-gray-900 truncate">
+                                <span className="font-medium text-xs text-gray-900 truncate">
                                   {lead.name}
                                 </span>
                               </div>
-                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${getScoreColor(lead.score)}`}>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${getScoreColor(lead.score)}`}>
                                 {lead.score}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1.5 mb-2">
+                            <div className="flex items-center gap-1 mb-1.5">
                               {getAgentBadge(lead.agentType)}
-                              <span className="text-xs text-gray-500 truncate">{lead.project}</span>
-                              <span className="text-xs">{getChannelIcon(lead.channel)}</span>
+                              <span className="text-[11px] text-gray-500 truncate">{lead.project}</span>
+                              <span className="text-[10px] flex-shrink-0">{getChannelIcon(lead.channel)}</span>
                             </div>
 
                             {lead.budget && (
-                              <p className="text-xs font-medium text-emerald-600 mb-1">
+                              <p className="text-[11px] font-medium text-emerald-600 mb-0.5">
                                 {lead.budgetCurrency} {lead.budget}
                               </p>
                             )}
 
-                            <p className="text-xs text-gray-500 truncate">{lead.interest}</p>
+                            <p className="text-[11px] text-gray-500 truncate">{lead.interest}</p>
 
                             {lead.notes && (
-                              <p className="text-xs text-amber-600 mt-1 truncate">📝 {lead.notes}</p>
+                              <p className="text-[10px] text-amber-600 mt-1 truncate">📝 {lead.notes}</p>
                             )}
 
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-gray-50">
                               <span className="text-[10px] text-gray-400">{lead.lastActivity}</span>
                               {lead.assignedTo && (
-                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded">
                                   {lead.assignedTo}
                                 </span>
                               )}
