@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Globe, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react'
+import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
