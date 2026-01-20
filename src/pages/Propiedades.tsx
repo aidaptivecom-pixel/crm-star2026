@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { Building2, Search, Filter, MapPin, Bed, Square, Eye, Heart, Share2, X } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight, LayoutGrid, List, Table2 } from 'lucide-react'
 
 type PropertyStatus = 'en_pozo' | 'en_construccion' | 'entrega_inmediata'
 type PropertyType = 'departamento' | 'local' | 'cochera' | 'lote'
+type ViewMode = 'cards' | 'table'
 
 interface Tipologia {
   id: string
@@ -175,29 +176,31 @@ const PROPERTIES: Property[] = [
   },
 ]
 
-const STATUS_LABELS: Record<PropertyStatus, { label: string; color: string }> = {
-  en_pozo: { label: 'En pozo', color: 'bg-blue-100 text-blue-700' },
-  en_construccion: { label: 'En construcción', color: 'bg-amber-100 text-amber-700' },
-  entrega_inmediata: { label: 'Entrega inmediata', color: 'bg-emerald-100 text-emerald-700' },
+const STATUS_LABELS: Record<PropertyStatus, { label: string; color: string; bgColor: string }> = {
+  en_pozo: { label: 'En pozo', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  en_construccion: { label: 'En construcción', color: 'text-amber-700', bgColor: 'bg-amber-100' },
+  entrega_inmediata: { label: 'Entrega inmediata', color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
 }
 
 export const Propiedades = () => {
   const [properties] = useState<Property[]>(PROPERTIES)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<PropertyStatus | 'all'>('all')
-  const [countryFilter, setCountryFilter] = useState<'all' | 'Argentina' | 'Uruguay'>('all')
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('cards')
+  const [activeIndex, setActiveIndex] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
 
-  const filteredProperties = properties.filter(prop => {
-    const matchesSearch = prop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prop.neighborhood.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || prop.status === statusFilter
-    const matchesCountry = countryFilter === 'all' || prop.country === countryFilter
-    return matchesSearch && matchesStatus && matchesCountry
-  })
+  const scrollToIndex = (index: number) => {
+    if (index < 0) index = properties.length - 1
+    if (index >= properties.length) index = 0
+    setActiveIndex(index)
+    
+    if (carouselRef.current) {
+      const scrollAmount = index * 200 // Approximate width of each item
+      carouselRef.current.scrollTo({ left: scrollAmount - 100, behavior: 'smooth' })
+    }
+  }
 
-  const featuredProperties = filteredProperties.filter(p => p.featured)
-  const otherProperties = filteredProperties.filter(p => !p.featured)
+  const totalUnidades = properties.reduce((acc, p) => acc + p.tipologias.reduce((a, t) => a + t.disponibles, 0), 0)
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
@@ -206,169 +209,353 @@ export const Propiedades = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Building2 className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Propiedades</h1>
+            <h1 className="text-xl font-bold text-gray-900">Emprendimientos</h1>
             <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
-              {filteredProperties.length} emprendimientos
+              {properties.length} proyectos • {totalUnidades} unidades
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar proyecto..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-56 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as PropertyStatus | 'all')}
-              className="bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'cards' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
-              <option value="all">Todos los estados</option>
-              <option value="en_pozo">En pozo</option>
-              <option value="en_construccion">En construcción</option>
-              <option value="entrega_inmediata">Entrega inmediata</option>
-            </select>
-
-            {/* Country Filter */}
-            <select
-              value={countryFilter}
-              onChange={(e) => setCountryFilter(e.target.value as 'all' | 'Argentina' | 'Uruguay')}
-              className="bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+              <LayoutGrid className="w-4 h-4" />
+              Cards
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
-              <option value="all">Todos los países</option>
-              <option value="Argentina">Argentina</option>
-              <option value="Uruguay">Uruguay</option>
-            </select>
-
-            <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
-              <Filter className="w-4 h-4" />
-              Más filtros
+              <Table2 className="w-4 h-4" />
+              Tabla
             </button>
           </div>
         </div>
       </div>
 
+      {/* Carousel Navigation */}
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-3">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => scrollToIndex(activeIndex - 1)}
+            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          
+          <div 
+            ref={carouselRef}
+            className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {properties.map((property, index) => (
+              <button
+                key={property.id}
+                onClick={() => {
+                  setActiveIndex(index)
+                  if (viewMode === 'cards') setSelectedProperty(property)
+                }}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+                  activeIndex === index
+                    ? 'bg-[#D4A745] text-white border-[#D4A745]'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4A745] hover:text-[#D4A745]'
+                }`}
+              >
+                <span className="font-medium text-sm whitespace-nowrap">{property.name}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                  activeIndex === index ? 'bg-white/20' : 'bg-gray-100'
+                }`}>
+                  {property.neighborhood}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => scrollToIndex(activeIndex + 1)}
+            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
-        {/* Featured Projects */}
-        {featuredProperties.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Proyectos destacados</h2>
-            <div className="grid grid-cols-2 gap-6">
-              {featuredProperties.slice(0, 2).map((property) => (
-                <div
-                  key={property.id}
-                  className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-                  onClick={() => setSelectedProperty(property)}
-                >
-                  <div className="relative h-56">
-                    <img
-                      src={property.image}
-                      alt={property.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[property.status].color}`}>
-                        {STATUS_LABELS[property.status].label}
-                      </span>
-                      {property.featured && (
-                        <span className="text-xs font-medium px-2 py-1 rounded bg-[#D4A745] text-white">
-                          Destacado
-                        </span>
-                      )}
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <h3 className="text-xl font-bold text-white mb-1">{property.name}</h3>
-                      <div className="flex items-center gap-1 text-white/90 text-sm">
-                        <MapPin className="w-4 h-4" />
-                        {property.location}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{property.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500">Desde</p>
-                        <p className="text-lg font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Entrega</p>
-                        <p className="text-sm font-medium text-gray-900">{property.entrega}</p>
-                      </div>
-                    </div>
-                    {property.avance > 0 && property.avance < 100 && (
-                      <div className="mt-3">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Avance de obra</span>
-                          <span>{property.avance}%</span>
-                        </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-[#D4A745] rounded-full"
-                            style={{ width: `${property.avance}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* All Projects Grid */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Todos los proyectos</h2>
-          <div className="grid grid-cols-3 gap-4">
-            {(featuredProperties.length > 0 ? otherProperties : filteredProperties).map((property) => (
+        {viewMode === 'cards' ? (
+          /* Cards View */
+          <div className="grid grid-cols-3 gap-6">
+            {properties.map((property, index) => (
               <div
                 key={property.id}
-                className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-                onClick={() => setSelectedProperty(property)}
+                className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all cursor-pointer group ${
+                  activeIndex === index ? 'border-[#D4A745] ring-2 ring-[#D4A745]/20' : 'border-gray-100'
+                }`}
+                onClick={() => {
+                  setActiveIndex(index)
+                  setSelectedProperty(property)
+                }}
               >
-                <div className="relative h-40">
+                <div className="relative h-44">
                   <img
                     src={property.image}
                     alt={property.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-2 left-2">
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${STATUS_LABELS[property.status].color}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[property.status].bgColor} ${STATUS_LABELS[property.status].color}`}>
                       {STATUS_LABELS[property.status].label}
                     </span>
                   </div>
-                  <div className="absolute top-2 right-2 flex gap-1">
-                    <button className="p-1.5 bg-white/90 rounded-full hover:bg-white">
-                      <Heart className="w-3.5 h-3.5 text-gray-600" />
-                    </button>
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h3 className="text-lg font-bold text-white mb-0.5">{property.name}</h3>
+                    <div className="flex items-center gap-1 text-white/90 text-xs">
+                      <MapPin className="w-3 h-3" />
+                      {property.neighborhood}, {property.country}
+                    </div>
                   </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
-                  <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
-                    <MapPin className="w-3 h-3" />
-                    {property.neighborhood}, {property.country}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-xs text-gray-500">Desde</p>
+                      <p className="text-lg font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">Entrega</p>
+                      <p className="text-sm font-medium text-gray-900">{property.entrega}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
-                    <span className="text-xs text-gray-500">{property.tipologias.length} tipologías</span>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{property.tipologias.length} tipologías</span>
+                    <span>{property.tipologias.reduce((a, t) => a + t.disponibles, 0)} unidades disp.</span>
                   </div>
+                  {property.avance > 0 && property.avance < 100 && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Avance</span>
+                        <span>{property.avance}%</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#D4A745] rounded-full" style={{ width: `${property.avance}%` }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        ) : (
+          /* Table View */
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Proyecto</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Ubicación</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipologías</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio desde</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Entrega</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Avance</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Unidades</th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {properties.map((property, index) => (
+                    <tr 
+                      key={property.id} 
+                      className={`hover:bg-gray-50 cursor-pointer transition-colors ${
+                        activeIndex === index ? 'bg-[#D4A745]/5' : ''
+                      }`}
+                      onClick={() => setActiveIndex(index)}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-[#D4A745]" />
+                          <span className="font-semibold text-gray-900">{property.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-gray-600">{property.neighborhood}</div>
+                        <div className="text-xs text-gray-400">{property.country}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[property.status].bgColor} ${STATUS_LABELS[property.status].color}`}>
+                          {STATUS_LABELS[property.status].label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-wrap gap-1">
+                          {property.tipologias.slice(0, 3).map((t) => (
+                            <span key={t.id} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                              {t.ambientes > 0 ? `${t.ambientes} amb` : t.name.split(' ')[0]}
+                            </span>
+                          ))}
+                          {property.tipologias.length > 3 && (
+                            <span className="text-xs text-gray-400">+{property.tipologias.length - 3}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-[#D4A745]">{property.tipologias[0].precio}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-gray-700">{property.entrega}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {property.avance === 100 ? (
+                          <span className="text-xs text-emerald-600 font-medium">Terminado</span>
+                        ) : property.avance === 0 ? (
+                          <span className="text-xs text-blue-600 font-medium">Por iniciar</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-[#D4A745] rounded-full" style={{ width: `${property.avance}%` }} />
+                            </div>
+                            <span className="text-xs text-gray-500">{property.avance}%</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm font-medium text-gray-700">
+                          {property.tipologias.reduce((a, t) => a + t.disponibles, 0)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-1">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setSelectedProperty(property); }}
+                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#D4A745]"
+                            title="Ver detalle"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#D4A745]"
+                            title="Compartir"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table Summary */}
+            <div className="bg-gray-50 border-t border-gray-200 px-4 py-3">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-6">
+                  <span className="text-gray-500">
+                    <span className="font-medium text-gray-700">{properties.length}</span> proyectos
+                  </span>
+                  <span className="text-gray-500">
+                    <span className="font-medium text-gray-700">{totalUnidades}</span> unidades disponibles
+                  </span>
+                  <span className="text-gray-500">
+                    <span className="font-medium text-gray-700">{properties.filter(p => p.country === 'Argentina').length}</span> Argentina
+                  </span>
+                  <span className="text-gray-500">
+                    <span className="font-medium text-gray-700">{properties.filter(p => p.country === 'Uruguay').length}</span> Uruguay
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-xs text-gray-500">En pozo</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="text-xs text-gray-500">En construcción</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-xs text-gray-500">Entrega inmediata</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Expanded Detail Section (Table View) */}
+        {viewMode === 'table' && activeIndex >= 0 && (
+          <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">{properties[activeIndex].name}</h3>
+                <p className="text-sm text-gray-500">{properties[activeIndex].location}</p>
+              </div>
+              <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[properties[activeIndex].status].bgColor} ${STATUS_LABELS[properties[activeIndex].status].color}`}>
+                {STATUS_LABELS[properties[activeIndex].status].label}
+              </span>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4">{properties[activeIndex].description}</p>
+            
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Tipologías disponibles</h4>
+                <div className="space-y-2">
+                  {properties[activeIndex].tipologias.map((tipo) => (
+                    <div key={tipo.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
+                      <div className="flex items-center gap-3">
+                        {tipo.ambientes > 0 && (
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Bed className="w-3.5 h-3.5" /> {tipo.ambientes}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1 text-gray-600">
+                          <Square className="w-3.5 h-3.5" /> {tipo.superficie}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
+                          {tipo.disponibles} disp.
+                        </span>
+                        <span className="font-bold text-[#D4A745]">{tipo.precio}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Amenities</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {properties[activeIndex].amenities.map((amenity) => (
+                    <span key={amenity} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                      {amenity}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button 
+                    onClick={() => setSelectedProperty(properties[activeIndex])}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Ver detalle completo
+                  </button>
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Property Detail Modal */}
@@ -390,7 +577,7 @@ export const Propiedades = () => {
                 <X className="w-5 h-5" />
               </button>
               <div className="absolute top-4 left-4 flex gap-2">
-                <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[selectedProperty.status].color}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[selectedProperty.status].bgColor} ${STATUS_LABELS[selectedProperty.status].color}`}>
                   {STATUS_LABELS[selectedProperty.status].label}
                 </span>
               </div>
