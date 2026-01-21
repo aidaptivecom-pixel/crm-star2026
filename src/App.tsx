@@ -4,7 +4,9 @@ import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
 import { Pipeline } from './pages/Pipeline'
 import { Agentes } from './pages/Agentes'
+import { Emprendimientos } from './pages/Emprendimientos'
 import { Propiedades } from './pages/Propiedades'
+import { Tasaciones } from './pages/Tasaciones'
 import { Reportes } from './pages/Reportes'
 import { Configuracion } from './pages/Configuracion'
 
@@ -24,7 +26,9 @@ function App() {
           <Route path="/inbox/:conversationId" element={<Inbox />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/agentes" element={<Agentes />} />
+          <Route path="/emprendimientos" element={<Emprendimientos />} />
           <Route path="/propiedades" element={<Propiedades />} />
+          <Route path="/tasaciones" element={<Tasaciones />} />
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/configuracion" element={<Configuracion />} />
         </Routes>

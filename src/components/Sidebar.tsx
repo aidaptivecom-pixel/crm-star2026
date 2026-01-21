@@ -5,7 +5,9 @@ import {
   Inbox, 
   Trello, 
   Bot, 
-  Building2, 
+  Building2,
+  Home as HomeIcon,
+  Calculator,
   BarChart3, 
   Settings, 
   HelpCircle,
@@ -63,7 +65,9 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Catálogo</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/propiedades" icon={Building2} label="Propiedades" />
+            <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" />
+            <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" />
+            <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" />
           </nav>
         </div>
 
