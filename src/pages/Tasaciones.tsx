@@ -31,7 +31,7 @@ interface Tasacion {
 
 const TASACIONES: Tasacion[] = [
   {
-    id: '1',
+    id: 'TAS-2025-045',
     propietario: { nombre: 'María García', telefono: '11-4567-8901', email: 'maria@email.com' },
     propiedad: { direccion: 'Av. Cabildo 2500, 5°A', barrio: 'Belgrano', ciudad: 'CABA', tipo: 'Departamento', superficie: 85, ambientes: 3, antiguedad: 20 },
     status: 'agendada',
@@ -40,38 +40,50 @@ const TASACIONES: Tasacion[] = [
     tasador: 'Juan Pérez',
   },
   {
-    id: '2',
-    propietario: { nombre: 'Carlos López', telefono: '11-2345-6789', email: 'carlos@email.com' },
-    propiedad: { direccion: 'Costa Rica 5800', barrio: 'Palermo', ciudad: 'CABA', tipo: 'PH', superficie: 120, ambientes: 4, antiguedad: 35 },
-    status: 'realizada',
-    fechaSolicitud: '2025-01-15',
-    fechaVisita: '2025-01-19',
-    tasador: 'Ana Martínez',
-    valorTasado: 195000,
-    precioSugerido: 210000,
-    notas: 'Excelente estado, reciclado. Muy luminoso. Terraza propia.',
-  },
-  {
-    id: '3',
-    propietario: { nombre: 'Laura Fernández', telefono: '11-3456-7890', email: 'laura@email.com' },
-    propiedad: { direccion: 'Juncal 1200, 8°B', barrio: 'Recoleta', ciudad: 'CABA', tipo: 'Departamento', superficie: 65, ambientes: 2, antiguedad: 15 },
+    id: 'TAS-2025-038',
+    propietario: { nombre: 'Jorge Méndez', telefono: '11-7890-1234', email: 'jorge@email.com' },
+    propiedad: { direccion: 'Humboldt 1800', barrio: 'Palermo Viejo', ciudad: 'CABA', tipo: 'PH', superficie: 85, ambientes: 3, antiguedad: 50 },
     status: 'captada',
-    fechaSolicitud: '2025-01-10',
-    fechaVisita: '2025-01-14',
-    tasador: 'Juan Pérez',
-    valorTasado: 145000,
-    precioSugerido: 155000,
+    fechaSolicitud: '2025-01-02',
+    fechaVisita: '2025-01-05',
+    tasador: 'Ana Martínez',
+    valorTasado: 190000,
+    precioSugerido: 195000,
     notas: 'Propietario aceptó. Firmó autorización de venta exclusiva por 90 días.',
   },
   {
-    id: '4',
+    id: 'TAS-2025-042',
+    propietario: { nombre: 'Lucía Martínez', telefono: '11-6789-0123', email: 'lucia@email.com' },
+    propiedad: { direccion: 'Güemes 4500, Piso 3', barrio: 'Palermo Soho', ciudad: 'CABA', tipo: 'Departamento', superficie: 45, ambientes: 2, antiguedad: 8 },
+    status: 'captada',
+    fechaSolicitud: '2025-01-08',
+    fechaVisita: '2025-01-10',
+    tasador: 'Juan Pérez',
+    valorTasado: 142000,
+    precioSugerido: 145000,
+    notas: 'Propietario aceptó. Firmó autorización de venta exclusiva por 90 días.',
+  },
+  {
+    id: 'TAS-2025-035',
+    propietario: { nombre: 'Comercial Norte SRL', telefono: '11-8901-2345', email: 'comercial@norte.com' },
+    propiedad: { direccion: 'Av. Cabildo 2300', barrio: 'Belgrano', ciudad: 'CABA', tipo: 'Local', superficie: 120, ambientes: 1, antiguedad: 25 },
+    status: 'captada',
+    fechaSolicitud: '2024-12-15',
+    fechaVisita: '2024-12-20',
+    tasador: 'Ana Martínez',
+    valorTasado: 310000,
+    precioSugerido: 320000,
+    notas: 'Propietario aceptó. Ideal gastronomía. Firmó exclusiva 60 días.',
+  },
+  {
+    id: 'TAS-2025-046',
     propietario: { nombre: 'Roberto Díaz', telefono: '11-5678-9012', email: 'roberto@email.com' },
     propiedad: { direccion: 'Av. Libertador 4000', barrio: 'Núñez', ciudad: 'CABA', tipo: 'Casa', superficie: 280, ambientes: 5, antiguedad: 40 },
     status: 'solicitada',
     fechaSolicitud: '2025-01-20',
   },
   {
-    id: '5',
+    id: 'TAS-2025-040',
     propietario: { nombre: 'Ana Rodríguez', telefono: '11-6789-0123', email: 'ana@email.com' },
     propiedad: { direccion: 'Thames 2200', barrio: 'Palermo Soho', ciudad: 'CABA', tipo: 'Local', superficie: 50, ambientes: 1, antiguedad: 25 },
     status: 'rechazada',
@@ -81,6 +93,18 @@ const TASACIONES: Tasacion[] = [
     valorTasado: 85000,
     precioSugerido: 95000,
     motivoRechazo: 'Propietario considera el valor muy bajo. Quiere publicar a USD 150.000.',
+  },
+  {
+    id: 'TAS-2025-044',
+    propietario: { nombre: 'Carlos López', telefono: '11-2345-6789', email: 'carlos@email.com' },
+    propiedad: { direccion: 'Costa Rica 5800', barrio: 'Palermo', ciudad: 'CABA', tipo: 'PH', superficie: 120, ambientes: 4, antiguedad: 35 },
+    status: 'realizada',
+    fechaSolicitud: '2025-01-15',
+    fechaVisita: '2025-01-19',
+    tasador: 'Ana Martínez',
+    valorTasado: 195000,
+    precioSugerido: 210000,
+    notas: 'Excelente estado, reciclado. Muy luminoso. Terraza propia. Esperando respuesta del propietario.',
   },
 ]
 
@@ -245,7 +269,7 @@ export const Tasaciones = () => {
                     {(() => { const Icon = STATUS_CONFIG[selectedTasacion.status].icon; return <Icon className={`w-6 h-6 ${STATUS_CONFIG[selectedTasacion.status].color}`} />; })()}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Tasación #{selectedTasacion.id}</h2>
+                    <h2 className="text-xl font-bold text-gray-900">Tasación {selectedTasacion.id}</h2>
                     <span className={`text-sm font-medium ${STATUS_CONFIG[selectedTasacion.status].color}`}>
                       {STATUS_CONFIG[selectedTasacion.status].label}
                     </span>
@@ -346,23 +370,32 @@ export const Tasaciones = () => {
                 </div>
               )}
 
-              {/* Timeline */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Timeline
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <p className="text-sm"><span className="font-medium">Solicitud:</span> {new Date(selectedTasacion.fechaSolicitud).toLocaleDateString('es-AR')}</p>
-                  </div>
-                  {selectedTasacion.fechaVisita && (
+              {/* Timeline con botón de teléfono a la derecha */}
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4" /> Timeline
+                  </h3>
+                  <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-purple-500" />
-                      <p className="text-sm"><span className="font-medium">Visita:</span> {new Date(selectedTasacion.fechaVisita).toLocaleDateString('es-AR')} {selectedTasacion.tasador && `- ${selectedTasacion.tasador}`}</p>
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <p className="text-sm"><span className="font-medium">Solicitud:</span> {new Date(selectedTasacion.fechaSolicitud).toLocaleDateString('es-AR')}</p>
                     </div>
-                  )}
+                    {selectedTasacion.fechaVisita && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <p className="text-sm"><span className="font-medium">Visita:</span> {new Date(selectedTasacion.fechaVisita).toLocaleDateString('es-AR')} {selectedTasacion.tasador && `- ${selectedTasacion.tasador}`}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <a 
+                  href={`tel:${selectedTasacion.propietario.telefono}`}
+                  className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone className="w-5 h-5" />
+                </a>
               </div>
             </div>
 
@@ -388,9 +421,11 @@ export const Tasaciones = () => {
                   </button>
                 </>
               )}
-              <button className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">
-                <Phone className="w-4 h-4" />
-              </button>
+              {selectedTasacion.status === 'captada' && (
+                <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+                  Ver en Propiedades Captadas
+                </button>
+              )}
             </div>
           </div>
         </div>
