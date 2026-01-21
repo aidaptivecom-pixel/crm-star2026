@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Home, MapPin, Bed, Bath, Square, Eye, Phone, Mail, Heart, Search, Plus, LayoutGrid, List, X } from 'lucide-react'
+import { Home, MapPin, Bed, Bath, Square, Eye, Phone, Mail, Heart, Search, Plus, LayoutGrid, List, X, FileCheck, Briefcase, Calendar, User } from 'lucide-react'
 
 type PropertyStatus = 'disponible' | 'reservada' | 'vendida'
-type PropertyType = 'departamento' | 'casa' | 'ph' | 'local' | 'oficina' | 'cochera'
-type OperationType = 'venta' | 'alquiler'
+type PropertyType = 'departamento' | 'casa' | 'ph' | 'local' | 'oficina' | 'cochera' | 'terreno'
+type PropertyOrigin = 'cartera' | 'captacion' // cartera = propiedad propia, captacion = ex-tasación
 type ViewMode = 'cards' | 'table'
+type TabView = 'cartera' | 'captadas'
 
 interface Inmueble {
   id: string
@@ -13,7 +14,7 @@ interface Inmueble {
   barrio: string
   ciudad: string
   tipo: PropertyType
-  operacion: OperationType
+  origen: PropertyOrigin
   status: PropertyStatus
   precio: number
   moneda: 'USD' | 'ARS'
@@ -33,10 +34,17 @@ interface Inmueble {
   }
   fechaAlta: string
   destacada: boolean
+  // Campos adicionales para propiedades captadas (ex-tasaciones)
+  tasacionOriginal?: {
+    id: string
+    fechaTasacion: string
+    valorTasado: number
+    agenteCaptador: string
+  }
 }
 
-// Datos de ejemplo - Inmuebles usados/reventa
-const INMUEBLES: Inmueble[] = [
+// Datos de ejemplo - Propiedades de cartera propia
+const INMUEBLES_CARTERA: Inmueble[] = [
   {
     id: '1',
     titulo: 'Departamento 3 amb con balcón',
@@ -44,7 +52,7 @@ const INMUEBLES: Inmueble[] = [
     barrio: 'Palermo',
     ciudad: 'CABA',
     tipo: 'departamento',
-    operacion: 'venta',
+    origen: 'cartera',
     status: 'disponible',
     precio: 185000,
     moneda: 'USD',
@@ -68,7 +76,7 @@ const INMUEBLES: Inmueble[] = [
     barrio: 'Palermo Hollywood',
     ciudad: 'CABA',
     tipo: 'ph',
-    operacion: 'venta',
+    origen: 'cartera',
     status: 'disponible',
     precio: 220000,
     moneda: 'USD',
@@ -91,7 +99,7 @@ const INMUEBLES: Inmueble[] = [
     barrio: 'Recoleta',
     ciudad: 'CABA',
     tipo: 'departamento',
-    operacion: 'venta',
+    origen: 'cartera',
     status: 'reservada',
     precio: 95000,
     moneda: 'USD',
@@ -115,7 +123,7 @@ const INMUEBLES: Inmueble[] = [
     barrio: 'Olivos',
     ciudad: 'Vicente López',
     tipo: 'casa',
-    operacion: 'venta',
+    origen: 'cartera',
     status: 'disponible',
     precio: 380000,
     moneda: 'USD',
@@ -138,9 +146,9 @@ const INMUEBLES: Inmueble[] = [
     barrio: 'Núñez',
     ciudad: 'CABA',
     tipo: 'oficina',
-    operacion: 'alquiler',
+    origen: 'cartera',
     status: 'disponible',
-    precio: 3500,
+    precio: 285000,
     moneda: 'USD',
     ambientes: 1,
     dormitorios: 0,
@@ -155,17 +163,21 @@ const INMUEBLES: Inmueble[] = [
     fechaAlta: '2025-01-15',
     destacada: false,
   },
+]
+
+// Propiedades captadas (ex-tasaciones convertidas a venta)
+const INMUEBLES_CAPTADOS: Inmueble[] = [
   {
-    id: '6',
+    id: 'cap-1',
     titulo: 'Departamento 2 amb luminoso',
     direccion: 'Güemes 4500, Piso 3',
     barrio: 'Palermo Soho',
     ciudad: 'CABA',
     tipo: 'departamento',
-    operacion: 'alquiler',
+    origen: 'captacion',
     status: 'disponible',
-    precio: 650000,
-    moneda: 'ARS',
+    precio: 145000,
+    moneda: 'USD',
     ambientes: 2,
     dormitorios: 1,
     banos: 1,
@@ -174,10 +186,75 @@ const INMUEBLES: Inmueble[] = [
     antiguedad: 8,
     expensas: 35000,
     imagen: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop',
-    caracteristicas: ['Amoblado', 'Balcón', 'Muy luminoso', 'Excelente ubicación'],
+    caracteristicas: ['Balcón', 'Muy luminoso', 'Excelente ubicación', 'Cocina integrada'],
     propietario: { nombre: 'Lucía Martínez', telefono: '11-6789-0123', email: 'lucia@email.com' },
     fechaAlta: '2025-01-18',
     destacada: true,
+    tasacionOriginal: {
+      id: 'TAS-2025-042',
+      fechaTasacion: '2025-01-10',
+      valorTasado: 142000,
+      agenteCaptador: 'Agente Tasaciones IA'
+    }
+  },
+  {
+    id: 'cap-2',
+    titulo: 'PH 3 amb con patio',
+    direccion: 'Humboldt 1800',
+    barrio: 'Palermo Viejo',
+    ciudad: 'CABA',
+    tipo: 'ph',
+    origen: 'captacion',
+    status: 'disponible',
+    precio: 195000,
+    moneda: 'USD',
+    ambientes: 3,
+    dormitorios: 2,
+    banos: 1,
+    superficie: 85,
+    superficieCubierta: 75,
+    antiguedad: 50,
+    imagen: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop',
+    caracteristicas: ['Patio propio', 'Sin expensas', 'Reciclado', 'Muy tranquilo'],
+    propietario: { nombre: 'Jorge Méndez', telefono: '11-7890-1234', email: 'jorge@email.com' },
+    fechaAlta: '2025-01-20',
+    destacada: false,
+    tasacionOriginal: {
+      id: 'TAS-2025-038',
+      fechaTasacion: '2025-01-05',
+      valorTasado: 190000,
+      agenteCaptador: 'Agente Tasaciones IA'
+    }
+  },
+  {
+    id: 'cap-3',
+    titulo: 'Local comercial sobre avenida',
+    direccion: 'Av. Cabildo 2300',
+    barrio: 'Belgrano',
+    ciudad: 'CABA',
+    tipo: 'local',
+    origen: 'captacion',
+    status: 'reservada',
+    precio: 320000,
+    moneda: 'USD',
+    ambientes: 1,
+    dormitorios: 0,
+    banos: 1,
+    superficie: 120,
+    superficieCubierta: 120,
+    antiguedad: 25,
+    expensas: 45000,
+    imagen: 'https://images.unsplash.com/photo-1582037928769-181f2644ecb7?w=800&auto=format&fit=crop',
+    caracteristicas: ['Sobre avenida', 'Gran vidriera', 'Sótano', 'Ideal gastronomía'],
+    propietario: { nombre: 'Comercial Norte SRL', telefono: '11-8901-2345', email: 'comercial@norte.com' },
+    fechaAlta: '2025-01-19',
+    destacada: true,
+    tasacionOriginal: {
+      id: 'TAS-2025-035',
+      fechaTasacion: '2024-12-20',
+      valorTasado: 310000,
+      agenteCaptador: 'Agente Tasaciones IA'
+    }
   },
 ]
 
@@ -194,21 +271,22 @@ const TIPO_CONFIG: Record<PropertyType, string> = {
   local: 'Local',
   oficina: 'Oficina',
   cochera: 'Cochera',
+  terreno: 'Terreno',
 }
 
 export const Propiedades = () => {
-  const [inmuebles] = useState<Inmueble[]>(INMUEBLES)
+  const [activeTab, setActiveTab] = useState<TabView>('cartera')
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterOperacion, setFilterOperacion] = useState<OperationType | 'todas'>('todas')
   const [selectedInmueble, setSelectedInmueble] = useState<Inmueble | null>(null)
 
-  const filteredInmuebles = inmuebles.filter(i => {
+  const currentInmuebles = activeTab === 'cartera' ? INMUEBLES_CARTERA : INMUEBLES_CAPTADOS
+
+  const filteredInmuebles = currentInmuebles.filter(i => {
     const matchesSearch = i.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.barrio.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.direccion.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesOperacion = filterOperacion === 'todas' || i.operacion === filterOperacion
-    return matchesSearch && matchesOperacion
+    return matchesSearch
   })
 
   const formatPrice = (precio: number, moneda: string) => {
@@ -216,11 +294,24 @@ export const Propiedades = () => {
     return `$ ${precio.toLocaleString()}`
   }
 
+  // Estadísticas rápidas
+  const statsCartera = {
+    total: INMUEBLES_CARTERA.length,
+    disponibles: INMUEBLES_CARTERA.filter(i => i.status === 'disponible').length,
+    reservadas: INMUEBLES_CARTERA.filter(i => i.status === 'reservada').length,
+  }
+  
+  const statsCaptadas = {
+    total: INMUEBLES_CAPTADOS.length,
+    disponibles: INMUEBLES_CAPTADOS.filter(i => i.status === 'disponible').length,
+    reservadas: INMUEBLES_CAPTADOS.filter(i => i.status === 'reservada').length,
+  }
+
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Home className="w-6 h-6 text-[#D4A745]" />
             <h1 className="text-xl font-bold text-gray-900">Propiedades</h1>
@@ -240,34 +331,6 @@ export const Propiedades = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
               />
-            </div>
-
-            {/* Filter by operation */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setFilterOperacion('todas')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filterOperacion === 'todas' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                onClick={() => setFilterOperacion('venta')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filterOperacion === 'venta' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                }`}
-              >
-                Venta
-              </button>
-              <button
-                onClick={() => setFilterOperacion('alquiler')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filterOperacion === 'alquiler' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                }`}
-              >
-                Alquiler
-              </button>
             </div>
 
             {/* View Mode */}
@@ -296,7 +359,53 @@ export const Propiedades = () => {
             </button>
           </div>
         </div>
+
+        {/* Tabs: Cartera vs Captadas */}
+        <div className="flex items-center gap-6 border-b border-gray-100 -mb-4">
+          <button
+            onClick={() => setActiveTab('cartera')}
+            className={`flex items-center gap-2 pb-3 border-b-2 transition-colors ${
+              activeTab === 'cartera' 
+                ? 'border-[#D4A745] text-[#D4A745]' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Briefcase className="w-4 h-4" />
+            <span className="font-medium">Cartera Propia</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${
+              activeTab === 'cartera' ? 'bg-[#D4A745]/10 text-[#D4A745]' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {statsCartera.total}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('captadas')}
+            className={`flex items-center gap-2 pb-3 border-b-2 transition-colors ${
+              activeTab === 'captadas' 
+                ? 'border-[#D4A745] text-[#D4A745]' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <FileCheck className="w-4 h-4" />
+            <span className="font-medium">Propiedades Captadas</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${
+              activeTab === 'captadas' ? 'bg-[#D4A745]/10 text-[#D4A745]' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {statsCaptadas.total}
+            </span>
+          </button>
+        </div>
       </div>
+
+      {/* Info banner para captadas */}
+      {activeTab === 'captadas' && (
+        <div className="mx-6 mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-center gap-3">
+          <FileCheck className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <p className="text-sm text-blue-800">
+            <span className="font-medium">Propiedades Captadas:</span> Estas propiedades provienen de tasaciones donde el propietario decidió vender con STAR Real Estate.
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
@@ -318,11 +427,11 @@ export const Propiedades = () => {
                     <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_CONFIG[inmueble.status].bg} ${STATUS_CONFIG[inmueble.status].color}`}>
                       {STATUS_CONFIG[inmueble.status].label}
                     </span>
-                    <span className={`text-xs font-medium px-2 py-1 rounded ${
-                      inmueble.operacion === 'venta' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                    }`}>
-                      {inmueble.operacion === 'venta' ? 'Venta' : 'Alquiler'}
-                    </span>
+                    {inmueble.origen === 'captacion' && (
+                      <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-700">
+                        Captada
+                      </span>
+                    )}
                   </div>
                   <button 
                     className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white rounded-full text-gray-600 hover:text-red-500 transition-colors"
@@ -335,7 +444,6 @@ export const Propiedades = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="text-lg font-bold text-[#D4A745]">{formatPrice(inmueble.precio, inmueble.moneda)}</p>
-                      {inmueble.operacion === 'alquiler' && <span className="text-xs text-gray-500">/mes</span>}
                     </div>
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                       {TIPO_CONFIG[inmueble.tipo]}
@@ -359,6 +467,15 @@ export const Propiedades = () => {
                       <Bath className="w-4 h-4" /> {inmueble.banos}
                     </span>
                   </div>
+                  {/* Info de captación */}
+                  {inmueble.tasacionOriginal && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Captada: {new Date(inmueble.tasacionOriginal.fechaTasacion).toLocaleDateString('es-AR')}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -371,10 +488,12 @@ export const Propiedades = () => {
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Propiedad</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Ubicación</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Tipo</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Operación</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Precio</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Superficie</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                  {activeTab === 'captadas' && (
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Tasación</th>
+                  )}
                   <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Acciones</th>
                 </tr>
               </thead>
@@ -398,13 +517,6 @@ export const Propiedades = () => {
                       <span className="text-sm text-gray-700">{TIPO_CONFIG[inmueble.tipo]}</span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        inmueble.operacion === 'venta' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                      }`}>
-                        {inmueble.operacion === 'venta' ? 'Venta' : 'Alquiler'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
                       <span className="font-bold text-[#D4A745]">{formatPrice(inmueble.precio, inmueble.moneda)}</span>
                     </td>
                     <td className="py-3 px-4">
@@ -415,6 +527,14 @@ export const Propiedades = () => {
                         {STATUS_CONFIG[inmueble.status].label}
                       </span>
                     </td>
+                    {activeTab === 'captadas' && inmueble.tasacionOriginal && (
+                      <td className="py-3 px-4">
+                        <div className="text-xs">
+                          <p className="text-gray-700 font-medium">{inmueble.tasacionOriginal.id}</p>
+                          <p className="text-gray-500">Tasado: {formatPrice(inmueble.tasacionOriginal.valorTasado, inmueble.moneda)}</p>
+                        </div>
+                      </td>
+                    )}
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-1">
                         <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#D4A745]">
@@ -449,17 +569,51 @@ export const Propiedades = () => {
                 <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_CONFIG[selectedInmueble.status].bg} ${STATUS_CONFIG[selectedInmueble.status].color}`}>
                   {STATUS_CONFIG[selectedInmueble.status].label}
                 </span>
+                {selectedInmueble.origen === 'captacion' && (
+                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-700">
+                    Propiedad Captada
+                  </span>
+                )}
               </div>
               <div className="absolute bottom-4 left-4">
                 <p className="text-2xl font-bold text-white">{formatPrice(selectedInmueble.precio, selectedInmueble.moneda)}</p>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-16rem)]">
               <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedInmueble.titulo}</h2>
               <div className="flex items-center gap-1 text-gray-500 mb-4">
                 <MapPin className="w-4 h-4" />
                 {selectedInmueble.direccion}, {selectedInmueble.barrio}
               </div>
+
+              {/* Info de tasación original (si es captada) */}
+              {selectedInmueble.tasacionOriginal && (
+                <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                    <FileCheck className="w-4 h-4" />
+                    Información de Captación
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-blue-600">ID Tasación</p>
+                      <p className="font-medium text-blue-900">{selectedInmueble.tasacionOriginal.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-600">Fecha Tasación</p>
+                      <p className="font-medium text-blue-900">{new Date(selectedInmueble.tasacionOriginal.fechaTasacion).toLocaleDateString('es-AR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-600">Valor Tasado</p>
+                      <p className="font-medium text-blue-900">{formatPrice(selectedInmueble.tasacionOriginal.valorTasado, selectedInmueble.moneda)}</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-600">Agente Captador</p>
+                      <p className="font-medium text-blue-900">{selectedInmueble.tasacionOriginal.agenteCaptador}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-4 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
                   <p className="text-lg font-bold text-gray-900">{selectedInmueble.ambientes}</p>
@@ -487,7 +641,10 @@ export const Propiedades = () => {
                 </div>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Propietario</h3>
+                <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Propietario
+                </h3>
                 <p className="text-sm text-gray-700">{selectedInmueble.propietario.nombre}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <a href={`tel:${selectedInmueble.propietario.telefono}`} className="flex items-center gap-1 text-sm text-[#D4A745]">
