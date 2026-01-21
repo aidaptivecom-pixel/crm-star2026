@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Home, MapPin, Bed, Bath, Square, Eye, Phone, Mail, Heart, Filter, Search, Plus, LayoutGrid, List, X } from 'lucide-react'
+import { Home, MapPin, Bed, Bath, Square, Eye, Phone, Mail, Heart, Search, Plus, LayoutGrid, List, X } from 'lucide-react'
 
 type PropertyStatus = 'disponible' | 'reservada' | 'vendida'
 type PropertyType = 'departamento' | 'casa' | 'ph' | 'local' | 'oficina' | 'cochera'

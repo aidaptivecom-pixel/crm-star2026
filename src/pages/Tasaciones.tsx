@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calculator, MapPin, Phone, Mail, Calendar, User, Home, Clock, CheckCircle, XCircle, AlertCircle, Plus, Eye, ChevronRight } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, Calendar, User, Home, Clock, CheckCircle, XCircle, AlertCircle, Plus, ChevronRight } from 'lucide-react'
 
 type TasacionStatus = 'solicitada' | 'agendada' | 'realizada' | 'captada' | 'rechazada'
 
