@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
-import { Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight, LayoutGrid, Table2 } from 'lucide-react'
+import { useState, useRef, useMemo } from 'react'
+import { Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight, LayoutGrid, Table2, Loader2, AlertCircle, Database } from 'lucide-react'
+import { useProjects } from '../hooks/useProjects'
+import type { Project as DBProject } from '../types/database'
 
 type PropertyStatus = 'en_pozo' | 'en_construccion' | 'entrega_inmediata'
-type PropertyType = 'departamento' | 'local' | 'cochera' | 'lote'
 type ViewMode = 'cards' | 'table'
 
 interface Tipologia {
@@ -21,7 +22,7 @@ interface Property {
   neighborhood: string
   country: 'Argentina' | 'Uruguay'
   status: PropertyStatus
-  type: PropertyType
+  type: string
   image: string
   description: string
   amenities: string[]
@@ -32,8 +33,8 @@ interface Property {
   precioM2?: string
 }
 
-// Datos actualizados desde brochures oficiales de STAR Real Estate
-const EMPRENDIMIENTOS: Property[] = [
+// Fallback data when Supabase is not configured
+const FALLBACK_DATA: Property[] = [
   {
     id: '1',
     name: 'Roccatagliata',
@@ -43,136 +44,16 @@ const EMPRENDIMIENTOS: Property[] = [
     status: 'en_construccion',
     type: 'departamento',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop',
-    description: 'Emplazado sobre un terreno de 3.500 m², conjugando la elegancia de la historia Argentina con la sofisticación de un proyecto moderno. Ubicación privilegiada frente a un palacio histórico con vistas panorámicas únicas. Full amenities, 180 cocheras en 3 subsuelos.',
-    amenities: ['Piscina', 'SUM', 'Terraza', 'Gimnasio', 'Jardines', '180 Cocheras', 'Locales Comerciales PB'],
+    description: 'Emplazado sobre un terreno de 3.500 m², conjugando la elegancia de la historia Argentina con la sofisticación de un proyecto moderno.',
+    amenities: ['Piscina', 'SUM', 'Terraza', 'Gimnasio', 'Jardines'],
     tipologias: [
-      { id: '1', name: '2 ambientes', ambientes: 2, superficie: '54-67 m² totales', precio: 'USD 209.657', disponibles: 8 },
-      { id: '2', name: '3 ambientes', ambientes: 3, superficie: '94 m² totales', precio: 'USD 311.500', disponibles: 12 },
-      { id: '3', name: '4 ambientes', ambientes: 4, superficie: '120-153 m² totales', precio: 'USD 374.331', disponibles: 10 },
-      { id: '4', name: '4 amb c/Dep', ambientes: 4, superficie: '146-149 m² totales', precio: 'USD 411.839', disponibles: 5 },
+      { id: '1', name: '2 ambientes', ambientes: 2, superficie: '54-67 m²', precio: 'USD 209.657', disponibles: 8 },
+      { id: '2', name: '3 ambientes', ambientes: 3, superficie: '94 m²', precio: 'USD 311.500', disponibles: 12 },
     ],
     entrega: '2026',
     avance: 65,
     featured: true,
     precioM2: 'USD 2.805 - 4.290/m²',
-  },
-  {
-    id: '2',
-    name: 'Voie Cañitas',
-    location: 'Ortega y Gasset 1920 / Baez 454, Cañitas',
-    neighborhood: 'Cañitas',
-    country: 'Argentina',
-    status: 'en_construccion',
-    type: 'departamento',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop',
-    description: 'Conjunto edilicio de dos frentes sobre las calles Ortega y Gasset y Baez, formado por planta baja, 10 pisos y 3 subsuelos. Exclusivas unidades de viviendas familiares, local comercial, hall de acceso, amenities, cocheras y bauleras.',
-    amenities: ['Piscina', 'Jacuzzi', 'Spa', 'Gym', 'Parrilla', 'S.U.M', 'Laundry'],
-    tipologias: [
-      { id: '1', name: '2 amb c/escritorio', ambientes: 2, superficie: '91-98 m² totales', precio: 'USD 180.000', disponibles: 6 },
-      { id: '2', name: '3 ambientes', ambientes: 3, superficie: '102 m² totales', precio: 'USD 220.000', disponibles: 6 },
-      { id: '3', name: '4 amb c/Dep', ambientes: 4, superficie: '146 m² totales', precio: 'USD 320.000', disponibles: 6 },
-      { id: '4', name: '5 amb c/Dep', ambientes: 5, superficie: '220-251 m² totales', precio: 'USD 450.000', disponibles: 4 },
-    ],
-    entrega: '2026',
-    avance: 45,
-    featured: true,
-  },
-  {
-    id: '3',
-    name: 'Huergo 475',
-    location: 'Paseo del Bajo | Dique 2, Puerto Madero',
-    neighborhood: 'Puerto Madero',
-    country: 'Argentina',
-    status: 'en_construccion',
-    type: 'departamento',
-    image: 'https://images.unsplash.com/photo-1567684014761-b65e2e59b9eb?w=800&auto=format&fit=crop',
-    description: 'Viví 365. Disfrutá 475. Frente al Paseo del Bajo y con vistas únicas de Buenos Aires. A diez cuadras de la Reserva Ecológica. A 750 metros del Puente de la Mujer. Con el Río de la Plata siempre a la vista.',
-    amenities: ['Piscina', 'Gym', 'SUM', 'Rooftop', 'Seguridad 24hs'],
-    tipologias: [
-      { id: '1', name: '2 ambientes', ambientes: 2, superficie: '~80 m² totales', precio: 'USD 285.000', disponibles: 40 },
-      { id: '2', name: '3 ambientes', ambientes: 3, superficie: '~110 m² totales', precio: 'USD 450.000', disponibles: 35 },
-      { id: '3', name: 'Premium', ambientes: 4, superficie: '~150 m²', precio: 'USD 650.000', disponibles: 10 },
-    ],
-    entrega: '2027',
-    avance: 30,
-    featured: false,
-  },
-  {
-    id: '4',
-    name: 'Human Abasto Towers',
-    location: 'Calle Lavalle / Guardia Vieja, Balvanera',
-    neighborhood: 'Balvanera',
-    country: 'Argentina',
-    status: 'entrega_inmediata',
-    type: 'departamento',
-    image: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800&auto=format&fit=crop',
-    description: 'Un conjunto de residencias con amenities y áreas deportivas pensado para un público heterogéneo, diverso y consciente. Vistas abiertas a la ciudad, balcones aterrazados y luz natural. OFERTA ESPECIAL: 4 unidades Torre Agüero USD 685.000 (antes USD 828.198).',
-    amenities: ['Spa', 'Gym', 'Kids Club', 'Cowork Room', 'Laundry', 'Microcine', 'SUM Gourmet', 'Parrillas', 'Solarium', 'Piscina climatizada', 'Canchas deportivas'],
-    tipologias: [
-      { id: '1', name: '3 ambientes (70m²)', ambientes: 3, superficie: '70 m² totales', precio: 'USD 171.250', disponibles: 2 },
-      { id: '2', name: '3 ambientes (77m²)', ambientes: 3, superficie: '77 m² totales', precio: 'USD 207.050', disponibles: 2 },
-    ],
-    entrega: 'Inmediata',
-    avance: 100,
-    featured: true,
-  },
-  {
-    id: '5',
-    name: 'Joy Patagonia',
-    location: 'El Calafate, Santa Cruz',
-    neighborhood: 'El Calafate',
-    country: 'Argentina',
-    status: 'en_construccion',
-    type: 'departamento',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop',
-    description: 'Tan solo 27 residencias exclusivas de 2 y 3 dormitorios que redefinen el concepto de vivir premium en El Calafate. Vista al Lago Argentino, terreno de 27.440 m². Inspirado en el concepto de "lujo esencial" con madera Lenga y piso radiante.',
-    amenities: ['Piscina climatizada', 'Spa', 'Hidromasaje', 'Sauna seco', 'Sauna húmedo', 'SUM con parrilla', 'Gimnasio', 'Restaurante', 'Cava de vinos', 'Terraza Sky Lounge'],
-    tipologias: [
-      { id: '1', name: 'Residencia Lago (2 dorm)', ambientes: 2, superficie: '123.5 m² totales', precio: 'USD 250.000', disponibles: 12 },
-      { id: '2', name: 'Residencia Glaciar (3 dorm)', ambientes: 3, superficie: '168 m² totales', precio: 'USD 380.000', disponibles: 6 },
-    ],
-    entrega: '2027',
-    avance: 25,
-    featured: true,
-  },
-  {
-    id: '6',
-    name: "B'Twins Norte",
-    location: 'Pinamar, Costa Atlántica',
-    neighborhood: 'Pinamar',
-    country: 'Argentina',
-    status: 'en_construccion',
-    type: 'departamento',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop',
-    description: 'Complejo de departamentos en Pinamar, ideal para inversión y disfrute de temporada en la Costa Atlántica.',
-    amenities: ['Piscina', 'Solarium', 'Parrillas', 'Gimnasio'],
-    tipologias: [
-      { id: '1', name: '1 dormitorio', ambientes: 1, superficie: '~45 m² totales', precio: 'USD 85.000', disponibles: 12 },
-      { id: '2', name: '2 dormitorios', ambientes: 2, superficie: '~60 m² totales', precio: 'USD 120.000', disponibles: 10 },
-    ],
-    entrega: '2026',
-    avance: 40,
-    featured: false,
-  },
-  {
-    id: '7',
-    name: 'Puerto Quetzal',
-    location: 'Camino del Cerro Eguzquiza, La Barra',
-    neighborhood: 'La Barra',
-    country: 'Uruguay',
-    status: 'en_pozo',
-    type: 'lote',
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop',
-    description: 'Club de chacras a 5 min de La Barra, 25 min de Jose Ignacio, 2 min del Aeropuerto Fasano, 20 min de Punta del Este. Lotes de 4.000 m² para construir en armonía con la naturaleza. Financiación: 50% en 18 cuotas sin intereses.',
-    amenities: ['Club House', 'Seguridad 24hs', 'Entorno natural', 'Barrio privado'],
-    tipologias: [
-      { id: '1', name: 'Lote estándar', ambientes: 0, superficie: '4.000 m²', precio: 'USD 150.000', disponibles: 10 },
-      { id: '2', name: 'Lote premium', ambientes: 0, superficie: '4.000 m²', precio: 'USD 280.000', disponibles: 12 },
-      { id: '3', name: 'Lote esquina', ambientes: 0, superficie: '4.000 m²+', precio: 'USD 350.000', disponibles: 4 },
-    ],
-    entrega: 'Disponible',
-    avance: 100,
-    featured: true,
   },
 ]
 
@@ -182,8 +63,84 @@ const STATUS_LABELS: Record<PropertyStatus, { label: string; color: string; bgCo
   entrega_inmediata: { label: 'Entrega inmediata', color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
 }
 
+// Transform Supabase data to component format
+function transformDBProject(dbProject: DBProject): Property {
+  const tipologias: Tipologia[] = Array.isArray(dbProject.tipologias) 
+    ? (dbProject.tipologias as any[]).map((t, i) => ({
+        id: String(i + 1),
+        name: t.nombre || t.name || `Tipo ${i + 1}`,
+        ambientes: t.ambientes || 0,
+        superficie: t.superficie || t.m2 || '-',
+        precio: t.precio || `USD ${dbProject.price_min?.toLocaleString() || '-'}`,
+        disponibles: t.disponibles || t.unidades || 0,
+      }))
+    : [{ 
+        id: '1', 
+        name: 'Consultar', 
+        ambientes: 0, 
+        superficie: '-', 
+        precio: `USD ${dbProject.price_min?.toLocaleString() || '-'}`, 
+        disponibles: dbProject.units_available || 0 
+      }]
+
+  const amenities: string[] = Array.isArray(dbProject.amenities) 
+    ? (dbProject.amenities as string[])
+    : []
+
+  // Determine country from location
+  const isUruguay = dbProject.location?.toLowerCase().includes('uruguay') || 
+                    dbProject.slug === 'puerto-quetzal'
+
+  // Map estado to PropertyStatus
+  let status: PropertyStatus = 'en_construccion'
+  if (dbProject.estado === 'entrega_inmediata' || dbProject.estado === 'disponible') {
+    status = 'entrega_inmediata'
+  } else if (dbProject.estado === 'preventa') {
+    status = 'en_pozo'
+  }
+
+  // Calculate avance based on estado
+  let avance = 50
+  if (dbProject.estado === 'entrega_inmediata' || dbProject.estado === 'disponible') {
+    avance = 100
+  } else if (dbProject.estado === 'preventa') {
+    avance = 15
+  }
+
+  return {
+    id: dbProject.id,
+    name: dbProject.name,
+    location: dbProject.direccion || dbProject.location || '',
+    neighborhood: dbProject.location?.split(',')[0] || '',
+    country: isUruguay ? 'Uruguay' : 'Argentina',
+    status,
+    type: 'departamento',
+    image: Array.isArray(dbProject.images) && dbProject.images.length > 0 
+      ? (dbProject.images as string[])[0] 
+      : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop',
+    description: dbProject.description || '',
+    amenities,
+    tipologias,
+    entrega: dbProject.entrega || 'Consultar',
+    avance,
+    featured: dbProject.units_available ? dbProject.units_available > 10 : false,
+    precioM2: dbProject.precio_m2_min 
+      ? `USD ${dbProject.precio_m2_min.toLocaleString()} - ${dbProject.precio_m2_max?.toLocaleString() || '-'}/m²`
+      : undefined,
+  }
+}
+
 export const Emprendimientos = () => {
-  const [properties] = useState<Property[]>(EMPRENDIMIENTOS)
+  const { projects: dbProjects, loading, error, isConfigured } = useProjects()
+  
+  // Transform DB projects to component format, or use fallback
+  const properties = useMemo(() => {
+    if (!isConfigured || dbProjects.length === 0) {
+      return FALLBACK_DATA
+    }
+    return dbProjects.map(transformDBProject)
+  }, [dbProjects, isConfigured])
+
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [activeIndex, setActiveIndex] = useState(0)
@@ -202,6 +159,37 @@ export const Emprendimientos = () => {
 
   const totalUnidades = properties.reduce((acc, p) => acc + p.tipologias.reduce((a, t) => a + t.disponibles, 0), 0)
 
+  // Loading state
+  if (loading) {
+    return (
+      <main className="flex-1 flex items-center justify-center bg-[#F8F9FA]">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#D4A745] mx-auto mb-3" />
+          <p className="text-gray-600">Cargando emprendimientos...</p>
+        </div>
+      </main>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <main className="flex-1 flex items-center justify-center bg-[#F8F9FA]">
+        <div className="text-center max-w-md px-4">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar datos</h2>
+          <p className="text-gray-600 text-sm mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-[#D4A745] text-white rounded-lg hover:bg-[#c49a3d]"
+          >
+            Reintentar
+          </button>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
@@ -213,6 +201,12 @@ export const Emprendimientos = () => {
             <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
               {properties.length} proyectos • {totalUnidades} unidades
             </span>
+            {isConfigured && (
+              <span className="hidden sm:inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-1 rounded-full">
+                <Database className="w-3 h-3" />
+                Supabase
+              </span>
+            )}
           </div>
 
           {/* View Mode Toggle */}
@@ -326,7 +320,7 @@ export const Emprendimientos = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-xs text-gray-500">Desde</p>
-                      <p className="text-base sm:text-lg font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
+                      <p className="text-base sm:text-lg font-bold text-[#D4A745]">{property.tipologias[0]?.precio || '-'}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">Entrega</p>
@@ -393,7 +387,7 @@ export const Emprendimientos = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-bold text-[#D4A745] text-sm">{property.tipologias[0].precio}</span>
+                        <span className="font-bold text-[#D4A745] text-sm">{property.tipologias[0]?.precio || '-'}</span>
                       </td>
                       <td className="py-3 px-4">
                         <span className="text-sm text-gray-700">{property.entrega}</span>
@@ -474,16 +468,18 @@ export const Emprendimientos = () => {
                   <p className="text-sm sm:text-base text-gray-600 mb-4">{selectedProperty.description}</p>
 
                   {/* Amenities */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Amenities</h3>
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                      {selectedProperty.amenities.map((amenity) => (
-                        <span key={amenity} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                          {amenity}
-                        </span>
-                      ))}
+                  {selectedProperty.amenities.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Amenities</h3>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {selectedProperty.amenities.map((amenity) => (
+                          <span key={amenity} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                            {amenity}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Tipologias */}
                   <div>
