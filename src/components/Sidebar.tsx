@@ -15,7 +15,11 @@ import {
 } from 'lucide-react'
 import { CONVERSATIONS } from '../constants'
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onNavigate?: () => void
+}
+
+export const Sidebar = ({ onNavigate }: SidebarProps) => {
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
   return (
@@ -47,9 +51,9 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Principal</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/" icon={Home} label="Inicio" />
-            <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} />
-            <NavItem to="/pipeline" icon={Trello} label="Pipeline" />
+            <NavItem to="/" icon={Home} label="Inicio" onNavigate={onNavigate} />
+            <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} onNavigate={onNavigate} />
+            <NavItem to="/pipeline" icon={Trello} label="Pipeline" onNavigate={onNavigate} />
           </nav>
         </div>
 
@@ -57,7 +61,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Agentes</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" />
+            <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" onNavigate={onNavigate} />
           </nav>
         </div>
 
@@ -65,9 +69,9 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Catálogo</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" />
-            <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" />
-            <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" />
+            <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" onNavigate={onNavigate} />
+            <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" onNavigate={onNavigate} />
+            <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" onNavigate={onNavigate} />
           </nav>
         </div>
 
@@ -75,7 +79,7 @@ export const Sidebar = () => {
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Analytics</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/reportes" icon={BarChart3} label="Reportes" />
+            <NavItem to="/reportes" icon={BarChart3} label="Reportes" onNavigate={onNavigate} />
           </nav>
         </div>
 
@@ -84,8 +88,8 @@ export const Sidebar = () => {
       {/* Bottom Actions */}
       <div className="px-4 pb-4 mt-auto">
         <div className="border-t border-gray-100 pt-4 mb-4 space-y-0.5">
-           <NavItem to="/configuracion" icon={Settings} label="Configuración" />
-           <NavItem to="/ayuda" icon={HelpCircle} label="Ayuda" disabled />
+           <NavItem to="/configuracion" icon={Settings} label="Configuración" onNavigate={onNavigate} />
+           <NavItem to="/ayuda" icon={HelpCircle} label="Ayuda" disabled onNavigate={onNavigate} />
         </div>
         
         {/* User Profile */}
@@ -107,9 +111,10 @@ interface NavItemProps {
   label: string
   badge?: string
   disabled?: boolean
+  onNavigate?: () => void
 }
 
-const NavItem = ({ to, icon: Icon, label, badge, disabled }: NavItemProps) => {
+const NavItem = ({ to, icon: Icon, label, badge, disabled, onNavigate }: NavItemProps) => {
   if (disabled) {
     return (
       <span className="flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed">
@@ -126,6 +131,7 @@ const NavItem = ({ to, icon: Icon, label, badge, disabled }: NavItemProps) => {
     <NavLink
       to={to}
       end={to === '/'}
+      onClick={onNavigate}
       className={({ isActive }) =>
         `flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
           isActive
