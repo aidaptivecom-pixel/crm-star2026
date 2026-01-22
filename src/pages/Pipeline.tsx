@@ -82,32 +82,21 @@ export const Pipeline = () => {
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Trello className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Pipeline</h1>
-            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
+        {/* Top Row */}
+        <div className="flex items-center justify-between gap-3 mb-3 sm:mb-0">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Trello className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Pipeline</h1>
+            <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
               {filteredLeads.length} leads
             </span>
-            <span className="bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-1 rounded-full">
-              USD {(totalValue / 1000000).toFixed(1)}M potencial
+            <span className="hidden md:inline bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-1 rounded-full">
+              USD {(totalValue / 1000000).toFixed(1)}M
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar lead..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-48 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-              />
-            </div>
-
+          <div className="flex items-center gap-2">
             {/* View Toggle */}
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -128,31 +117,53 @@ export const Pipeline = () => {
               </button>
             </div>
 
-            {/* Filter */}
-            <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+            {/* Filter - Hidden on smallest screens */}
+            <button className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
               <Filter className="w-4 h-4" />
-              Filtros
+              <span className="hidden md:inline">Filtros</span>
             </button>
 
             {/* Add Lead */}
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] transition-colors">
+            <button className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] transition-colors">
               <Plus className="w-4 h-4" />
-              Nuevo Lead
+              <span className="hidden sm:inline">Nuevo</span>
             </button>
+          </div>
+        </div>
+
+        {/* Search Row - Full width on mobile */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar lead..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full sm:w-48 lg:w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+            />
+          </div>
+          
+          {/* Mobile stats */}
+          <div className="flex sm:hidden items-center gap-2">
+            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
+              {filteredLeads.length}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Content */}
       {viewMode === 'kanban' ? (
-        <div className="flex-1 overflow-hidden p-4">
-          <div className="grid grid-cols-5 gap-3 h-full">
+        /* Kanban View - Horizontal scroll on mobile */
+        <div className="flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-4">
+          <div className="flex lg:grid lg:grid-cols-5 gap-3 h-full min-w-max lg:min-w-0">
             {STAGES.map((stage) => {
               const stageLeads = getLeadsByStage(stage.id)
               return (
                 <div
                   key={stage.id}
-                  className="flex flex-col bg-gray-100 rounded-xl min-w-0 overflow-hidden"
+                  className="flex flex-col bg-gray-100 rounded-xl w-[280px] sm:w-[300px] lg:w-auto flex-shrink-0 lg:flex-shrink overflow-hidden"
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(stage.id)}
                 >
@@ -183,7 +194,7 @@ export const Pipeline = () => {
                         }`}
                       >
                         <div className="flex items-start gap-2">
-                          <div className="cursor-grab text-gray-300 hover:text-gray-400 flex-shrink-0">
+                          <div className="cursor-grab text-gray-300 hover:text-gray-400 flex-shrink-0 hidden sm:block">
                             <GripVertical className="w-3.5 h-3.5" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -237,102 +248,101 @@ export const Pipeline = () => {
         </div>
       ) : (
         /* Table View */
-        <div className="flex-1 overflow-auto p-6">
-          <div className="bg-white rounded-xl border border-gray-100">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                  <th className="px-4 py-3">Lead</th>
-                  <th className="px-4 py-3">Proyecto</th>
-                  <th className="px-4 py-3">Etapa</th>
-                  <th className="px-4 py-3">Score</th>
-                  <th className="px-4 py-3">Presupuesto</th>
-                  <th className="px-4 py-3">Asignado</th>
-                  <th className="px-4 py-3">Última actividad</th>
-                  <th className="px-4 py-3">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredLeads.map((lead) => {
-                  const stage = STAGES.find(s => s.id === lead.stage)
-                  return (
-                    <tr key={lead.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedLead(lead)}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar name={lead.name} size="sm" />
-                          <div>
-                            <p className="font-medium text-sm text-gray-900">{lead.name}</p>
-                            <p className="text-xs text-gray-500">{lead.phone}</p>
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
+                <thead>
+                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                    <th className="px-3 sm:px-4 py-3">Lead</th>
+                    <th className="px-3 sm:px-4 py-3">Proyecto</th>
+                    <th className="px-3 sm:px-4 py-3">Etapa</th>
+                    <th className="px-3 sm:px-4 py-3">Score</th>
+                    <th className="px-3 sm:px-4 py-3">Presupuesto</th>
+                    <th className="px-3 sm:px-4 py-3">Actividad</th>
+                    <th className="px-3 sm:px-4 py-3">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredLeads.map((lead) => {
+                    const stage = STAGES.find(s => s.id === lead.stage)
+                    return (
+                      <tr key={lead.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedLead(lead)}>
+                        <td className="px-3 sm:px-4 py-3">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <Avatar name={lead.name} size="sm" />
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm text-gray-900 truncate">{lead.name}</p>
+                              <p className="text-xs text-gray-500 truncate">{lead.phone}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          {getAgentBadge(lead.agentType)}
-                          <span className="text-sm text-gray-700">{lead.project}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${stage?.color} text-white`}>
-                          {stage?.title}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-bold px-2 py-1 rounded ${getScoreColor(lead.score)}`}>
-                          {lead.score}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {lead.budget ? (
-                          <span className="text-sm font-medium text-emerald-600">
-                            {lead.budgetCurrency} {lead.budget}
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            {getAgentBadge(lead.agentType)}
+                            <span className="text-sm text-gray-700 truncate max-w-[120px]">{lead.project}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${stage?.color} text-white`}>
+                            {stage?.title}
                           </span>
-                        ) : (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {lead.assignedTo ? (
-                          <span className="text-sm text-gray-600">{lead.assignedTo}</span>
-                        ) : (
-                          <span className="text-sm text-gray-400">Sin asignar</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-gray-500">{lead.lastActivity}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
-                            <Phone className="w-4 h-4" />
-                          </button>
-                          <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                            <MessageCircle className="w-4 h-4" />
-                          </button>
-                          <button className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors">
-                            <Calendar className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${getScoreColor(lead.score)}`}>
+                            {lead.score}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          {lead.budget ? (
+                            <span className="text-sm font-medium text-emerald-600">
+                              {lead.budgetCurrency} {lead.budget}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <span className="text-xs text-gray-500">{lead.lastActivity}</span>
+                        </td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
+                              <Phone className="w-4 h-4" />
+                            </button>
+                            <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                              <MessageCircle className="w-4 h-4" />
+                            </button>
+                            <button className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors">
+                              <Calendar className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Mobile hint */}
+            <div className="lg:hidden px-4 py-2 text-center border-t border-gray-100">
+              <p className="text-xs text-gray-400">← Desliza para ver más →</p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Lead Detail Modal */}
       {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedLead(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 m-4" onClick={e => e.stopPropagation()}>
-            <div className="flex items-start gap-4 mb-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3" onClick={() => setSelectedLead(null)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-md p-4 sm:p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
               <Avatar name={selectedLead.name} size="lg" />
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900">{selectedLead.name}</h3>
-                <p className="text-sm text-gray-500">{selectedLead.project}</p>
-                <div className="flex items-center gap-2 mt-1">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">{selectedLead.name}</h3>
+                <p className="text-sm text-gray-500 truncate">{selectedLead.project}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(selectedLead.score)}`}>
                     Score {selectedLead.score}
                   </span>
@@ -343,12 +353,12 @@ export const Pipeline = () => {
                   )}
                 </div>
               </div>
-              <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600 p-1">
                 ✕
               </button>
             </div>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3 mb-4 sm:mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Teléfono</span>
                 <span className="text-gray-900">{selectedLead.phone}</span>
@@ -356,12 +366,12 @@ export const Pipeline = () => {
               {selectedLead.email && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Email</span>
-                  <span className="text-gray-900">{selectedLead.email}</span>
+                  <span className="text-gray-900 truncate ml-4">{selectedLead.email}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Interés</span>
-                <span className="text-gray-900">{selectedLead.interest}</span>
+                <span className="text-gray-900 truncate ml-4">{selectedLead.interest}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Canal</span>
@@ -382,17 +392,17 @@ export const Pipeline = () => {
             </div>
 
             <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600">
+              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600">
                 <Phone className="w-4 h-4" />
-                Llamar
+                <span className="hidden sm:inline">Llamar</span>
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">
+              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">
                 <MessageCircle className="w-4 h-4" />
-                Mensaje
+                <span className="hidden sm:inline">Mensaje</span>
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600">
+              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600">
                 <Calendar className="w-4 h-4" />
-                Agendar
+                <span className="hidden sm:inline">Agendar</span>
               </button>
             </div>
           </div>
