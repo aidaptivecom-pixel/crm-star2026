@@ -132,95 +132,96 @@ export const Agentes = () => {
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Bot className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Monitoreo IA</h1>
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Bot className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Monitoreo IA</h1>
+            <span className="bg-emerald-100 text-emerald-700 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              {agents.filter(a => a.status === 'active').length} agentes activos
+              <span className="hidden sm:inline">{agents.filter(a => a.status === 'active').length} agentes activos</span>
+              <span className="sm:hidden">{agents.filter(a => a.status === 'active').length}</span>
             </span>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+          <button className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
             <Settings className="w-4 h-4" />
-            Configuración
+            <span className="hidden sm:inline">Config</span>
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
         {/* Global Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 sm:w-10 h-8 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{totalActiveConversations}</p>
-                <p className="text-xs text-gray-500">Conversaciones activas</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{totalTodayConversations}</p>
-                <p className="text-xs text-gray-500">Conversaciones hoy</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalActiveConversations}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Conv. activas</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 sm:w-10 h-8 sm:h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{totalQualifiedLeads}</p>
-                <p className="text-xs text-gray-500">Leads calificados hoy</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalTodayConversations}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Conv. hoy</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-amber-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 sm:w-10 h-8 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 sm:w-5 h-4 sm:h-5 text-purple-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{avgSuccessRate}%</p>
-                <p className="text-xs text-gray-500">Tasa de éxito promedio</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalQualifiedLeads}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Calificados</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 sm:w-10 h-8 sm:h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Zap className="w-4 sm:w-5 h-4 sm:h-5 text-amber-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{avgSuccessRate}%</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Tasa éxito</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Agents Grid - Equal Height Cards */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {agents.map((agent) => (
             <div
               key={agent.id}
               className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
             >
               {/* Agent Header */}
-              <div className={`${agent.bgColor} px-4 py-3`}>
+              <div className={`${agent.bgColor} px-3 sm:px-4 py-3`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <Brain className="w-5 h-5 text-white" />
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 sm:w-10 h-8 sm:h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-white">{agent.name}</h3>
-                      <p className="text-xs text-white/80">{agent.description}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{agent.name}</h3>
+                      <p className="text-[10px] sm:text-xs text-white/80 truncate">{agent.description}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleAgentStatus(agent.id)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 sm:p-2 rounded-lg transition-colors flex-shrink-0 ${
                       agent.status === 'active'
                         ? 'bg-white/20 hover:bg-white/30'
                         : 'bg-red-500/50 hover:bg-red-500/70'
@@ -236,7 +237,7 @@ export const Agentes = () => {
               </div>
 
               {/* Status Badge */}
-              <div className="px-4 py-2 border-b border-gray-100">
+              <div className="px-3 sm:px-4 py-2 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {agent.status === 'active' ? (
@@ -251,47 +252,47 @@ export const Agentes = () => {
                       </>
                     )}
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {agent.metrics.activeConversations} conversaciones activas
+                  <span className="text-[10px] sm:text-xs text-gray-500">
+                    {agent.metrics.activeConversations} activas
                   </span>
                 </div>
               </div>
 
               {/* Metrics */}
-              <div className="p-4 grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[10px] text-gray-500 uppercase">Tiempo resp.</span>
+              <div className="p-3 sm:p-4 grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                    <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-gray-400" />
+                    <span className="text-[9px] sm:text-[10px] text-gray-500 uppercase">Tiempo</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{agent.metrics.avgResponseTime}</p>
+                  <p className="text-base sm:text-lg font-bold text-gray-900">{agent.metrics.avgResponseTime}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[10px] text-gray-500 uppercase">Éxito</span>
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                    <CheckCircle className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-gray-400" />
+                    <span className="text-[9px] sm:text-[10px] text-gray-500 uppercase">Éxito</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{agent.metrics.successRate}%</p>
+                  <p className="text-base sm:text-lg font-bold text-gray-900">{agent.metrics.successRate}%</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Users className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[10px] text-gray-500 uppercase">Calificados</span>
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                    <Users className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-gray-400" />
+                    <span className="text-[9px] sm:text-[10px] text-gray-500 uppercase">Calif.</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{agent.metrics.qualifiedLeads}</p>
+                  <p className="text-base sm:text-lg font-bold text-gray-900">{agent.metrics.qualifiedLeads}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[10px] text-gray-500 uppercase">Handoffs</span>
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                    <AlertTriangle className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-gray-400" />
+                    <span className="text-[9px] sm:text-[10px] text-gray-500 uppercase">Handoffs</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{agent.metrics.handoffs}</p>
+                  <p className="text-base sm:text-lg font-bold text-gray-900">{agent.metrics.handoffs}</p>
                 </div>
               </div>
 
               {/* Recent Activity - Fixed Height */}
-              <div className="px-4 pb-4 flex-1">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Actividad reciente</h4>
+              <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex-1">
+                <h4 className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase mb-2">Actividad reciente</h4>
                 <div className="space-y-2">
                   {agent.recentActivity.slice(0, 3).map((activity) => (
                     <div key={activity.id} className="flex items-center gap-2 text-sm">
@@ -301,7 +302,7 @@ export const Agentes = () => {
                           {activity.leadName}
                         </span>
                       </div>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap ${
+                      <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap ${
                         activity.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
                         activity.status === 'pending' ? 'bg-blue-100 text-blue-700' :
                         'bg-amber-100 text-amber-700'
@@ -314,13 +315,13 @@ export const Agentes = () => {
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 mt-auto">
+              <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border-t border-gray-100 mt-auto">
                 <button
                   onClick={() => setSelectedAgent(agent)}
-                  className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="w-full flex items-center justify-center gap-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900"
                 >
                   <BarChart3 className="w-4 h-4" />
-                  Ver métricas detalladas
+                  Ver métricas
                 </button>
               </div>
             </div>
@@ -328,25 +329,25 @@ export const Agentes = () => {
         </div>
 
         {/* Performance Chart */}
-        <div className="mt-6 bg-white rounded-xl border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Rendimiento semanal</h3>
-            <div className="flex items-center gap-4 text-xs">
+        <div className="mt-6 bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Rendimiento semanal</h3>
+            <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-blue-500 rounded" /> Emprendimientos
+                <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 bg-blue-500 rounded" /> Emp
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-purple-500 rounded" /> Inmuebles
+                <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 bg-purple-500 rounded" /> Inm
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-amber-500 rounded" /> Tasaciones
+                <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 bg-amber-500 rounded" /> Tas
               </span>
             </div>
           </div>
-          <div className="h-48 flex items-end gap-4">
+          <div className="h-36 sm:h-48 flex items-end gap-2 sm:gap-4">
             {CHART_DATA.map((data) => (
               <div key={data.day} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full flex gap-1 items-end h-40">
+                <div className="w-full flex gap-0.5 sm:gap-1 items-end h-28 sm:h-40">
                   <div 
                     className="flex-1 bg-blue-500 rounded-t transition-all" 
                     style={{ height: `${data.emp}%` }} 
@@ -360,7 +361,7 @@ export const Agentes = () => {
                     style={{ height: `${data.tas}%` }} 
                   />
                 </div>
-                <span className="text-xs text-gray-500">{data.day}</span>
+                <span className="text-[10px] sm:text-xs text-gray-500">{data.day}</span>
               </div>
             ))}
           </div>
@@ -369,54 +370,54 @@ export const Agentes = () => {
 
       {/* Agent Detail Modal */}
       {selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedAgent(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 m-4" onClick={e => e.stopPropagation()}>
-            <div className="flex items-start justify-between mb-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setSelectedAgent(null)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg p-4 sm:p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 ${selectedAgent.bgColor} rounded-xl flex items-center justify-center`}>
-                  <Brain className="w-6 h-6 text-white" />
+                <div className={`w-10 sm:w-12 h-10 sm:h-12 ${selectedAgent.bgColor} rounded-xl flex items-center justify-center`}>
+                  <Brain className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">{selectedAgent.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedAgent.description}</p>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">{selectedAgent.name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">{selectedAgent.description}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedAgent(null)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSelectedAgent(null)} className="text-gray-400 hover:text-gray-600 p-1">
                 ✕
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Conversaciones hoy</p>
-                <p className="text-2xl font-bold text-gray-900">{selectedAgent.metrics.todayConversations}</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1">Conv. hoy</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{selectedAgent.metrics.todayConversations}</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Tiempo promedio</p>
-                <p className="text-2xl font-bold text-gray-900">{selectedAgent.metrics.avgResponseTime}</p>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1">Tiempo prom.</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{selectedAgent.metrics.avgResponseTime}</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Tasa de éxito</p>
-                <p className="text-2xl font-bold text-emerald-600">{selectedAgent.metrics.successRate}%</p>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1">Tasa éxito</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-600">{selectedAgent.metrics.successRate}%</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Derivaciones</p>
-                <p className="text-2xl font-bold text-amber-600">{selectedAgent.metrics.handoffs}</p>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1">Derivaciones</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-600">{selectedAgent.metrics.handoffs}</p>
               </div>
             </div>
 
-            <h4 className="font-semibold text-gray-900 mb-3">Actividad reciente</h4>
-            <div className="space-y-2 mb-6">
+            <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Actividad reciente</h4>
+            <div className="space-y-2 mb-4 sm:mb-6">
               {selectedAgent.recentActivity.map((activity) => (
                 <div key={activity.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Avatar name={activity.leadName} size="sm" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{activity.leadName}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{activity.leadName}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500">{activity.time}</p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded ${
+                  <span className={`text-[10px] sm:text-xs px-2 py-1 rounded flex-shrink-0 ${
                     activity.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
                     activity.status === 'pending' ? 'bg-blue-100 text-blue-700' :
                     'bg-amber-100 text-amber-700'
@@ -427,7 +428,7 @@ export const Agentes = () => {
               ))}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => toggleAgentStatus(selectedAgent.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium ${
@@ -437,9 +438,9 @@ export const Agentes = () => {
                 }`}
               >
                 {selectedAgent.status === 'active' ? (
-                  <><Pause className="w-4 h-4" /> Pausar agente</>
+                  <><Pause className="w-4 h-4" /> Pausar</>
                 ) : (
-                  <><Play className="w-4 h-4" /> Activar agente</>
+                  <><Play className="w-4 h-4" /> Activar</>
                 )}
               </button>
               <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
