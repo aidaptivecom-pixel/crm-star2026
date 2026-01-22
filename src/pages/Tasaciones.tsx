@@ -136,58 +136,58 @@ export const Tasaciones = () => {
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Calculator className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Tasaciones</h1>
-            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Calculator className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Tasaciones</h1>
+            <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
               {tasaciones.length} solicitudes
             </span>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+          <button className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
             <Plus className="w-4 h-4" />
-            Nueva tasación
+            <span className="hidden sm:inline">Nueva</span>
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-gray-200">
-        <div className="grid grid-cols-5 gap-4">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            <p className="text-sm text-gray-500">Total solicitudes</p>
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Total</p>
           </div>
-          <div className="bg-blue-50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-blue-700">{stats.solicitadas}</p>
-            <p className="text-sm text-blue-600">Por agendar</p>
+          <div className="bg-blue-50 rounded-xl p-3 sm:p-4">
+            <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats.solicitadas}</p>
+            <p className="text-xs sm:text-sm text-blue-600">Por agendar</p>
           </div>
-          <div className="bg-purple-50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-purple-700">{stats.agendadas}</p>
-            <p className="text-sm text-purple-600">Agendadas</p>
+          <div className="bg-purple-50 rounded-xl p-3 sm:p-4">
+            <p className="text-xl sm:text-2xl font-bold text-purple-700">{stats.agendadas}</p>
+            <p className="text-xs sm:text-sm text-purple-600">Agendadas</p>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-emerald-700">{stats.captadas}</p>
-            <p className="text-sm text-emerald-600">Captadas</p>
+          <div className="bg-emerald-50 rounded-xl p-3 sm:p-4">
+            <p className="text-xl sm:text-2xl font-bold text-emerald-700">{stats.captadas}</p>
+            <p className="text-xs sm:text-sm text-emerald-600">Captadas</p>
           </div>
-          <div className="bg-[#D4A745]/10 rounded-xl p-4">
-            <p className="text-2xl font-bold text-[#D4A745]">{stats.tasaConversion}%</p>
-            <p className="text-sm text-[#c49a3d]">Tasa conversión</p>
+          <div className="bg-[#D4A745]/10 rounded-xl p-3 sm:p-4 col-span-2 sm:col-span-1">
+            <p className="text-xl sm:text-2xl font-bold text-[#D4A745]">{stats.tasaConversion}%</p>
+            <p className="text-xs sm:text-sm text-[#c49a3d]">Conversión</p>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex-shrink-0 px-6 py-3 bg-white border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500 mr-2">Filtrar:</span>
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 bg-white border-b border-gray-200 overflow-x-auto">
+        <div className="flex items-center gap-2 min-w-max">
+          <span className="text-sm text-gray-500 mr-1 sm:mr-2 hidden sm:inline">Filtrar:</span>
           {(['todas', 'solicitada', 'agendada', 'realizada', 'captada', 'rechazada'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                 filterStatus === status
                   ? 'bg-[#D4A745] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -200,17 +200,46 @@ export const Tasaciones = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
         <div className="space-y-3">
           {filteredTasaciones.map((tasacion) => {
             const StatusIcon = STATUS_CONFIG[tasacion.status].icon
             return (
               <div
                 key={tasacion.id}
-                className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedTasacion(tasacion)}
               >
-                <div className="flex items-center justify-between">
+                {/* Mobile layout */}
+                <div className="lg:hidden">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${STATUS_CONFIG[tasacion.status].bg}`}>
+                      <StatusIcon className={`w-5 h-5 ${STATUS_CONFIG[tasacion.status].color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-gray-900 text-sm">{tasacion.propietario.nombre}</h3>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${STATUS_CONFIG[tasacion.status].bg} ${STATUS_CONFIG[tasacion.status].color}`}>
+                          {STATUS_CONFIG[tasacion.status].label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{tasacion.propiedad.barrio}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-500 pl-[52px]">
+                    <span>{tasacion.propiedad.tipo} • {tasacion.propiedad.superficie}m²</span>
+                    {tasacion.valorTasado && (
+                      <span className="font-bold text-[#D4A745] text-sm">USD {tasacion.valorTasado.toLocaleString()}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Desktop layout */}
+                <div className="hidden lg:flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${STATUS_CONFIG[tasacion.status].bg}`}>
                       <StatusIcon className={`w-5 h-5 ${STATUS_CONFIG[tasacion.status].color}`} />
@@ -260,41 +289,41 @@ export const Tasaciones = () => {
 
       {/* Detail Modal */}
       {selectedTasacion && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedTasacion(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setSelectedTasacion(null)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${STATUS_CONFIG[selectedTasacion.status].bg}`}>
-                    {(() => { const Icon = STATUS_CONFIG[selectedTasacion.status].icon; return <Icon className={`w-6 h-6 ${STATUS_CONFIG[selectedTasacion.status].color}`} />; })()}
+                  <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center ${STATUS_CONFIG[selectedTasacion.status].bg}`}>
+                    {(() => { const Icon = STATUS_CONFIG[selectedTasacion.status].icon; return <Icon className={`w-5 sm:w-6 h-5 sm:h-6 ${STATUS_CONFIG[selectedTasacion.status].color}`} />; })()}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Tasación {selectedTasacion.id}</h2>
-                    <span className={`text-sm font-medium ${STATUS_CONFIG[selectedTasacion.status].color}`}>
+                    <h2 className="text-base sm:text-xl font-bold text-gray-900">{selectedTasacion.id}</h2>
+                    <span className={`text-xs sm:text-sm font-medium ${STATUS_CONFIG[selectedTasacion.status].color}`}>
                       {STATUS_CONFIG[selectedTasacion.status].label}
                     </span>
                   </div>
                 </div>
-                <button onClick={() => setSelectedTasacion(null)} className="text-gray-400 hover:text-gray-600">
-                  <XCircle className="w-6 h-6" />
+                <button onClick={() => setSelectedTasacion(null)} className="text-gray-400 hover:text-gray-600 p-1">
+                  <XCircle className="w-5 sm:w-6 h-5 sm:h-6" />
                 </button>
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Propietario */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
                   <User className="w-4 h-4" /> Propietario
                 </h3>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="font-medium text-gray-900">{selectedTasacion.propietario.nombre}</p>
-                  <div className="flex items-center gap-4 mt-2">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">{selectedTasacion.propietario.nombre}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
                     <a href={`tel:${selectedTasacion.propietario.telefono}`} className="flex items-center gap-1 text-sm text-[#D4A745]">
                       <Phone className="w-4 h-4" /> {selectedTasacion.propietario.telefono}
                     </a>
-                    <a href={`mailto:${selectedTasacion.propietario.email}`} className="flex items-center gap-1 text-sm text-[#D4A745]">
-                      <Mail className="w-4 h-4" /> {selectedTasacion.propietario.email}
+                    <a href={`mailto:${selectedTasacion.propietario.email}`} className="flex items-center gap-1 text-sm text-[#D4A745] truncate">
+                      <Mail className="w-4 h-4 flex-shrink-0" /> {selectedTasacion.propietario.email}
                     </a>
                   </div>
                 </div>
@@ -302,27 +331,27 @@ export const Tasaciones = () => {
 
               {/* Propiedad */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
                   <Home className="w-4 h-4" /> Propiedad
                 </h3>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="font-medium text-gray-900">{selectedTasacion.propiedad.direccion}</p>
-                  <p className="text-sm text-gray-500">{selectedTasacion.propiedad.barrio}, {selectedTasacion.propiedad.ciudad}</p>
-                  <div className="grid grid-cols-4 gap-4 mt-4">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">{selectedTasacion.propiedad.direccion}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{selectedTasacion.propiedad.barrio}, {selectedTasacion.propiedad.ciudad}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-4">
                     <div>
-                      <p className="text-lg font-bold text-gray-900">{selectedTasacion.propiedad.tipo}</p>
+                      <p className="text-base sm:text-lg font-bold text-gray-900">{selectedTasacion.propiedad.tipo}</p>
                       <p className="text-xs text-gray-500">Tipo</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-gray-900">{selectedTasacion.propiedad.superficie} m²</p>
+                      <p className="text-base sm:text-lg font-bold text-gray-900">{selectedTasacion.propiedad.superficie}m²</p>
                       <p className="text-xs text-gray-500">Superficie</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-gray-900">{selectedTasacion.propiedad.ambientes}</p>
+                      <p className="text-base sm:text-lg font-bold text-gray-900">{selectedTasacion.propiedad.ambientes}</p>
                       <p className="text-xs text-gray-500">Ambientes</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-gray-900">{selectedTasacion.propiedad.antiguedad} años</p>
+                      <p className="text-base sm:text-lg font-bold text-gray-900">{selectedTasacion.propiedad.antiguedad}a</p>
                       <p className="text-xs text-gray-500">Antigüedad</p>
                     </div>
                   </div>
@@ -332,24 +361,24 @@ export const Tasaciones = () => {
               {/* Valuación */}
               {selectedTasacion.valorTasado && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
                     <Calculator className="w-4 h-4" /> Valuación
                   </h3>
-                  <div className="bg-[#D4A745]/10 rounded-xl p-4">
+                  <div className="bg-[#D4A745]/10 rounded-xl p-3 sm:p-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-2xl font-bold text-[#D4A745]">USD {selectedTasacion.valorTasado.toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">Valor tasado</p>
+                        <p className="text-xl sm:text-2xl font-bold text-[#D4A745]">USD {selectedTasacion.valorTasado.toLocaleString()}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Valor tasado</p>
                       </div>
                       {selectedTasacion.precioSugerido && (
                         <div>
-                          <p className="text-2xl font-bold text-gray-900">USD {selectedTasacion.precioSugerido.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">Precio publicación sugerido</p>
+                          <p className="text-xl sm:text-2xl font-bold text-gray-900">USD {selectedTasacion.precioSugerido.toLocaleString()}</p>
+                          <p className="text-xs sm:text-sm text-gray-600">Precio sugerido</p>
                         </div>
                       )}
                     </div>
                     {selectedTasacion.notas && (
-                      <p className="mt-4 text-sm text-gray-600 border-t border-[#D4A745]/20 pt-4">
+                      <p className="mt-4 text-xs sm:text-sm text-gray-600 border-t border-[#D4A745]/20 pt-4">
                         <strong>Notas:</strong> {selectedTasacion.notas}
                       </p>
                     )}
@@ -359,71 +388,71 @@ export const Tasaciones = () => {
 
               {/* Motivo rechazo */}
               {selectedTasacion.motivoRechazo && (
-                <div className="bg-red-50 rounded-xl p-4">
+                <div className="bg-red-50 rounded-xl p-3 sm:p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-red-700">Motivo del rechazo</p>
-                      <p className="text-sm text-red-600">{selectedTasacion.motivoRechazo}</p>
+                      <p className="font-medium text-red-700 text-sm sm:text-base">Motivo del rechazo</p>
+                      <p className="text-xs sm:text-sm text-red-600">{selectedTasacion.motivoRechazo}</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Timeline con botón de teléfono a la derecha */}
+              {/* Timeline */}
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
                     <Clock className="w-4 h-4" /> Timeline
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      <p className="text-sm"><span className="font-medium">Solicitud:</span> {new Date(selectedTasacion.fechaSolicitud).toLocaleDateString('es-AR')}</p>
+                      <p className="text-xs sm:text-sm"><span className="font-medium">Solicitud:</span> {new Date(selectedTasacion.fechaSolicitud).toLocaleDateString('es-AR')}</p>
                     </div>
                     {selectedTasacion.fechaVisita && (
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-purple-500" />
-                        <p className="text-sm"><span className="font-medium">Visita:</span> {new Date(selectedTasacion.fechaVisita).toLocaleDateString('es-AR')} {selectedTasacion.tasador && `- ${selectedTasacion.tasador}`}</p>
+                        <p className="text-xs sm:text-sm"><span className="font-medium">Visita:</span> {new Date(selectedTasacion.fechaVisita).toLocaleDateString('es-AR')} {selectedTasacion.tasador && `- ${selectedTasacion.tasador}`}</p>
                       </div>
                     )}
                   </div>
                 </div>
                 <a 
                   href={`tel:${selectedTasacion.propietario.telefono}`}
-                  className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                  className="p-2 sm:p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Phone className="w-5 h-5" />
+                  <Phone className="w-4 sm:w-5 h-4 sm:h-5" />
                 </a>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="p-6 border-t border-gray-200 flex gap-3">
+            <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-3">
               {selectedTasacion.status === 'solicitada' && (
-                <button className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]">
+                <button className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] text-sm sm:text-base">
                   Agendar visita
                 </button>
               )}
               {selectedTasacion.status === 'agendada' && (
-                <button className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]">
+                <button className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] text-sm sm:text-base">
                   Registrar tasación
                 </button>
               )}
               {selectedTasacion.status === 'realizada' && (
                 <>
-                  <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
-                    Marcar como captada
+                  <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 text-sm sm:text-base">
+                    Marcar captada
                   </button>
-                  <button className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">
-                    Marcar como rechazada
+                  <button className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 text-sm sm:text-base">
+                    Marcar rechazada
                   </button>
                 </>
               )}
               {selectedTasacion.status === 'captada' && (
-                <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
-                  Ver en Propiedades Captadas
+                <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 text-sm sm:text-base">
+                  Ver en Propiedades
                 </button>
               )}
             </div>
