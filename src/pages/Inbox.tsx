@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Search, Filter, MessageSquare } from 'lucide-react'
+import { Search, Filter, MessageSquare, X } from 'lucide-react'
 import { ConversationList } from '../components/inbox/ConversationList'
 import { ChatWindow } from '../components/inbox/ChatWindow'
 import { LeadPanel } from '../components/inbox/LeadPanel'
@@ -14,6 +14,7 @@ export const Inbox = () => {
   const [selectedId, setSelectedId] = useState<string | null>(conversationId || null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [showLeadPanel, setShowLeadPanel] = useState(false)
   
   // Filters
   const [agentFilter, setAgentFilter] = useState<AgentType | 'all'>('all')
@@ -32,7 +33,10 @@ export const Inbox = () => {
     if (conversationId && !selectedId) {
       setSelectedId(conversationId)
     } else if (!conversationId && !selectedId && CONVERSATIONS.length > 0) {
-      setSelectedId(CONVERSATIONS[0].id)
+      // Don't auto-select on mobile
+      if (window.innerWidth >= 1024) {
+        setSelectedId(CONVERSATIONS[0].id)
+      }
     }
   }, [conversationId, selectedId])
 
@@ -52,61 +56,86 @@ export const Inbox = () => {
 
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
+  // Mobile: go back to list
+  const handleBack = () => {
+    setSelectedId(null)
+    navigate('/inbox', { replace: true })
+  }
+
+  // Mobile: handle conversation select
+  const handleSelectConversation = (id: string) => {
+    setSelectedId(id)
+  }
+
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Inbox</h1>
+      <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <MessageSquare className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Inbox</h1>
             {unreadCount > 0 && (
               <span className="bg-[#D4A745] text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                {unreadCount} nuevos
+                {unreadCount}
               </span>
             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Search - Hidden on mobile, visible on sm+ */}
+            <div className="hidden sm:block relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar conversación..."
+                placeholder="Buscar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                className="w-48 lg:w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
               />
             </div>
             
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 showFilters || agentFilter !== 'all' || statusFilter !== 'all' || channelFilter !== 'all'
                   ? 'bg-[#D4A745]/10 border-[#D4A745] text-[#D4A745]'
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
               <Filter className="w-4 h-4" />
-              Filtros
+              <span className="hidden sm:inline">Filtros</span>
             </button>
+          </div>
+        </div>
+
+        {/* Mobile Search - Only on mobile */}
+        <div className="sm:hidden mt-3">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar conversación..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+            />
           </div>
         </div>
 
         {/* Filters Row */}
         {showFilters && (
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-4 pt-4 border-t border-gray-100">
             {/* Agent Filter */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Agente:</span>
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'Todos' },
-                  { value: 'emprendimientos', label: '🔵 Emp' },
-                  { value: 'inmuebles', label: '🟣 Inm' },
-                  { value: 'tasaciones', label: '🟡 Tas' },
+                  { value: 'emprendimientos', label: '🔵' },
+                  { value: 'inmuebles', label: '🟣' },
+                  { value: 'tasaciones', label: '🟡' },
                 ].map(opt => (
                   <button
                     key={opt.value}
@@ -129,40 +158,15 @@ export const Inbox = () => {
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'Todos' },
-                  { value: 'ai_active', label: 'IA activa' },
-                  { value: 'needs_human', label: 'Necesita humano' },
-                  { value: 'closed', label: 'Cerrado' },
+                  { value: 'ai_active', label: 'IA' },
+                  { value: 'needs_human', label: '🔴' },
+                  { value: 'closed', label: '✓' },
                 ].map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => setStatusFilter(opt.value as ConversationStatus | 'all')}
                     className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                       statusFilter === opt.value
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Channel Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium">Canal:</span>
-              <div className="flex gap-1">
-                {[
-                  { value: 'all', label: 'Todos' },
-                  { value: 'whatsapp', label: 'WhatsApp' },
-                  { value: 'instagram', label: 'Instagram' },
-                  { value: 'facebook', label: 'Facebook' },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setChannelFilter(opt.value as ChannelType | 'all')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      channelFilter === opt.value
                         ? 'bg-gray-900 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -183,39 +187,70 @@ export const Inbox = () => {
                 }}
                 className="text-xs text-[#D4A745] hover:text-[#b8923c] font-medium"
               >
-                Limpiar filtros
+                Limpiar
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* Main Content - 3 Columns */}
+      {/* Main Content - Responsive Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Conversations List */}
-        <ConversationList
-          conversations={filteredConversations}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-        />
+        {/* Conversations List - Full width on mobile when no selection */}
+        <div className={`${
+          selectedId ? 'hidden lg:block' : 'block'
+        } w-full lg:w-80 lg:min-w-[320px] flex-shrink-0`}>
+          <ConversationList
+            conversations={filteredConversations}
+            selectedId={selectedId}
+            onSelect={handleSelectConversation}
+          />
+        </div>
 
-        {/* Chat Window */}
-        {selectedConversation ? (
-          <ChatWindow conversation={selectedConversation} />
-        ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Selecciona una conversación</p>
+        {/* Chat Window - Full width on mobile when selected */}
+        <div className={`${
+          selectedId ? 'flex' : 'hidden lg:flex'
+        } flex-1 flex-col min-w-0`}>
+          {selectedConversation ? (
+            <ChatWindow 
+              conversation={selectedConversation} 
+              onBack={handleBack}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Selecciona una conversación</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Lead Panel */}
-        {selectedLead && (
-          <LeadPanel lead={selectedLead} />
-        )}
+        {/* Lead Panel - Hidden on mobile */}
+        <div className="hidden xl:block">
+          {selectedLead && (
+            <LeadPanel lead={selectedLead} />
+          )}
+        </div>
       </div>
+
+      {/* Mobile Lead Panel Overlay */}
+      {showLeadPanel && selectedLead && (
+        <div className="xl:hidden fixed inset-0 bg-black/50 z-50" onClick={() => setShowLeadPanel(false)}>
+          <div 
+            className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowLeadPanel(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+            <LeadPanel lead={selectedLead} />
+          </div>
+        </div>
+      )}
     </main>
   )
 }

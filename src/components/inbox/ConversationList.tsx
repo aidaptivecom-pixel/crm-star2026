@@ -54,7 +54,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
   }
 
   return (
-    <div className="w-80 min-w-[320px] border-r border-gray-200 bg-white overflow-y-auto">
+    <div className="h-full border-r border-gray-200 bg-white overflow-y-auto">
       <div className="p-3">
         <div className="text-xs font-medium text-gray-500 mb-2 px-2">
           {conversations.length} conversaciones
@@ -97,9 +97,9 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
                   </div>
                   
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-xs text-gray-500">{conv.project}</span>
+                    <span className="text-xs text-gray-500 truncate">{conv.project}</span>
                     <span className="text-gray-300">·</span>
-                    <span className="text-xs">{getChannelIcon(conv.channel)}</span>
+                    <span className="text-xs flex-shrink-0">{getChannelIcon(conv.channel)}</span>
                   </div>
                   
                   <div className="flex items-center justify-between gap-2">
