@@ -16,7 +16,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="h-screen bg-[#D1D5DB] p-2 md:p-4 font-sans overflow-hidden">
+    <div className="h-screen bg-[#F8F9FA] lg:bg-[#D1D5DB] lg:p-4 font-sans overflow-hidden">
       {/* Mobile Header - Only visible on small screens */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <button
@@ -38,7 +38,7 @@ function App() {
       )}
 
       {/* Main Container */}
-      <div className="flex h-[calc(100vh-16px)] md:h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-2xl md:rounded-3xl overflow-hidden shadow-xl mt-14 lg:mt-0">
+      <div className="flex h-[calc(100vh-56px)] lg:h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-none lg:rounded-3xl overflow-hidden lg:shadow-xl mt-14 lg:mt-0">
         
         {/* Sidebar - Responsive */}
         <div className={`
@@ -56,7 +56,7 @@ function App() {
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </div>
         
-        {/* Main Content - Routes - CHANGED: overflow-auto instead of overflow-hidden */}
+        {/* Main Content - Routes */}
         <div className="flex-1 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
