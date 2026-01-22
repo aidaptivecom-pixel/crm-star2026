@@ -205,18 +205,18 @@ export const Emprendimientos = () => {
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
+      <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-gray-200 bg-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Building2 className="w-6 h-6 text-[#D4A745]" />
-            <h1 className="text-xl font-bold text-gray-900">Emprendimientos</h1>
-            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
+            <Building2 className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Emprendimientos</h1>
+            <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
               {properties.length} proyectos • {totalUnidades} unidades
             </span>
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg self-start sm:self-auto">
             <button
               onClick={() => setViewMode('cards')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -224,7 +224,7 @@ export const Emprendimientos = () => {
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
-              Cards
+              <span className="hidden sm:inline">Cards</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -233,18 +233,18 @@ export const Emprendimientos = () => {
               }`}
             >
               <Table2 className="w-4 h-4" />
-              Tabla
+              <span className="hidden sm:inline">Tabla</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Carousel Navigation */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-3">
-        <div className="flex items-center gap-3">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button 
             onClick={() => scrollToIndex(activeIndex - 1)}
-            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex-shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -261,14 +261,14 @@ export const Emprendimientos = () => {
                   setActiveIndex(index)
                   if (viewMode === 'cards') setSelectedProperty(property)
                 }}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+                className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full border transition-all ${
                   activeIndex === index
                     ? 'bg-[#D4A745] text-white border-[#D4A745]'
                     : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4A745] hover:text-[#D4A745]'
                 }`}
               >
-                <span className="font-medium text-sm whitespace-nowrap">{property.name}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                <span className="font-medium text-xs sm:text-sm whitespace-nowrap">{property.name}</span>
+                <span className={`hidden sm:inline text-xs px-1.5 py-0.5 rounded ${
                   activeIndex === index ? 'bg-white/20' : 'bg-gray-100'
                 }`}>
                   {property.neighborhood}
@@ -279,7 +279,7 @@ export const Emprendimientos = () => {
 
           <button 
             onClick={() => scrollToIndex(activeIndex + 1)}
-            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+            className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex-shrink-0"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -287,10 +287,10 @@ export const Emprendimientos = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
         {viewMode === 'cards' ? (
-          /* Cards View */
-          <div className="grid grid-cols-3 gap-6">
+          /* Cards View - Responsive Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {properties.map((property, index) => (
               <div
                 key={property.id}
@@ -302,7 +302,7 @@ export const Emprendimientos = () => {
                   setSelectedProperty(property)
                 }}
               >
-                <div className="relative h-44">
+                <div className="relative h-40 sm:h-44">
                   <img
                     src={property.image}
                     alt={property.name}
@@ -315,18 +315,18 @@ export const Emprendimientos = () => {
                     </span>
                   </div>
                   <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-lg font-bold text-white mb-0.5">{property.name}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-white mb-0.5">{property.name}</h3>
                     <div className="flex items-center gap-1 text-white/90 text-xs">
                       <MapPin className="w-3 h-3" />
                       {property.neighborhood}, {property.country}
                     </div>
                   </div>
                 </div>
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-xs text-gray-500">Desde</p>
-                      <p className="text-lg font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
+                      <p className="text-base sm:text-lg font-bold text-[#D4A745]">{property.tipologias[0].precio}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">Entrega</p>
@@ -356,16 +356,14 @@ export const Emprendimientos = () => {
           /* Table View */
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Proyecto</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Ubicación</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipologías</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio desde</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Entrega</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Avance</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Unidades</th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
                   </tr>
@@ -382,7 +380,7 @@ export const Emprendimientos = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 rounded-full bg-[#D4A745]" />
-                          <span className="font-semibold text-gray-900">{property.name}</span>
+                          <span className="font-semibold text-gray-900 text-sm">{property.name}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -395,36 +393,10 @@ export const Emprendimientos = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {property.tipologias.slice(0, 3).map((t) => (
-                            <span key={t.id} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                              {t.ambientes > 0 ? `${t.ambientes} amb` : t.name.split(' ')[0]}
-                            </span>
-                          ))}
-                          {property.tipologias.length > 3 && (
-                            <span className="text-xs text-gray-400">+{property.tipologias.length - 3}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-[#D4A745]">{property.tipologias[0].precio}</span>
+                        <span className="font-bold text-[#D4A745] text-sm">{property.tipologias[0].precio}</span>
                       </td>
                       <td className="py-3 px-4">
                         <span className="text-sm text-gray-700">{property.entrega}</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        {property.avance === 100 ? (
-                          <span className="text-xs text-emerald-600 font-medium">Terminado</span>
-                        ) : property.avance === 0 ? (
-                          <span className="text-xs text-blue-600 font-medium">Por iniciar</span>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#D4A745] rounded-full" style={{ width: `${property.avance}%` }} />
-                            </div>
-                            <span className="text-xs text-gray-500">{property.avance}%</span>
-                          </div>
-                        )}
                       </td>
                       <td className="py-3 px-4">
                         <span className="text-sm font-medium text-gray-700">
@@ -454,116 +426,20 @@ export const Emprendimientos = () => {
               </table>
             </div>
 
-            {/* Table Summary */}
-            <div className="bg-gray-50 border-t border-gray-200 px-4 py-3">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-6">
-                  <span className="text-gray-500">
-                    <span className="font-medium text-gray-700">{properties.length}</span> proyectos
-                  </span>
-                  <span className="text-gray-500">
-                    <span className="font-medium text-gray-700">{totalUnidades}</span> unidades disponibles
-                  </span>
-                  <span className="text-gray-500">
-                    <span className="font-medium text-gray-700">{properties.filter(p => p.country === 'Argentina').length}</span> Argentina
-                  </span>
-                  <span className="text-gray-500">
-                    <span className="font-medium text-gray-700">{properties.filter(p => p.country === 'Uruguay').length}</span> Uruguay
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-xs text-gray-500">En pozo</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span className="text-xs text-gray-500">En construcción</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-xs text-gray-500">Entrega inmediata</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Expanded Detail Section (Table View) */}
-        {viewMode === 'table' && activeIndex >= 0 && (
-          <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">{properties[activeIndex].name}</h3>
-                <p className="text-sm text-gray-500">{properties[activeIndex].location}</p>
-              </div>
-              <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[properties[activeIndex].status].bgColor} ${STATUS_LABELS[properties[activeIndex].status].color}`}>
-                {STATUS_LABELS[properties[activeIndex].status].label}
-              </span>
-            </div>
-            
-            <p className="text-sm text-gray-600 mb-4">{properties[activeIndex].description}</p>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Tipologías disponibles</h4>
-                <div className="space-y-2">
-                  {properties[activeIndex].tipologias.map((tipo) => (
-                    <div key={tipo.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
-                      <div className="flex items-center gap-3">
-                        {tipo.ambientes > 0 && (
-                          <span className="flex items-center gap-1 text-gray-600">
-                            <Bed className="w-3.5 h-3.5" /> {tipo.ambientes}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-gray-600">
-                          <Square className="w-3.5 h-3.5" /> {tipo.superficie}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
-                          {tipo.disponibles} disp.
-                        </span>
-                        <span className="font-bold text-[#D4A745]">{tipo.precio}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Amenities</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {properties[activeIndex].amenities.map((amenity) => (
-                    <span key={amenity} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <button 
-                    onClick={() => setSelectedProperty(properties[activeIndex])}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Ver detalle completo
-                  </button>
-                  <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            {/* Mobile hint for scroll */}
+            <div className="lg:hidden px-4 py-2 text-center border-t border-gray-100">
+              <p className="text-xs text-gray-400">← Desliza para ver más →</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Property Detail Modal */}
+      {/* Property Detail Modal - Responsive */}
       {selectedProperty && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedProperty(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setSelectedProperty(null)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
             {/* Modal Header Image */}
-            <div className="relative h-64">
+            <div className="relative h-48 sm:h-64">
               <img
                 src={selectedProperty.image}
                 alt={selectedProperty.name}
@@ -572,35 +448,35 @@ export const Emprendimientos = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <button
                 onClick={() => setSelectedProperty(null)}
-                className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white"
+                className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="absolute top-4 left-4 flex gap-2">
+              <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-2">
                 <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_LABELS[selectedProperty.status].bgColor} ${STATUS_LABELS[selectedProperty.status].color}`}>
                   {STATUS_LABELS[selectedProperty.status].label}
                 </span>
               </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <h2 className="text-2xl font-bold text-white mb-1">{selectedProperty.name}</h2>
-                <div className="flex items-center gap-1 text-white/90">
+              <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{selectedProperty.name}</h2>
+                <div className="flex items-center gap-1 text-white/90 text-sm">
                   <MapPin className="w-4 h-4" />
                   {selectedProperty.location}
                 </div>
               </div>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-256px)]">
-              <div className="grid grid-cols-3 gap-6">
+            {/* Modal Content - Responsive */}
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-192px)] sm:max-h-[calc(90vh-256px)]">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Left Column */}
-                <div className="col-span-2">
-                  <p className="text-gray-600 mb-4">{selectedProperty.description}</p>
+                <div className="lg:col-span-2">
+                  <p className="text-sm sm:text-base text-gray-600 mb-4">{selectedProperty.description}</p>
 
                   {/* Amenities */}
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-2">Amenities</h3>
-                    <div className="flex flex-wrap gap-2">
+                    <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Amenities</h3>
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {selectedProperty.amenities.map((amenity) => (
                         <span key={amenity} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                           {amenity}
@@ -611,11 +487,11 @@ export const Emprendimientos = () => {
 
                   {/* Tipologias */}
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Tipologías disponibles</h3>
+                    <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Tipologías disponibles</h3>
                     <div className="space-y-2">
                       {selectedProperty.tipologias.map((tipo) => (
-                        <div key={tipo.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-4">
+                        <div key={tipo.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2">
+                          <div className="flex items-center gap-3 sm:gap-4">
                             {tipo.ambientes > 0 && (
                               <div className="flex items-center gap-1 text-gray-600">
                                 <Bed className="w-4 h-4" />
@@ -627,7 +503,7 @@ export const Emprendimientos = () => {
                               <span className="text-sm">{tipo.superficie}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-3 sm:gap-4">
                             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">
                               {tipo.disponibles} disponibles
                             </span>
@@ -679,11 +555,11 @@ export const Emprendimientos = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]">
+                    <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] text-sm sm:text-base">
                       <Eye className="w-4 h-4" />
                       Solicitar información
                     </button>
-                    <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">
+                    <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 text-sm sm:text-base">
                       <Share2 className="w-4 h-4" />
                       Compartir
                     </button>
