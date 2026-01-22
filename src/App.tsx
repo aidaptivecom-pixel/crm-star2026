@@ -56,8 +56,8 @@ function App() {
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </div>
         
-        {/* Main Content - Routes */}
-        <div className="flex-1 overflow-hidden">
+        {/* Main Content - Routes - CHANGED: overflow-auto instead of overflow-hidden */}
+        <div className="flex-1 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/inbox" element={<Inbox />} />
