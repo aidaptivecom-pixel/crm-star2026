@@ -10,12 +10,18 @@ interface ChatWindowProps {
 
 export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   const [message, setMessage] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom ONLY within the messages container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [conversation.messages])
+    const container = messagesContainerRef.current
+    if (container) {
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight
+      })
+    }
+  }, [conversation.messages, conversation.id])
 
   const getAgentBadge = (type: Conversation['agentType']) => {
     switch (type) {
@@ -70,8 +76,8 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 min-w-0">
-      {/* Chat Header */}
+    <div className="flex-1 flex flex-col bg-gray-50 min-w-0 h-full overflow-hidden">
+      {/* Chat Header - Fixed */}
       <div className="flex-shrink-0 px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -105,8 +111,11 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
+      {/* Messages - Scrollable container with fixed height */}
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4"
+      >
         {conversation.messages.map((msg) => (
           <div
             key={msg.id}
@@ -165,11 +174,9 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
             </div>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - Fixed */}
       <div className="flex-shrink-0 p-3 sm:p-4 bg-white border-t border-gray-200">
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Take Control Button - Hidden on small mobile */}
@@ -180,7 +187,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
             </button>
           )}
           
-          {/* Message Input */}
+          {/* Message Input - No autofocus to prevent page scroll */}
           <div className="flex-1 relative">
             <textarea
               value={message}
