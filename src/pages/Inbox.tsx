@@ -68,8 +68,8 @@ export const Inbox = () => {
   }
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
-      {/* Header */}
+    <div className="h-full flex flex-col overflow-hidden bg-[#F8F9FA]">
+      {/* Header - Fixed */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -194,12 +194,12 @@ export const Inbox = () => {
         )}
       </div>
 
-      {/* Main Content - Responsive Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content - Fixed height, no page scroll */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Conversations List - Full width on mobile when no selection */}
         <div className={`${
-          selectedId ? 'hidden lg:block' : 'block'
-        } w-full lg:w-80 lg:min-w-[320px] flex-shrink-0`}>
+          selectedId ? 'hidden lg:flex' : 'flex'
+        } w-full lg:w-80 lg:min-w-[320px] flex-shrink-0 flex-col overflow-hidden`}>
           <ConversationList
             conversations={filteredConversations}
             selectedId={selectedId}
@@ -210,7 +210,7 @@ export const Inbox = () => {
         {/* Chat Window - Full width on mobile when selected */}
         <div className={`${
           selectedId ? 'flex' : 'hidden lg:flex'
-        } flex-1 flex-col min-w-0`}>
+        } flex-1 flex-col min-w-0 overflow-hidden`}>
           {selectedConversation ? (
             <ChatWindow 
               conversation={selectedConversation} 
@@ -227,7 +227,7 @@ export const Inbox = () => {
         </div>
 
         {/* Lead Panel - Hidden on mobile */}
-        <div className="hidden xl:block">
+        <div className="hidden xl:flex flex-col overflow-hidden">
           {selectedLead && (
             <LeadPanel lead={selectedLead} />
           )}
@@ -251,6 +251,6 @@ export const Inbox = () => {
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }
