@@ -17,19 +17,25 @@ const STAGES: { id: PipelineStage | 'all'; label: string }[] = [
 ]
 
 const AGENT_TYPES: { id: AgentType | 'all'; label: string; color: string }[] = [
-  { id: 'all', label: 'Todos', color: 'bg-gray-500' },
-  { id: 'emprendimientos', label: 'Emprendimientos', color: 'bg-blue-500' },
-  { id: 'inmuebles', label: 'Inmuebles', color: 'bg-purple-500' },
-  { id: 'tasaciones', label: 'Tasaciones', color: 'bg-amber-500' },
+  { id: 'all', label: 'Todos', color: 'bg-gray-100 text-gray-600 border-gray-200' },
+  { id: 'emprendimientos', label: 'Emp', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { id: 'inmuebles', label: 'Inm', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { id: 'tasaciones', label: 'Tas', color: 'bg-amber-50 text-amber-700 border-amber-200' },
 ]
 
-const CHANNELS = ['all', 'whatsapp', 'instagram', 'facebook'] as const
+const CHANNELS: { id: 'all' | 'whatsapp' | 'instagram' | 'facebook'; label: string }[] = [
+  { id: 'all', label: 'Todos' },
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'facebook', label: 'Facebook' },
+]
 
-const SCORE_RANGES = [
-  { id: 'all', label: 'Todos', min: 0, max: 100 },
-  { id: 'hot', label: '🔥 Hot (70+)', min: 70, max: 100 },
-  { id: 'warm', label: '🟡 Warm (40-69)', min: 40, max: 69 },
-  { id: 'cold', label: '🔵 Cold (<40)', min: 0, max: 39 },
+// Score ranges with traffic light colors
+const SCORE_RANGES: { id: string; label: string; min: number; max: number; dotColor: string; bgColor: string; textColor: string; borderColor: string }[] = [
+  { id: 'all', label: 'Todos', min: 0, max: 100, dotColor: 'bg-gray-400', bgColor: 'bg-gray-100', textColor: 'text-gray-600', borderColor: 'border-gray-200' },
+  { id: 'high', label: 'Alto', min: 70, max: 100, dotColor: 'bg-emerald-500', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', borderColor: 'border-emerald-200' },
+  { id: 'medium', label: 'Medio', min: 40, max: 69, dotColor: 'bg-amber-500', bgColor: 'bg-amber-50', textColor: 'text-amber-700', borderColor: 'border-amber-200' },
+  { id: 'low', label: 'Bajo', min: 0, max: 39, dotColor: 'bg-red-500', bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200' },
 ]
 
 const ASSIGNED_AGENTS = ['all', 'Jony', 'María', 'Pablo', 'Sin asignar'] as const
@@ -44,7 +50,7 @@ export const Leads = () => {
   const [stageFilter, setStageFilter] = useState<PipelineStage | 'all'>('all')
   const [agentTypeFilter, setAgentTypeFilter] = useState<AgentType | 'all'>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
-  const [channelFilter, setChannelFilter] = useState<typeof CHANNELS[number]>('all')
+  const [channelFilter, setChannelFilter] = useState<'all' | 'whatsapp' | 'instagram' | 'facebook'>('all')
   const [scoreFilter, setScoreFilter] = useState<string>('all')
   const [assignedFilter, setAssignedFilter] = useState<typeof ASSIGNED_AGENTS[number]>('all')
   const [budgetMin, setBudgetMin] = useState<string>('')
@@ -198,10 +204,10 @@ export const Leads = () => {
     return 'bg-red-100 text-red-700'
   }
 
-  const getScoreEmoji = (score: number) => {
-    if (score >= 70) return '🔥'
-    if (score >= 40) return '🟡'
-    return '🔵'
+  const getScoreDot = (score: number) => {
+    if (score >= 70) return 'bg-emerald-500'
+    if (score >= 40) return 'bg-amber-500'
+    return 'bg-red-500'
   }
 
   const getAgentBadge = (type: AgentType) => {
@@ -290,32 +296,64 @@ export const Leads = () => {
           />
         </div>
 
-        {/* Filters Panel */}
+        {/* Filters Panel - Redesigned */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
-            {/* Row 1: Score, Stage, Type */}
-            <div className="flex flex-wrap gap-4">
-              {/* Score Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Score</label>
-                <select
-                  value={scoreFilter}
-                  onChange={(e) => setScoreFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
-                >
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap gap-x-6 gap-y-4">
+              
+              {/* Score Filter - Chip buttons */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Score</label>
+                <div className="flex gap-1.5">
                   {SCORE_RANGES.map(range => (
-                    <option key={range.id} value={range.id}>{range.label}</option>
+                    <button
+                      key={range.id}
+                      onClick={() => setScoreFilter(range.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        scoreFilter === range.id
+                          ? `${range.bgColor} ${range.textColor} ${range.borderColor} ring-1 ring-offset-1 ring-current`
+                          : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${range.dotColor}`} />
+                      {range.label}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              {/* Stage Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Etapa</label>
+              {/* Tipo Filter - Chip buttons */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Tipo</label>
+                <div className="flex gap-1.5">
+                  {AGENT_TYPES.map(type => (
+                    <button
+                      key={type.id}
+                      onClick={() => setAgentTypeFilter(type.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        agentTypeFilter === type.id
+                          ? `${type.color} ring-1 ring-offset-1 ring-current`
+                          : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Etapa Filter - Dropdown styled */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Etapa</label>
                 <select
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value as PipelineStage | 'all')}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer appearance-none pr-8 bg-no-repeat bg-right ${
+                    stageFilter !== 'all'
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='${stageFilter !== 'all' ? 'white' : '%236B7280'}'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'right 8px center' }}
                 >
                   {STAGES.map(stage => (
                     <option key={stage.id} value={stage.id}>{stage.label}</option>
@@ -323,27 +361,18 @@ export const Leads = () => {
                 </select>
               </div>
 
-              {/* Agent Type Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Tipo</label>
-                <select
-                  value={agentTypeFilter}
-                  onChange={(e) => setAgentTypeFilter(e.target.value as AgentType | 'all')}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
-                >
-                  {AGENT_TYPES.map(type => (
-                    <option key={type.id} value={type.id}>{type.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Project Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Proyecto</label>
+              {/* Proyecto Filter - Dropdown styled */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Proyecto</label>
                 <select
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer appearance-none pr-8 bg-no-repeat bg-right ${
+                    projectFilter !== 'all'
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='${projectFilter !== 'all' ? 'white' : '%236B7280'}'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'right 8px center' }}
                 >
                   <option value="all">Todos</option>
                   {PROJECTS.map(project => (
@@ -351,32 +380,38 @@ export const Leads = () => {
                   ))}
                 </select>
               </div>
-            </div>
 
-            {/* Row 2: Channel, Assigned, Budget */}
-            <div className="flex flex-wrap gap-4">
-              {/* Channel Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Canal</label>
+              {/* Canal Filter - Dropdown styled */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Canal</label>
                 <select
                   value={channelFilter}
-                  onChange={(e) => setChannelFilter(e.target.value as typeof CHANNELS[number])}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                  onChange={(e) => setChannelFilter(e.target.value as 'all' | 'whatsapp' | 'instagram' | 'facebook')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer appearance-none pr-8 bg-no-repeat bg-right ${
+                    channelFilter !== 'all'
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='${channelFilter !== 'all' ? 'white' : '%236B7280'}'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'right 8px center' }}
                 >
-                  <option value="all">Todos</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="facebook">Facebook</option>
+                  {CHANNELS.map(ch => (
+                    <option key={ch.id} value={ch.id}>{ch.label}</option>
+                  ))}
                 </select>
               </div>
 
-              {/* Assigned Filter */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Asignado a</label>
+              {/* Asignado Filter - Dropdown styled */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Asignado</label>
                 <select
                   value={assignedFilter}
                   onChange={(e) => setAssignedFilter(e.target.value as typeof ASSIGNED_AGENTS[number])}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer appearance-none pr-8 bg-no-repeat bg-right ${
+                    assignedFilter !== 'all'
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='${assignedFilter !== 'all' ? 'white' : '%236B7280'}'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'right 8px center' }}
                 >
                   {ASSIGNED_AGENTS.map(agent => (
                     <option key={agent} value={agent}>{agent === 'all' ? 'Todos' : agent}</option>
@@ -385,23 +420,23 @@ export const Leads = () => {
               </div>
 
               {/* Budget Range */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">Presupuesto (USD miles)</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Ticket USD (miles)</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={budgetMin}
                     onChange={(e) => setBudgetMin(e.target.value)}
-                    className="w-20 px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                    className="w-20 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                   />
-                  <span className="text-gray-400">-</span>
+                  <span className="text-gray-300">—</span>
                   <input
                     type="number"
                     placeholder="Max"
                     value={budgetMax}
                     onChange={(e) => setBudgetMax(e.target.value)}
-                    className="w-20 px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
+                    className="w-20 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                   />
                 </div>
               </div>
@@ -411,10 +446,10 @@ export const Leads = () => {
                 <div className="flex items-end">
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:text-red-700 font-medium"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-600 hover:text-red-700 font-medium hover:bg-red-50 rounded-full transition-colors"
                   >
-                    <X className="w-4 h-4" />
-                    Limpiar
+                    <X className="w-3.5 h-3.5" />
+                    Limpiar filtros
                   </button>
                 </div>
               )}
@@ -444,7 +479,7 @@ export const Leads = () => {
                   </th>
                   <th className="px-4 py-3">
                     <button onClick={() => handleSort('budget')} className="flex items-center gap-1 hover:text-gray-700">
-                      Presupuesto <SortIcon field="budget" />
+                      Ticket <SortIcon field="budget" />
                     </button>
                   </th>
                   <th className="px-4 py-3">Interés</th>
@@ -480,8 +515,9 @@ export const Leads = () => {
                       {getStageBadge(lead.stage)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${getScoreColor(lead.score)}`}>
-                        {getScoreEmoji(lead.score)} {lead.score}
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${getScoreColor(lead.score)}`}>
+                        <span className={`w-2 h-2 rounded-full ${getScoreDot(lead.score)}`} />
+                        {lead.score}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -501,7 +537,7 @@ export const Leads = () => {
                     </td>
                     <td className="px-4 py-3">
                       {lead.assignedTo ? (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{lead.assignedTo}</span>
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{lead.assignedTo}</span>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
@@ -511,13 +547,13 @@ export const Leads = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                        <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
+                        <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors">
                           <Phone className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                        <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
                           <MessageCircle className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors">
+                        <button className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-colors">
                           <Calendar className="w-4 h-4" />
                         </button>
                       </div>
@@ -558,8 +594,9 @@ export const Leads = () => {
                 <h3 className="text-lg font-bold text-gray-900">{selectedLead.name}</h3>
                 <p className="text-sm text-gray-500">{selectedLead.project}</p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(selectedLead.score)}`}>
-                    {getScoreEmoji(selectedLead.score)} Score {selectedLead.score}
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${getScoreColor(selectedLead.score)}`}>
+                    <span className={`w-2 h-2 rounded-full ${getScoreDot(selectedLead.score)}`} />
+                    Score {selectedLead.score}
                   </span>
                   {getStageBadge(selectedLead.stage)}
                 </div>
@@ -582,7 +619,7 @@ export const Leads = () => {
               )}
               {selectedLead.budget && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Presupuesto</span>
+                  <span className="text-gray-500">Ticket</span>
                   <span className="text-emerald-600 font-medium">{selectedLead.budgetCurrency || 'USD'} {selectedLead.budget}</span>
                 </div>
               )}
@@ -613,7 +650,7 @@ export const Leads = () => {
               {selectedLead.notes && (
                 <div className="pt-3 border-t border-gray-100">
                   <p className="text-xs text-gray-500 mb-1">Notas</p>
-                  <p className="text-sm text-amber-700 bg-amber-50 p-2 rounded">{selectedLead.notes}</p>
+                  <p className="text-sm text-amber-700 bg-amber-50 p-2 rounded-lg">{selectedLead.notes}</p>
                 </div>
               )}
             </div>
