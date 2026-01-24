@@ -2,14 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #F8F9FA;
-}
-
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -17,10 +13,99 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
+  background: #d1d5db;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #9ca3af;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Font size scaling */
+.text-size-small {
+  font-size: 14px;
+}
+
+.text-size-small .text-xs {
+  font-size: 0.65rem;
+}
+
+.text-size-small .text-sm {
+  font-size: 0.75rem;
+}
+
+.text-size-small .text-base {
+  font-size: 0.875rem;
+}
+
+.text-size-small .text-lg {
+  font-size: 1rem;
+}
+
+.text-size-small .text-xl {
+  font-size: 1.125rem;
+}
+
+.text-size-small .text-2xl {
+  font-size: 1.25rem;
+}
+
+/* Normal is default, no changes needed */
+.text-size-normal {
+  font-size: 16px;
+}
+
+/* Large font size */
+.text-size-large {
+  font-size: 18px;
+}
+
+.text-size-large .text-xs {
+  font-size: 0.8rem;
+}
+
+.text-size-large .text-sm {
+  font-size: 0.95rem;
+}
+
+.text-size-large .text-base {
+  font-size: 1.1rem;
+}
+
+.text-size-large .text-lg {
+  font-size: 1.3rem;
+}
+
+.text-size-large .text-xl {
+  font-size: 1.5rem;
+}
+
+.text-size-large .text-2xl {
+  font-size: 1.75rem;
+}
+
+.text-size-large .text-\[10px\] {
+  font-size: 12px;
+}
+
+.text-size-large .text-\[11px\] {
+  font-size: 13px;
+}
+
+.text-size-small .text-\[10px\] {
+  font-size: 9px;
+}
+
+.text-size-small .text-\[11px\] {
+  font-size: 10px;
 }
