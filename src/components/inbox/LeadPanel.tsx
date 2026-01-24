@@ -4,13 +4,20 @@ import { Avatar } from '../Avatar'
 
 interface LeadPanelProps {
   lead: LeadDetail
+  onViewFullProfile?: () => void
 }
 
-export const LeadPanel = ({ lead }: LeadPanelProps) => {
+export const LeadPanel = ({ lead, onViewFullProfile }: LeadPanelProps) => {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-100 text-emerald-700'
-    if (score >= 60) return 'bg-amber-100 text-amber-700'
+    if (score >= 70) return 'bg-emerald-100 text-emerald-700'
+    if (score >= 40) return 'bg-amber-100 text-amber-700'
     return 'bg-red-100 text-red-700'
+  }
+
+  const getScoreDot = (score: number) => {
+    if (score >= 70) return 'bg-emerald-500'
+    if (score >= 40) return 'bg-amber-500'
+    return 'bg-red-500'
   }
 
   const getAgentBadge = (type: LeadDetail['agentType']) => {
@@ -50,11 +57,12 @@ export const LeadPanel = ({ lead }: LeadPanelProps) => {
           </div>
         </div>
 
-        {/* Score */}
+        {/* Score - Traffic light style */}
         <div className="flex items-center justify-center mb-6">
-          <div className={`px-4 py-2 rounded-xl ${getScoreColor(lead.score)}`}>
+          <div className={`px-4 py-2 rounded-xl ${getScoreColor(lead.score)} flex items-center gap-2`}>
+            <span className={`w-3 h-3 rounded-full ${getScoreDot(lead.score)}`} />
             <span className="text-2xl font-bold">{lead.score}</span>
-            <span className="text-sm font-medium ml-1">/ 100</span>
+            <span className="text-sm font-medium">/ 100</span>
           </div>
         </div>
 
@@ -86,8 +94,8 @@ export const LeadPanel = ({ lead }: LeadPanelProps) => {
             </div>
             {lead.budget && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Presupuesto</span>
-                <span className="text-gray-900 font-medium">
+                <span className="text-gray-500">Ticket</span>
+                <span className="text-emerald-600 font-semibold">
                   {lead.budgetCurrency} {lead.budget}
                 </span>
               </div>
@@ -147,7 +155,10 @@ export const LeadPanel = ({ lead }: LeadPanelProps) => {
         </div>
 
         {/* View Full Profile */}
-        <button className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+        <button 
+          onClick={onViewFullProfile}
+          className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors"
+        >
           <ExternalLink className="w-4 h-4" />
           Ver perfil completo
         </button>

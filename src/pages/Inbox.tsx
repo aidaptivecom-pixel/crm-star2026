@@ -15,7 +15,6 @@ export const Inbox = () => {
   const [selectedId, setSelectedId] = useState<string | null>(conversationId || null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
-  const [showLeadPanel, setShowLeadPanel] = useState(false)
   const [showLeadModal, setShowLeadModal] = useState(false)
   
   // Filters
@@ -284,28 +283,13 @@ export const Inbox = () => {
         {/* Lead Panel - Hidden on mobile, visible on xl+ */}
         <div className="hidden xl:flex flex-col overflow-hidden">
           {selectedLead && (
-            <LeadPanel lead={selectedLead} />
+            <LeadPanel 
+              lead={selectedLead} 
+              onViewFullProfile={handleViewLead}
+            />
           )}
         </div>
       </div>
-
-      {/* Mobile Lead Panel Overlay - Old version, keeping for reference */}
-      {showLeadPanel && selectedLead && (
-        <div className="xl:hidden fixed inset-0 bg-black/50 z-50" onClick={() => setShowLeadPanel(false)}>
-          <div 
-            className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowLeadPanel(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-            <LeadPanel lead={selectedLead} />
-          </div>
-        </div>
-      )}
 
       {/* Lead Detail Modal - Unified modal component */}
       {showLeadModal && leadForModal && (
