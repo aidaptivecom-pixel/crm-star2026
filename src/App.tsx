@@ -58,29 +58,21 @@ function App() {
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </div>
         
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Desktop Global Header - Notification Bell */}
-          <div className="hidden lg:flex items-center justify-end px-6 py-3 bg-[#F8F9FA] border-b border-gray-100">
-            <NotificationBell />
-          </div>
-          
-          {/* Routes Content */}
-          <div className="flex-1 overflow-auto">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/inbox" element={<Inbox />} />
-              <Route path="/inbox/:conversationId" element={<Inbox />} />
-              <Route path="/pipeline" element={<Pipeline />} />
-              <Route path="/leads" element={<Leads />} />
-              <Route path="/agentes" element={<Agentes />} />
-              <Route path="/emprendimientos" element={<Emprendimientos />} />
-              <Route path="/propiedades" element={<Propiedades />} />
-              <Route path="/tasaciones" element={<Tasaciones />} />
-              <Route path="/reportes" element={<Reportes />} />
-              <Route path="/configuracion" element={<Configuracion />} />
-            </Routes>
-          </div>
+        {/* Main Content - Routes */}
+        <div className="flex-1 overflow-auto">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/inbox" element={<Inbox />} />
+            <Route path="/inbox/:conversationId" element={<Inbox />} />
+            <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/agentes" element={<Agentes />} />
+            <Route path="/emprendimientos" element={<Emprendimientos />} />
+            <Route path="/propiedades" element={<Propiedades />} />
+            <Route path="/tasaciones" element={<Tasaciones />} />
+            <Route path="/reportes" element={<Reportes />} />
+            <Route path="/configuracion" element={<Configuracion />} />
+          </Routes>
         </div>
       </div>
     </div>
