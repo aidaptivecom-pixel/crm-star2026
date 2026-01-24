@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, Volume2, VolumeX, Check, CheckCheck, Trash2, User, TrendingUp, MessageSquare, AlertCircle } from 'lucide-react'
 import { useNotifications } from '../hooks/useNotifications'
-import { Notification, NotificationType } from '../types'
+import { AppNotification, NotificationType } from '../types'
 import { useNavigate } from 'react-router-dom'
 
 const getNotificationIcon = (type: NotificationType) => {
@@ -76,7 +76,7 @@ export const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
   
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: AppNotification) => {
     markAsRead(notification.id)
     setIsOpen(false)
     

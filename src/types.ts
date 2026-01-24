@@ -52,7 +52,7 @@ export interface LiveConversation {
 
 export type NotificationType = 'new_lead' | 'escalation' | 'high_score' | 'message' | 'system'
 
-export interface Notification {
+export interface AppNotification {
   id: string
   type: NotificationType
   title: string

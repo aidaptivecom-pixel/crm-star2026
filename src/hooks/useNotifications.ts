@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Notification } from '../types'
+import { AppNotification } from '../types'
 
 // Mock notifications for demo - will be replaced with Supabase realtime
-const mockNotifications: Notification[] = [
+const mockNotifications: AppNotification[] = [
   {
     id: '1',
     type: 'escalation',
@@ -49,7 +49,8 @@ const mockNotifications: Notification[] = [
 // Sound frequencies for notification alert
 const playNotificationSound = () => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const audioContext = new AudioContextClass()
     
     // Create a pleasant two-tone notification sound
     const playTone = (frequency: number, startTime: number, duration: number) => {
@@ -87,12 +88,12 @@ const requestNotificationPermission = async (): Promise<boolean> => {
     return false
   }
   
-  if (Notification.permission === 'granted') {
+  if (window.Notification.permission === 'granted') {
     return true
   }
   
-  if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission()
+  if (window.Notification.permission !== 'denied') {
+    const permission = await window.Notification.requestPermission()
     return permission === 'granted'
   }
   
@@ -100,11 +101,11 @@ const requestNotificationPermission = async (): Promise<boolean> => {
 }
 
 // Show browser notification
-const showBrowserNotification = (notification: Notification) => {
-  if (Notification.permission === 'granted') {
-    const browserNotif = new Notification(notification.title, {
+const showBrowserNotification = (notification: AppNotification) => {
+  if (window.Notification.permission === 'granted') {
+    const browserNotif = new window.Notification(notification.title, {
       body: notification.message,
-      icon: '/star-logo.png', // Add your logo here
+      icon: '/star-logo.png',
       tag: notification.id,
       requireInteraction: notification.type === 'escalation'
     })
@@ -112,7 +113,6 @@ const showBrowserNotification = (notification: Notification) => {
     browserNotif.onclick = () => {
       window.focus()
       browserNotif.close()
-      // Navigate to relevant page based on notification type
       if (notification.conversationId) {
         window.location.href = `/inbox/${notification.conversationId}`
       } else if (notification.leadId) {
@@ -123,7 +123,7 @@ const showBrowserNotification = (notification: Notification) => {
 }
 
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications)
   const [isTabVisible, setIsTabVisible] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false)
@@ -147,13 +147,11 @@ export const useNotifications = () => {
   }, [])
   
   // Handle new notifications (play sound, show browser notification)
-  const handleNewNotification = useCallback((notification: Notification) => {
-    // Play sound if enabled (especially useful when tab is not visible)
+  const handleNewNotification = useCallback((notification: AppNotification) => {
     if (soundEnabled) {
       playNotificationSound()
     }
     
-    // Show browser notification if tab is not visible and permission granted
     if (!isTabVisible && browserNotificationsEnabled) {
       showBrowserNotification(notification)
     }
@@ -194,7 +192,6 @@ export const useNotifications = () => {
   // Effect to detect new notifications and trigger alerts
   useEffect(() => {
     if (unreadCount > lastNotificationCount.current) {
-      // New notification arrived
       const newNotification = notifications.find(n => !n.read)
       if (newNotification && soundEnabled) {
         playNotificationSound()
