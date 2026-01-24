@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react'
+import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook, Type } from 'lucide-react'
+import { usePreferences } from '../contexts/PreferencesContext'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
@@ -28,7 +29,14 @@ const TABS: { id: Tab; label: string; shortLabel: string; icon: React.ElementTyp
   { id: 'empresa', label: 'Empresa', shortLabel: 'Empresa', icon: Building },
 ]
 
+const FONT_SIZES = [
+  { id: 'small', label: 'Pequeño', preview: 'Aa', size: 'text-xs' },
+  { id: 'normal', label: 'Normal', preview: 'Aa', size: 'text-sm' },
+  { id: 'large', label: 'Grande', preview: 'Aa', size: 'text-base' },
+] as const
+
 export const Configuracion = () => {
+  const { fontSize, setFontSize } = usePreferences()
   const [activeTab, setActiveTab] = useState<Tab>('perfil')
   const [agentSettings, setAgentSettings] = useState({
     emprendimientos: { active: true, autoReply: true, workingHours: true },
@@ -154,6 +162,43 @@ export const Configuracion = () => {
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Accesibilidad - Tamaño de fuente */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                  <Type className="w-4 h-4 text-gray-400" />
+                  Accesibilidad
+                </h3>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3">Tamaño de texto</label>
+                  <div className="flex gap-2">
+                    {FONT_SIZES.map((size) => (
+                      <button
+                        key={size.id}
+                        onClick={() => setFontSize(size.id)}
+                        className={`flex-1 flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                          fontSize === size.id
+                            ? 'border-[#D4A745] bg-[#D4A745]/5'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <span className={`font-bold text-gray-700 ${
+                          size.id === 'small' ? 'text-sm' : 
+                          size.id === 'normal' ? 'text-lg' : 
+                          'text-2xl'
+                        }`}>
+                          {size.preview}
+                        </span>
+                        <span className="text-xs text-gray-500 font-medium">{size.label}</span>
+                        {fontSize === size.id && (
+                          <span className="w-2 h-2 rounded-full bg-[#D4A745]" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-gray-400">Los cambios se aplican automáticamente en todo el dashboard</p>
                 </div>
               </div>
 
