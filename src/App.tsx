@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar'
 import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
 import { Pipeline } from './pages/Pipeline'
+import { Leads } from './pages/Leads'
 import { Agentes } from './pages/Agentes'
 import { Emprendimientos } from './pages/Emprendimientos'
 import { Propiedades } from './pages/Propiedades'
@@ -64,6 +65,7 @@ function App() {
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/inbox/:conversationId" element={<Inbox />} />
             <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/leads" element={<Leads />} />
             <Route path="/agentes" element={<Agentes />} />
             <Route path="/emprendimientos" element={<Emprendimientos />} />
             <Route path="/propiedades" element={<Propiedades />} />

@@ -3,7 +3,8 @@ import {
   Search, 
   Home, 
   Inbox, 
-  Trello, 
+  Trello,
+  Users,
   Bot, 
   Building2,
   Home as HomeIcon,
@@ -54,6 +55,7 @@ export const Sidebar = ({ onNavigate }: SidebarProps) => {
             <NavItem to="/" icon={Home} label="Inicio" onNavigate={onNavigate} />
             <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} onNavigate={onNavigate} />
             <NavItem to="/pipeline" icon={Trello} label="Pipeline" onNavigate={onNavigate} />
+            <NavItem to="/leads" icon={Users} label="Leads" onNavigate={onNavigate} />
           </nav>
         </div>
 
