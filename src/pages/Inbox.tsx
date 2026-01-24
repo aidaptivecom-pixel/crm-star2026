@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Search, Filter, MessageSquare, X } from 'lucide-react'
+import { Search, Filter, MessageSquare } from 'lucide-react'
 import { ConversationList } from '../components/inbox/ConversationList'
 import { ChatWindow } from '../components/inbox/ChatWindow'
 import { LeadPanel } from '../components/inbox/LeadPanel'
