@@ -48,6 +48,22 @@ export interface LiveConversation {
   agentType: 'emprendimientos' | 'inmuebles' | 'tasaciones'
 }
 
+// ============ NOTIFICATION TYPES ============
+
+export type NotificationType = 'new_lead' | 'escalation' | 'high_score' | 'message' | 'system'
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  title: string
+  message: string
+  leadId?: string
+  conversationId?: string
+  read: boolean
+  createdAt: string
+  avatar?: string
+}
+
 // ============ INBOX TYPES ============
 
 export type AgentType = 'emprendimientos' | 'inmuebles' | 'tasaciones'
