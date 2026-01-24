@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Trello, Search, Filter, LayoutGrid, List, Plus, GripVertical, MessageCircle, Phone, Calendar } from 'lucide-react'
+import { Trello, Search, Plus, GripVertical } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
+import { LeadDetailModal } from '../components/LeadDetailModal'
 import { PIPELINE_LEADS } from '../constants'
 import { PipelineLead, PipelineStage } from '../types'
 
@@ -15,7 +16,6 @@ const STAGES: { id: PipelineStage; title: string; color: string }[] = [
 export const Pipeline = () => {
   const [leads, setLeads] = useState<PipelineLead[]>(PIPELINE_LEADS)
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban')
   const [draggedLead, setDraggedLead] = useState<PipelineLead | null>(null)
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null)
 
@@ -50,9 +50,15 @@ export const Pipeline = () => {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-100 text-emerald-700'
-    if (score >= 60) return 'bg-amber-100 text-amber-700'
+    if (score >= 70) return 'bg-emerald-100 text-emerald-700'
+    if (score >= 40) return 'bg-amber-100 text-amber-700'
     return 'bg-red-100 text-red-700'
+  }
+
+  const getScoreDot = (score: number) => {
+    if (score >= 70) return 'bg-emerald-500'
+    if (score >= 40) return 'bg-amber-500'
+    return 'bg-red-500'
   }
 
   const getAgentBadge = (type: PipelineLead['agentType']) => {
@@ -63,14 +69,6 @@ export const Pipeline = () => {
         return <span className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
       case 'tasaciones':
         return <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
-    }
-  }
-
-  const getChannelIcon = (channel: PipelineLead['channel']) => {
-    switch (channel) {
-      case 'whatsapp': return '💬'
-      case 'instagram': return '📷'
-      case 'facebook': return '👤'
     }
   }
 
@@ -97,36 +95,10 @@ export const Pipeline = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* View Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('kanban')}
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'kanban' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'table' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Filter - Hidden on smallest screens */}
-            <button className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
-              <Filter className="w-4 h-4" />
-              <span className="hidden md:inline">Filtros</span>
-            </button>
-
             {/* Add Lead */}
             <button className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] transition-colors">
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nuevo</span>
+              <span className="hidden sm:inline">Nuevo Lead</span>
             </button>
           </div>
         </div>
@@ -140,7 +112,7 @@ export const Pipeline = () => {
               placeholder="Buscar lead..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-48 lg:w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+              className="w-full sm:w-64 lg:w-80 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
             />
           </div>
           
@@ -153,260 +125,131 @@ export const Pipeline = () => {
         </div>
       </div>
 
-      {/* Content */}
-      {viewMode === 'kanban' ? (
-        /* Kanban View - Horizontal scroll on mobile */
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-4">
-          <div className="flex lg:grid lg:grid-cols-5 gap-3 h-full min-w-max lg:min-w-0">
-            {STAGES.map((stage) => {
-              const stageLeads = getLeadsByStage(stage.id)
-              return (
-                <div
-                  key={stage.id}
-                  className="flex flex-col bg-gray-100 rounded-xl w-[280px] sm:w-[300px] lg:w-auto flex-shrink-0 lg:flex-shrink overflow-hidden"
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(stage.id)}
-                >
-                  {/* Column Header */}
-                  <div className="flex items-center justify-between px-3 py-2.5 flex-shrink-0">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`w-2.5 h-2.5 rounded-full ${stage.color} flex-shrink-0`} />
-                      <h3 className="font-semibold text-sm text-gray-700 truncate">{stage.title}</h3>
-                      <span className="bg-white text-gray-500 text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0">
-                        {stageLeads.length}
+      {/* Kanban Board */}
+      <div className="flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-4">
+        <div className="flex lg:grid lg:grid-cols-5 gap-3 h-full min-w-max lg:min-w-0">
+          {STAGES.map((stage) => {
+            const stageLeads = getLeadsByStage(stage.id)
+            const stageValue = stageLeads
+              .filter(l => l.budget)
+              .reduce((sum, l) => sum + parseInt(l.budget?.replace(/,/g, '') || '0'), 0)
+            
+            return (
+              <div
+                key={stage.id}
+                className="flex flex-col bg-gray-100 rounded-xl w-[280px] sm:w-[300px] lg:w-auto flex-shrink-0 lg:flex-shrink overflow-hidden"
+                onDragOver={handleDragOver}
+                onDrop={() => handleDrop(stage.id)}
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between px-3 py-2.5 flex-shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`w-2.5 h-2.5 rounded-full ${stage.color} flex-shrink-0`} />
+                    <h3 className="font-semibold text-sm text-gray-700 truncate">{stage.title}</h3>
+                    <span className="bg-white text-gray-500 text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      {stageLeads.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {stageValue > 0 && (
+                      <span className="text-[10px] text-emerald-600 font-medium">
+                        ${(stageValue / 1000).toFixed(0)}k
                       </span>
-                    </div>
+                    )}
                     <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded flex-shrink-0">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
 
-                  {/* Cards */}
-                  <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
-                    {stageLeads.map((lead) => (
-                      <div
-                        key={lead.id}
-                        draggable
-                        onDragStart={() => handleDragStart(lead)}
-                        onClick={() => setSelectedLead(lead)}
-                        className={`bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all ${
-                          draggedLead?.id === lead.id ? 'opacity-50' : ''
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className="cursor-grab text-gray-300 hover:text-gray-400 flex-shrink-0 hidden sm:block">
-                            <GripVertical className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1 mb-1">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <Avatar name={lead.name} size="sm" />
-                                <span className="font-medium text-xs text-gray-900 truncate">
-                                  {lead.name}
-                                </span>
-                              </div>
-                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${getScoreColor(lead.score)}`}>
-                                {lead.score}
+                {/* Cards */}
+                <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
+                  {stageLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={() => handleDragStart(lead)}
+                      onClick={() => setSelectedLead(lead)}
+                      className={`bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-gray-200 transition-all ${
+                        draggedLead?.id === lead.id ? 'opacity-50 scale-95' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="cursor-grab text-gray-300 hover:text-gray-400 flex-shrink-0 hidden sm:block">
+                          <GripVertical className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {/* Name & Score */}
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Avatar name={lead.name} size="sm" />
+                              <span className="font-medium text-xs text-gray-900 truncate">
+                                {lead.name}
                               </span>
                             </div>
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${getScoreColor(lead.score)}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${getScoreDot(lead.score)}`} />
+                              {lead.score}
+                            </span>
+                          </div>
 
-                            <div className="flex items-center gap-1 mb-1.5">
-                              {getAgentBadge(lead.agentType)}
-                              <span className="text-[11px] text-gray-500 truncate">{lead.project}</span>
-                              <span className="text-[10px] flex-shrink-0">{getChannelIcon(lead.channel)}</span>
-                            </div>
+                          {/* Project */}
+                          <div className="flex items-center gap-1 mb-1.5">
+                            {getAgentBadge(lead.agentType)}
+                            <span className="text-[11px] text-gray-500 truncate">{lead.project}</span>
+                          </div>
 
-                            {lead.budget && (
-                              <p className="text-[11px] font-medium text-emerald-600 mb-0.5">
-                                {lead.budgetCurrency} {lead.budget}
-                              </p>
+                          {/* Budget */}
+                          {lead.budget && (
+                            <p className="text-[11px] font-semibold text-emerald-600 mb-0.5">
+                              {lead.budgetCurrency || 'USD'} {lead.budget}
+                            </p>
+                          )}
+
+                          {/* Interest */}
+                          <p className="text-[11px] text-gray-500 truncate">{lead.interest}</p>
+
+                          {/* Notes */}
+                          {lead.notes && (
+                            <p className="text-[10px] text-amber-600 mt-1 truncate bg-amber-50 px-1.5 py-0.5 rounded">
+                              {lead.notes}
+                            </p>
+                          )}
+
+                          {/* Footer */}
+                          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-gray-50">
+                            <span className="text-[10px] text-gray-400">{lead.lastActivity}</span>
+                            {lead.assignedTo && (
+                              <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                                {lead.assignedTo}
+                              </span>
                             )}
-
-                            <p className="text-[11px] text-gray-500 truncate">{lead.interest}</p>
-
-                            {lead.notes && (
-                              <p className="text-[10px] text-amber-600 mt-1 truncate">📝 {lead.notes}</p>
-                            )}
-
-                            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-gray-50">
-                              <span className="text-[10px] text-gray-400">{lead.lastActivity}</span>
-                              {lead.assignedTo && (
-                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded">
-                                  {lead.assignedTo}
-                                </span>
-                              )}
-                            </div>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="flex-1 overflow-auto p-4 sm:p-6">
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px]">
-                <thead>
-                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                    <th className="px-3 sm:px-4 py-3">Lead</th>
-                    <th className="px-3 sm:px-4 py-3">Proyecto</th>
-                    <th className="px-3 sm:px-4 py-3">Etapa</th>
-                    <th className="px-3 sm:px-4 py-3">Score</th>
-                    <th className="px-3 sm:px-4 py-3">Presupuesto</th>
-                    <th className="px-3 sm:px-4 py-3">Actividad</th>
-                    <th className="px-3 sm:px-4 py-3">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filteredLeads.map((lead) => {
-                    const stage = STAGES.find(s => s.id === lead.stage)
-                    return (
-                      <tr key={lead.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedLead(lead)}>
-                        <td className="px-3 sm:px-4 py-3">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <Avatar name={lead.name} size="sm" />
-                            <div className="min-w-0">
-                              <p className="font-medium text-sm text-gray-900 truncate">{lead.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{lead.phone}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            {getAgentBadge(lead.agentType)}
-                            <span className="text-sm text-gray-700 truncate max-w-[120px]">{lead.project}</span>
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${stage?.color} text-white`}>
-                            {stage?.title}
-                          </span>
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          <span className={`text-xs font-bold px-2 py-1 rounded ${getScoreColor(lead.score)}`}>
-                            {lead.score}
-                          </span>
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          {lead.budget ? (
-                            <span className="text-sm font-medium text-emerald-600">
-                              {lead.budgetCurrency} {lead.budget}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          <span className="text-xs text-gray-500">{lead.lastActivity}</span>
-                        </td>
-                        <td className="px-3 sm:px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
-                              <Phone className="w-4 h-4" />
-                            </button>
-                            <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                              <MessageCircle className="w-4 h-4" />
-                            </button>
-                            <button className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors">
-                              <Calendar className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Mobile hint */}
-            <div className="lg:hidden px-4 py-2 text-center border-t border-gray-100">
-              <p className="text-xs text-gray-400">← Desliza para ver más →</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Lead Detail Modal */}
-      {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3" onClick={() => setSelectedLead(null)}>
-          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-md p-4 sm:p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
-              <Avatar name={selectedLead.name} size="lg" />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">{selectedLead.name}</h3>
-                <p className="text-sm text-gray-500 truncate">{selectedLead.project}</p>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(selectedLead.score)}`}>
-                    Score {selectedLead.score}
-                  </span>
-                  {selectedLead.budget && (
-                    <span className="text-xs font-medium text-emerald-600">
-                      {selectedLead.budgetCurrency} {selectedLead.budget}
-                    </span>
+                    </div>
+                  ))}
+                  
+                  {/* Empty state */}
+                  {stageLeads.length === 0 && (
+                    <div className="text-center py-8 text-gray-400">
+                      <p className="text-xs">Sin leads</p>
+                    </div>
                   )}
                 </div>
               </div>
-              <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 mb-4 sm:mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Teléfono</span>
-                <span className="text-gray-900">{selectedLead.phone}</span>
-              </div>
-              {selectedLead.email && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Email</span>
-                  <span className="text-gray-900 truncate ml-4">{selectedLead.email}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Interés</span>
-                <span className="text-gray-900 truncate ml-4">{selectedLead.interest}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Canal</span>
-                <span className="text-gray-900">{getChannelIcon(selectedLead.channel)} {selectedLead.channel}</span>
-              </div>
-              {selectedLead.assignedTo && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Asignado a</span>
-                  <span className="text-gray-900">{selectedLead.assignedTo}</span>
-                </div>
-              )}
-              {selectedLead.notes && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 mb-1">Notas</p>
-                  <p className="text-sm text-amber-700 bg-amber-50 p-2 rounded">{selectedLead.notes}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600">
-                <Phone className="w-4 h-4" />
-                <span className="hidden sm:inline">Llamar</span>
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">
-                <MessageCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Mensaje</span>
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600">
-                <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Agendar</span>
-              </button>
-            </div>
-          </div>
+            )
+          })}
         </div>
+      </div>
+
+      {/* Lead Detail Modal */}
+      {selectedLead && (
+        <LeadDetailModal
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          currentPage="pipeline"
+        />
       )}
     </main>
   )

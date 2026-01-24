@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Users, Search, Filter, Download, X, Phone, MessageCircle, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
+import { LeadDetailModal } from '../components/LeadDetailModal'
 import { PIPELINE_LEADS, EMPRENDIMIENTOS } from '../constants'
 import { PipelineLead, AgentType, PipelineStage } from '../types'
 
@@ -584,93 +585,13 @@ export const Leads = () => {
         </div>
       </div>
 
-      {/* Lead Detail Modal */}
+      {/* Lead Detail Modal - Shared Component */}
       {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3" onClick={() => setSelectedLead(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-start gap-4 mb-6">
-              <Avatar name={selectedLead.name} size="lg" />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-gray-900">{selectedLead.name}</h3>
-                <p className="text-sm text-gray-500">{selectedLead.project}</p>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${getScoreColor(selectedLead.score)}`}>
-                    <span className={`w-2 h-2 rounded-full ${getScoreDot(selectedLead.score)}`} />
-                    Score {selectedLead.score}
-                  </span>
-                  {getStageBadge(selectedLead.stage)}
-                </div>
-              </div>
-              <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Teléfono</span>
-                <span className="text-gray-900">{selectedLead.phone}</span>
-              </div>
-              {selectedLead.email && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Email</span>
-                  <span className="text-gray-900 truncate ml-4">{selectedLead.email}</span>
-                </div>
-              )}
-              {selectedLead.budget && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Ticket</span>
-                  <span className="text-emerald-600 font-medium">{selectedLead.budgetCurrency || 'USD'} {selectedLead.budget}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Interés</span>
-                <span className="text-gray-900 truncate ml-4">{selectedLead.interest}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Canal</span>
-                <span className="text-gray-900 capitalize">{selectedLead.channel}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Creado</span>
-                <span className="text-gray-900">{selectedLead.createdAt}</span>
-              </div>
-              {selectedLead.assignedTo && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Asignado a</span>
-                  <span className="text-gray-900">{selectedLead.assignedTo}</span>
-                </div>
-              )}
-              {selectedLead.scheduledDate && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Visita agendada</span>
-                  <span className="text-purple-600 font-medium">{selectedLead.scheduledDate}</span>
-                </div>
-              )}
-              {selectedLead.notes && (
-                <div className="pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 mb-1">Notas</p>
-                  <p className="text-sm text-amber-700 bg-amber-50 p-2 rounded-lg">{selectedLead.notes}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600">
-                <Phone className="w-4 h-4" />
-                Llamar
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">
-                <MessageCircle className="w-4 h-4" />
-                Mensaje
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600">
-                <Calendar className="w-4 h-4" />
-                Agendar
-              </button>
-            </div>
-          </div>
-        </div>
+        <LeadDetailModal
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          currentPage="leads"
+        />
       )}
     </div>
   )
