@@ -10,6 +10,7 @@ import { Propiedades } from './pages/Propiedades'
 import { Tasaciones } from './pages/Tasaciones'
 import { Reportes } from './pages/Reportes'
 import { Configuracion } from './pages/Configuracion'
+import { NotificationBell } from './components/NotificationBell'
 import { Menu, X } from 'lucide-react'
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
           <Menu className="w-6 h-6" />
         </button>
         <span className="font-bold text-lg text-gray-900">STAR CRM</span>
-        <div className="w-10" /> {/* Spacer for centering */}
+        <NotificationBell />
       </div>
 
       {/* Mobile Overlay */}
