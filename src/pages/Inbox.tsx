@@ -4,8 +4,9 @@ import { Search, Filter, MessageSquare, X } from 'lucide-react'
 import { ConversationList } from '../components/inbox/ConversationList'
 import { ChatWindow } from '../components/inbox/ChatWindow'
 import { LeadPanel } from '../components/inbox/LeadPanel'
-import { CONVERSATIONS, LEAD_DETAILS } from '../constants'
-import { AgentType, ConversationStatus, ChannelType } from '../types'
+import { LeadDetailModal } from '../components/LeadDetailModal'
+import { CONVERSATIONS, LEAD_DETAILS, PIPELINE_LEADS } from '../constants'
+import { AgentType, ConversationStatus, ChannelType, PipelineLead } from '../types'
 
 export const Inbox = () => {
   const { conversationId } = useParams()
@@ -15,6 +16,7 @@ export const Inbox = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [showLeadPanel, setShowLeadPanel] = useState(false)
+  const [showLeadModal, setShowLeadModal] = useState(false)
   
   // Filters
   const [agentFilter, setAgentFilter] = useState<AgentType | 'all'>('all')
@@ -53,6 +55,51 @@ export const Inbox = () => {
 
   const selectedConversation = CONVERSATIONS.find(c => c.id === selectedId)
   const selectedLead = selectedConversation ? LEAD_DETAILS[selectedConversation.leadId] : null
+  
+  // Get PipelineLead for modal (search by leadId or create from conversation data)
+  const getLeadForModal = (): PipelineLead | null => {
+    if (!selectedConversation) return null
+    
+    // First try to find in PIPELINE_LEADS
+    const pipelineLead = PIPELINE_LEADS.find(l => l.id === selectedConversation.leadId)
+    if (pipelineLead) return pipelineLead
+    
+    // If not found, create a temporary one from conversation + leadDetail data
+    const leadDetail = LEAD_DETAILS[selectedConversation.leadId]
+    if (leadDetail) {
+      return {
+        id: leadDetail.id,
+        name: leadDetail.name,
+        phone: leadDetail.phone,
+        email: leadDetail.email,
+        project: leadDetail.project,
+        agentType: leadDetail.agentType,
+        channel: leadDetail.channel,
+        score: leadDetail.score,
+        budget: leadDetail.budget,
+        budgetCurrency: leadDetail.budgetCurrency,
+        interest: leadDetail.interest,
+        stage: 'nuevo', // Default stage
+        createdAt: leadDetail.createdAt,
+        lastActivity: 'Hoy',
+      }
+    }
+    
+    // Fallback: create from conversation only
+    return {
+      id: selectedConversation.leadId,
+      name: selectedConversation.name,
+      phone: selectedConversation.phone,
+      project: selectedConversation.project,
+      agentType: selectedConversation.agentType,
+      channel: selectedConversation.channel,
+      score: 50, // Default score
+      interest: 'Consulta general',
+      stage: 'nuevo',
+      createdAt: 'Hoy',
+      lastActivity: selectedConversation.lastMessageTime,
+    }
+  }
 
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
@@ -66,6 +113,13 @@ export const Inbox = () => {
   const handleSelectConversation = (id: string) => {
     setSelectedId(id)
   }
+
+  // Handle view lead profile
+  const handleViewLead = () => {
+    setShowLeadModal(true)
+  }
+
+  const leadForModal = getLeadForModal()
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F8F9FA]">
@@ -215,6 +269,7 @@ export const Inbox = () => {
             <ChatWindow 
               conversation={selectedConversation} 
               onBack={handleBack}
+              onViewLead={handleViewLead}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">
@@ -226,7 +281,7 @@ export const Inbox = () => {
           )}
         </div>
 
-        {/* Lead Panel - Hidden on mobile */}
+        {/* Lead Panel - Hidden on mobile, visible on xl+ */}
         <div className="hidden xl:flex flex-col overflow-hidden">
           {selectedLead && (
             <LeadPanel lead={selectedLead} />
@@ -234,7 +289,7 @@ export const Inbox = () => {
         </div>
       </div>
 
-      {/* Mobile Lead Panel Overlay */}
+      {/* Mobile Lead Panel Overlay - Old version, keeping for reference */}
       {showLeadPanel && selectedLead && (
         <div className="xl:hidden fixed inset-0 bg-black/50 z-50" onClick={() => setShowLeadPanel(false)}>
           <div 
@@ -250,6 +305,15 @@ export const Inbox = () => {
             <LeadPanel lead={selectedLead} />
           </div>
         </div>
+      )}
+
+      {/* Lead Detail Modal - Unified modal component */}
+      {showLeadModal && leadForModal && (
+        <LeadDetailModal
+          lead={leadForModal}
+          onClose={() => setShowLeadModal(false)}
+          currentPage="inbox"
+        />
       )}
     </div>
   )

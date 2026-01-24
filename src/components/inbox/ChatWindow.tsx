@@ -6,9 +6,10 @@ import { Avatar } from '../Avatar'
 interface ChatWindowProps {
   conversation: Conversation
   onBack?: () => void
+  onViewLead?: () => void
 }
 
-export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
+export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps) => {
   const [message, setMessage] = useState('')
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -103,8 +104,12 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {getStatusBadge(conversation.status)}
-            {/* Lead info button - Mobile only */}
-            <button className="xl:hidden p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+            {/* Lead profile button */}
+            <button 
+              onClick={onViewLead}
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-[#D4A745] transition-colors"
+              title="Ver perfil del lead"
+            >
               <UserCircle className="w-5 h-5" />
             </button>
           </div>
