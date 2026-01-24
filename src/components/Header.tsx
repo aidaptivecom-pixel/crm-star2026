@@ -1,5 +1,4 @@
 import { ChevronDown } from 'lucide-react'
-import { NotificationBell } from './NotificationBell'
 
 export const Header = () => {
   const today = new Date()
@@ -26,9 +25,6 @@ export const Header = () => {
           Últimos 7 días
           <ChevronDown className="w-4 h-4 text-gray-400" />
         </button>
-        
-        {/* Notification Bell */}
-        <NotificationBell />
       </div>
     </div>
   )
