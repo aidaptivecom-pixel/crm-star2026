@@ -55,7 +55,7 @@ export const Inbox = () => {
   const selectedConversation = CONVERSATIONS.find(c => c.id === selectedId)
   const selectedLead = selectedConversation ? LEAD_DETAILS[selectedConversation.leadId] : null
   
-  // Get PipelineLead for modal (search by leadId or create from conversation data)
+  // Get PipelineLead for modal
   const getLeadForModal = (): PipelineLead | null => {
     if (!selectedConversation) return null
     
@@ -78,7 +78,7 @@ export const Inbox = () => {
         budget: leadDetail.budget,
         budgetCurrency: leadDetail.budgetCurrency,
         interest: leadDetail.interest,
-        stage: 'nuevo', // Default stage
+        stage: 'nuevo',
         createdAt: leadDetail.createdAt,
         lastActivity: 'Hoy',
       }
@@ -92,7 +92,7 @@ export const Inbox = () => {
       project: selectedConversation.project,
       agentType: selectedConversation.agentType,
       channel: selectedConversation.channel,
-      score: 50, // Default score
+      score: 50,
       interest: 'Consulta general',
       stage: 'nuevo',
       createdAt: 'Hoy',
@@ -102,18 +102,15 @@ export const Inbox = () => {
 
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
-  // Mobile: go back to list
   const handleBack = () => {
     setSelectedId(null)
     navigate('/inbox', { replace: true })
   }
 
-  // Mobile: handle conversation select
   const handleSelectConversation = (id: string) => {
     setSelectedId(id)
   }
 
-  // Handle view lead profile
   const handleViewLead = () => {
     setShowLeadModal(true)
   }
@@ -122,7 +119,7 @@ export const Inbox = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F8F9FA]">
-      {/* Header - Fixed */}
+      {/* Header */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -136,7 +133,6 @@ export const Inbox = () => {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Search - Hidden on mobile, visible on sm+ */}
             <div className="hidden sm:block relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -148,7 +144,6 @@ export const Inbox = () => {
               />
             </div>
             
-            {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
@@ -163,7 +158,6 @@ export const Inbox = () => {
           </div>
         </div>
 
-        {/* Mobile Search - Only on mobile */}
         <div className="sm:hidden mt-3">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -177,10 +171,8 @@ export const Inbox = () => {
           </div>
         </div>
 
-        {/* Filters Row */}
         {showFilters && (
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-4 pt-4 border-t border-gray-100">
-            {/* Agent Filter */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Agente:</span>
               <div className="flex gap-1">
@@ -205,7 +197,6 @@ export const Inbox = () => {
               </div>
             </div>
 
-            {/* Status Filter */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Estado:</span>
               <div className="flex gap-1">
@@ -230,7 +221,6 @@ export const Inbox = () => {
               </div>
             </div>
 
-            {/* Clear Filters */}
             {(agentFilter !== 'all' || statusFilter !== 'all' || channelFilter !== 'all') && (
               <button
                 onClick={() => {
@@ -247,9 +237,8 @@ export const Inbox = () => {
         )}
       </div>
 
-      {/* Main Content - Fixed height, no page scroll */}
+      {/* Main Content */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Conversations List - Full width on mobile when no selection */}
         <div className={`${
           selectedId ? 'hidden lg:flex' : 'flex'
         } w-full lg:w-80 lg:min-w-[320px] flex-shrink-0 flex-col overflow-hidden`}>
@@ -260,7 +249,6 @@ export const Inbox = () => {
           />
         </div>
 
-        {/* Chat Window - Full width on mobile when selected */}
         <div className={`${
           selectedId ? 'flex' : 'hidden lg:flex'
         } flex-1 flex-col min-w-0 overflow-hidden`}>
@@ -280,7 +268,6 @@ export const Inbox = () => {
           )}
         </div>
 
-        {/* Lead Panel - Hidden on mobile, visible on xl+ */}
         <div className="hidden xl:flex flex-col overflow-hidden">
           {selectedLead && (
             <LeadPanel 
@@ -291,7 +278,6 @@ export const Inbox = () => {
         </div>
       </div>
 
-      {/* Lead Detail Modal - Unified modal component */}
       {showLeadModal && leadForModal && (
         <LeadDetailModal
           lead={leadForModal}
