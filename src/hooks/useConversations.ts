@@ -109,7 +109,7 @@ export function useMessages(conversationId: string) {
       })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => { supabase?.removeChannel(channel) }
   }, [conversationId])
 
   return { messages, loading, error, refetch: fetchMessages }
