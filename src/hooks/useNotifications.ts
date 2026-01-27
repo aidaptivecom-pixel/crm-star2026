@@ -1,50 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AppNotification } from '../types'
-
-// Mock notifications for demo - will be replaced with Supabase realtime
-const mockNotifications: AppNotification[] = [
-  {
-    id: '1',
-    type: 'escalation',
-    title: 'Escalado a humano',
-    message: 'María González solicita hablar con un asesor',
-    leadId: 'lead-1',
-    conversationId: 'conv-1',
-    read: false,
-    createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-    avatar: 'MG'
-  },
-  {
-    id: '2',
-    type: 'high_score',
-    title: 'Lead caliente',
-    message: 'Carlos Ruiz alcanzó score 85 - Interesado en Roccatagliata',
-    leadId: 'lead-2',
-    read: false,
-    createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
-    avatar: 'CR'
-  },
-  {
-    id: '3',
-    type: 'new_lead',
-    title: 'Nuevo lead',
-    message: 'Ana Martínez desde WhatsApp - Voie Cañitas',
-    leadId: 'lead-3',
-    read: true,
-    createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
-    avatar: 'AM'
-  },
-  {
-    id: '4',
-    type: 'message',
-    title: 'Nuevo mensaje',
-    message: 'Pedro López respondió en la conversación',
-    conversationId: 'conv-4',
-    read: true,
-    createdAt: new Date(Date.now() - 60 * 60000).toISOString(),
-    avatar: 'PL'
-  }
-]
 
 // Sound frequencies for notification alert
 const playNotificationSound = () => {
@@ -52,7 +8,6 @@ const playNotificationSound = () => {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     const audioContext = new AudioContextClass()
     
-    // Create a pleasant two-tone notification sound
     const playTone = (frequency: number, startTime: number, duration: number) => {
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
@@ -63,7 +18,6 @@ const playNotificationSound = () => {
       oscillator.frequency.value = frequency
       oscillator.type = 'sine'
       
-      // Smooth envelope
       gainNode.gain.setValueAtTime(0, startTime)
       gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05)
       gainNode.gain.linearRampToValueAtTime(0, startTime + duration)
@@ -73,34 +27,24 @@ const playNotificationSound = () => {
     }
     
     const now = audioContext.currentTime
-    playTone(880, now, 0.15)        // A5
-    playTone(1108.73, now + 0.15, 0.2)  // C#6 - pleasant major third
+    playTone(880, now, 0.15)
+    playTone(1108.73, now + 0.15, 0.2)
     
   } catch (error) {
     console.warn('Could not play notification sound:', error)
   }
 }
 
-// Request browser notification permission
 const requestNotificationPermission = async (): Promise<boolean> => {
-  if (!('Notification' in window)) {
-    console.warn('This browser does not support notifications')
-    return false
-  }
-  
-  if (window.Notification.permission === 'granted') {
-    return true
-  }
-  
+  if (!('Notification' in window)) return false
+  if (window.Notification.permission === 'granted') return true
   if (window.Notification.permission !== 'denied') {
     const permission = await window.Notification.requestPermission()
     return permission === 'granted'
   }
-  
   return false
 }
 
-// Show browser notification
 const showBrowserNotification = (notification: AppNotification) => {
   if (window.Notification.permission === 'granted') {
     const browserNotif = new window.Notification(notification.title, {
@@ -122,82 +66,137 @@ const showBrowserNotification = (notification: AppNotification) => {
   }
 }
 
+// Map Supabase notification row to AppNotification
+function mapNotification(row: Record<string, unknown>): AppNotification {
+  const name = typeof row.title === 'string' ? row.title : ''
+  const initials = name
+    .replace(/^(Lead caliente|Nuevo lead|Escalado|Nuevo mensaje):\s*/i, '')
+    .split(' ')
+    .map((w: string) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  return {
+    id: row.id as string,
+    type: (row.type as AppNotification['type']) || 'system',
+    title: row.title as string,
+    message: (row.message as string) || '',
+    leadId: (row.lead_id as string) || undefined,
+    conversationId: (row.conversation_id as string) || undefined,
+    read: row.read as boolean,
+    createdAt: (row.created_at as string) || new Date().toISOString(),
+    avatar: initials || '🔔'
+  }
+}
+
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications)
+  const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [isTabVisible, setIsTabVisible] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false)
-  const lastNotificationCount = useRef(notifications.filter(n => !n.read).length)
+  const lastNotificationCount = useRef(0)
   
+  // Fetch notifications from Supabase
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
+  async function fetchNotifications() {
+    if (!isSupabaseConfigured() || !supabase) {
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (error) throw error
+      setNotifications((data || []).map(mapNotification))
+    } catch (err) {
+      console.error('Error fetching notifications:', err)
+    }
+  }
+
+  // Subscribe to realtime notifications
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return
+
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications'
+      }, (payload) => {
+        const notification = mapNotification(payload.new as Record<string, unknown>)
+        handleNewNotification(notification)
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications'
+      }, (payload) => {
+        const updated = mapNotification(payload.new as Record<string, unknown>)
+        setNotifications(prev => prev.map(n => n.id === updated.id ? updated : n))
+      })
+      .subscribe()
+
+    return () => { supabase?.removeChannel(channel) }
+  }, [])
+
   // Track tab visibility
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsTabVisible(!document.hidden)
-    }
-    
+    const handleVisibilityChange = () => setIsTabVisible(!document.hidden)
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [])
   
-  // Request browser notification permission on mount
+  // Request browser notification permission
   useEffect(() => {
     requestNotificationPermission().then(granted => {
       setBrowserNotificationsEnabled(granted)
     })
   }, [])
   
-  // Handle new notifications (play sound, show browser notification)
   const handleNewNotification = useCallback((notification: AppNotification) => {
-    if (soundEnabled) {
-      playNotificationSound()
-    }
-    
-    if (!isTabVisible && browserNotificationsEnabled) {
-      showBrowserNotification(notification)
-    }
-    
+    if (soundEnabled) playNotificationSound()
+    if (!isTabVisible && browserNotificationsEnabled) showBrowserNotification(notification)
     setNotifications(prev => [notification, ...prev])
   }, [soundEnabled, isTabVisible, browserNotificationsEnabled])
   
-  // Mark notification as read
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    )
+  const markAsRead = useCallback(async (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+    if (isSupabaseConfigured() && supabase) {
+      await supabase.from('notifications').update({ read: true, read_at: new Date().toISOString() } as never).eq('id', id)
+    }
   }, [])
   
-  // Mark all as read
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = useCallback(async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    if (isSupabaseConfigured() && supabase) {
+      await supabase.from('notifications').update({ read: true, read_at: new Date().toISOString() } as never).eq('read', false)
+    }
   }, [])
   
-  // Clear a notification
   const clearNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id))
   }, [])
   
-  // Toggle sound
-  const toggleSound = useCallback(() => {
-    setSoundEnabled(prev => !prev)
-  }, [])
+  const toggleSound = useCallback(() => setSoundEnabled(prev => !prev), [])
+  const testSound = useCallback(() => playNotificationSound(), [])
   
-  // Test sound (for settings)
-  const testSound = useCallback(() => {
-    playNotificationSound()
-  }, [])
-  
-  // Unread count
   const unreadCount = notifications.filter(n => !n.read).length
   
-  // Effect to detect new notifications and trigger alerts
   useEffect(() => {
     if (unreadCount > lastNotificationCount.current) {
       const newNotification = notifications.find(n => !n.read)
       if (newNotification && soundEnabled) {
         playNotificationSound()
-        if (!isTabVisible && browserNotificationsEnabled) {
-          showBrowserNotification(newNotification)
-        }
+        if (!isTabVisible && browserNotificationsEnabled) showBrowserNotification(newNotification)
       }
     }
     lastNotificationCount.current = unreadCount
@@ -214,6 +213,7 @@ export const useNotifications = () => {
     markAllAsRead,
     clearNotification,
     toggleSound,
-    testSound
+    testSound,
+    refetch: fetchNotifications
   }
 }

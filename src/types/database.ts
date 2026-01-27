@@ -138,6 +138,60 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['messages']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['messages']['Insert']>
       }
+      notifications: {
+        Row: {
+          id: string
+          type: 'new_lead' | 'high_score' | 'escalation' | 'handoff' | 'appointment' | 'follow_up' | 'system' | 'appraisal_complete'
+          title: string
+          message: string | null
+          lead_id: string | null
+          conversation_id: string | null
+          agent_id: string | null
+          priority: 'low' | 'normal' | 'high' | 'urgent'
+          read: boolean
+          read_at: string | null
+          action_url: string | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['notifications']['Insert']>
+      }
+      properties: {
+        Row: {
+          id: string
+          address: string
+          neighborhood: string | null
+          city: string | null
+          type: 'departamento' | 'casa' | 'ph' | 'local' | 'oficina' | 'terreno'
+          operation: 'venta' | 'alquiler' | 'temporal'
+          rooms: number | null
+          bathrooms: number | null
+          sqm_total: number | null
+          sqm_covered: number | null
+          price: number | null
+          currency: string | null
+          expenses: number | null
+          expenses_currency: string | null
+          status: 'disponible' | 'reservado' | 'vendido' | 'alquilado' | 'suspendido'
+          description: string | null
+          features: Json | null
+          photos: Json | null
+          video_url: string | null
+          tour_360_url: string | null
+          floor: string | null
+          orientation: string | null
+          antiquity: number | null
+          garage: boolean | null
+          storage: boolean | null
+          agent_id: string | null
+          external_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['properties']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['properties']['Insert']>
+      }
       appraisals: {
         Row: {
           id: string
@@ -176,3 +230,5 @@ export type Lead = Database['public']['Tables']['leads']['Row']
 export type Conversation = Database['public']['Tables']['conversations']['Row']
 export type Message = Database['public']['Tables']['messages']['Row']
 export type Appraisal = Database['public']['Tables']['appraisals']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type Property = Database['public']['Tables']['properties']['Row']
