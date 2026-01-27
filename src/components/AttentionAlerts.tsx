@@ -1,8 +1,12 @@
 import { AlertTriangle, ArrowRight, Clock, MessageSquareWarning, TrendingUp } from 'lucide-react'
-import { ATTENTION_LEADS } from '../constants'
+import { AttentionLead } from '../types'
 import { Avatar } from './Avatar'
 
-export const AttentionAlerts = () => {
+interface AttentionAlertsProps {
+  leads?: AttentionLead[]
+}
+
+export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
   const getReasonIcon = (reason: string) => {
     switch (reason) {
       case 'human_requested':
@@ -35,6 +39,20 @@ export const AttentionAlerts = () => {
     return 'bg-red-100 text-red-700'
   }
 
+  if (leads.length === 0) {
+    return (
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4">
+          <AlertTriangle className="w-5 h-5 text-gray-400" />
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Requieren Atención</h2>
+        </div>
+        <div className="text-center py-8 bg-white rounded-xl border border-gray-100">
+          <p className="text-gray-500 text-sm">No hay alertas pendientes</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mb-6 sm:mb-8">
       {/* Header */}
@@ -46,7 +64,7 @@ export const AttentionAlerts = () => {
           </div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900">Requieren Atención</h2>
           <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
-            {ATTENTION_LEADS.length}
+            {leads.length}
           </span>
         </div>
         <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors">
@@ -57,7 +75,7 @@ export const AttentionAlerts = () => {
 
       {/* Cards - Responsive Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {ATTENTION_LEADS.map((lead) => (
+        {leads.map((lead) => (
           <div
             key={lead.id}
             className={`p-3 sm:p-4 rounded-xl border ${getReasonBg(lead.reason)} hover:shadow-md transition-all cursor-pointer`}

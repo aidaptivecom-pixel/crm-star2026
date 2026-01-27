@@ -1,12 +1,30 @@
-import { ArrowRight, Bot, User } from 'lucide-react'
-import { RECENT_ACTIVITY } from '../constants'
+import { ArrowRight, Bot, User, Users } from 'lucide-react'
+import { LeadActivity } from '../types'
 import { Avatar } from './Avatar'
 
-export const RecentActivityTable = () => {
+interface RecentActivityTableProps {
+  activities?: LeadActivity[]
+}
+
+export const RecentActivityTable = ({ activities = [] }: RecentActivityTableProps) => {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'bg-emerald-100 text-emerald-700'
     if (score >= 60) return 'bg-amber-100 text-amber-700'
     return 'bg-red-100 text-red-700'
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900 text-sm sm:text-base">Actividad Reciente</h3>
+        </div>
+        <div className="text-center py-12">
+          <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">No hay actividad reciente</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -33,7 +51,7 @@ export const RecentActivityTable = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {RECENT_ACTIVITY.map((activity) => (
+            {activities.map((activity) => (
               <tr key={activity.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
                 <td className="px-4 sm:px-6 py-4">
                   <div className="flex items-center gap-3">

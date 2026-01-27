@@ -42,7 +42,6 @@ export const GLOBAL_STATS = {
   proyectos: [
     { name: 'Roccatagliata', leads: 245, qualified: 98, reservas: 12, color: 'bg-blue-500' },
     { name: 'Voie Cañitas', leads: 189, qualified: 82, reservas: 8, color: 'bg-purple-500' },
-    { name: 'Huergo 475', leads: 267, qualified: 112, reservas: 15, color: 'bg-emerald-500' },
     { name: 'Human Abasto', leads: 198, qualified: 86, reservas: 5, color: 'bg-amber-500' },
     { name: 'Joy Patagonia', leads: 156, qualified: 72, reservas: 4, color: 'bg-rose-500' },
     { name: 'BTN Pinamar', leads: 112, qualified: 48, reservas: 2, color: 'bg-cyan-500' },

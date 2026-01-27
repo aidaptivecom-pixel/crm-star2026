@@ -4,9 +4,82 @@ import { AttentionAlerts } from '../components/AttentionAlerts'
 import { LeadsChart } from '../components/LeadsChart'
 import { LiveConversations } from '../components/LiveConversations'
 import { RecentActivityTable } from '../components/RecentActivityTable'
-import { METRICS } from '../constants'
+import { useLeads, useConversations } from '../hooks'
+import { MetricData, AttentionLead, LiveConversation as LiveConvType, LeadActivity } from '../types'
+import { mapLeadToAttentionLead, mapDbConversationToLive, mapLeadToActivity } from '../lib/mappers'
 
 export const Dashboard = () => {
+  const { leads, loading: leadsLoading, stats: leadStats } = useLeads()
+  const { conversations, loading: convsLoading, stats: convStats } = useConversations()
+
+  const loading = leadsLoading || convsLoading
+
+  // Compute metrics from real data
+  const qualified = leadStats.calificado + leadStats.contactado + leadStats.visita + leadStats.cierre
+  const conversionRate = leadStats.total > 0
+    ? ((qualified / leadStats.total) * 100).toFixed(1)
+    : '0'
+
+  const metrics: MetricData[] = [
+    {
+      title: 'Leads Totales',
+      value: leadStats.total.toLocaleString(),
+      change: '',
+      isPositive: true,
+    },
+    {
+      title: 'Conversaciones Activas',
+      value: convStats.active.toString(),
+      change: '',
+      isPositive: true,
+    },
+    {
+      title: 'Tasa de Conversión',
+      value: `${conversionRate}%`,
+      change: '',
+      isPositive: true,
+    },
+    {
+      title: 'Calificados',
+      value: leadStats.calificado.toString(),
+      change: '',
+      isPositive: true,
+    },
+  ]
+
+  // Build attention leads: high score unassigned leads
+  const attentionLeads: AttentionLead[] = leads
+    .filter(l => (l.score || 0) >= 70 && !l.assigned_to)
+    .slice(0, 5)
+    .map(l => mapLeadToAttentionLead(l, 'high_score', `Score ${l.score}, sin asignar`))
+
+  // Live conversations (non-closed)
+  const liveConversations: LiveConvType[] = conversations
+    .filter(c => c.status !== 'closed')
+    .slice(0, 6)
+    .map(mapDbConversationToLive)
+
+  // Recent activity from latest leads
+  const recentActivity: LeadActivity[] = leads
+    .slice(0, 5)
+    .map(mapLeadToActivity)
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
+        <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
+          <Header />
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-gray-500">Cargando...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
       <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
@@ -15,13 +88,13 @@ export const Dashboard = () => {
 
         {/* Metrics Grid - Responsive */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {METRICS.map((metric, index) => (
+          {metrics.map((metric, index) => (
             <MetricCard key={index} data={metric} />
           ))}
         </div>
 
         {/* Attention Alerts */}
-        <AttentionAlerts />
+        <AttentionAlerts leads={attentionLeads} />
 
         {/* Chart + Live Conversations - Responsive */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -29,13 +102,13 @@ export const Dashboard = () => {
             <LeadsChart />
           </div>
           <div className="lg:col-span-1">
-            <LiveConversations />
+            <LiveConversations conversations={liveConversations} />
           </div>
         </div>
 
         {/* Activity Table */}
         <div>
-          <RecentActivityTable />
+          <RecentActivityTable activities={recentActivity} />
         </div>
 
       </div>

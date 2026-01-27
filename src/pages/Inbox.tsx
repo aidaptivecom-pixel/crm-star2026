@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Search, Filter, MessageSquare } from 'lucide-react'
 import { ConversationList } from '../components/inbox/ConversationList'
 import { ChatWindow } from '../components/inbox/ChatWindow'
 import { LeadPanel } from '../components/inbox/LeadPanel'
 import { LeadDetailModal } from '../components/LeadDetailModal'
-import { CONVERSATIONS, LEAD_DETAILS, PIPELINE_LEADS } from '../constants'
+import { useConversations, useMessages, useLeads } from '../hooks'
+import { mapDbConversationToUi, mapLeadToLeadDetail, mapLeadToPipelineLead } from '../lib/mappers'
 import { AgentType, ConversationStatus, ChannelType, PipelineLead } from '../types'
 
 export const Inbox = () => {
@@ -22,6 +23,17 @@ export const Inbox = () => {
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all')
   const [channelFilter, setChannelFilter] = useState<ChannelType | 'all'>('all')
 
+  // Data from Supabase
+  const { conversations: dbConversations, loading: convsLoading } = useConversations()
+  const { messages: dbMessages, loading: msgsLoading } = useMessages(selectedId || '')
+  const { leads: dbLeads } = useLeads()
+
+  // Map DB conversations to UI conversations (without messages, for list)
+  const uiConversations = useMemo(
+    () => dbConversations.map(c => mapDbConversationToUi(c, [])),
+    [dbConversations],
+  )
+
   // Update URL when conversation changes
   useEffect(() => {
     if (selectedId && selectedId !== conversationId) {
@@ -33,16 +45,16 @@ export const Inbox = () => {
   useEffect(() => {
     if (conversationId && !selectedId) {
       setSelectedId(conversationId)
-    } else if (!conversationId && !selectedId && CONVERSATIONS.length > 0) {
+    } else if (!conversationId && !selectedId && uiConversations.length > 0) {
       // Don't auto-select on mobile
       if (window.innerWidth >= 1024) {
-        setSelectedId(CONVERSATIONS[0].id)
+        setSelectedId(uiConversations[0].id)
       }
     }
-  }, [conversationId, selectedId])
+  }, [conversationId, selectedId, uiConversations])
 
   // Filter conversations
-  const filteredConversations = CONVERSATIONS.filter(conv => {
+  const filteredConversations = uiConversations.filter(conv => {
     const matchesSearch = conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          conv.project.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesAgent = agentFilter === 'all' || conv.agentType === agentFilter
@@ -52,39 +64,31 @@ export const Inbox = () => {
     return matchesSearch && matchesAgent && matchesStatus && matchesChannel
   })
 
-  const selectedConversation = CONVERSATIONS.find(c => c.id === selectedId)
-  const selectedLead = selectedConversation ? LEAD_DETAILS[selectedConversation.leadId] : null
-  
+  // Build selected conversation WITH messages
+  const selectedConversation = useMemo(() => {
+    if (!selectedId) return null
+    const dbConv = dbConversations.find(c => c.id === selectedId)
+    if (!dbConv) return null
+    return mapDbConversationToUi(dbConv, dbMessages)
+  }, [selectedId, dbConversations, dbMessages])
+
+  // Get lead for the selected conversation
+  const selectedLead = useMemo(() => {
+    if (!selectedConversation?.leadId) return null
+    const dbLead = dbLeads.find(l => l.id === selectedConversation.leadId)
+    if (!dbLead) return null
+    return mapLeadToLeadDetail(dbLead)
+  }, [selectedConversation, dbLeads])
+
   // Get PipelineLead for modal
   const getLeadForModal = (): PipelineLead | null => {
     if (!selectedConversation) return null
     
-    // First try to find in PIPELINE_LEADS
-    const pipelineLead = PIPELINE_LEADS.find(l => l.id === selectedConversation.leadId)
-    if (pipelineLead) return pipelineLead
+    // Try to find the lead in our leads data
+    const dbLead = dbLeads.find(l => l.id === selectedConversation.leadId)
+    if (dbLead) return mapLeadToPipelineLead(dbLead)
     
-    // If not found, create a temporary one from conversation + leadDetail data
-    const leadDetail = LEAD_DETAILS[selectedConversation.leadId]
-    if (leadDetail) {
-      return {
-        id: leadDetail.id,
-        name: leadDetail.name,
-        phone: leadDetail.phone,
-        email: leadDetail.email,
-        project: leadDetail.project,
-        agentType: leadDetail.agentType,
-        channel: leadDetail.channel,
-        score: leadDetail.score,
-        budget: leadDetail.budget,
-        budgetCurrency: leadDetail.budgetCurrency,
-        interest: leadDetail.interest,
-        stage: 'nuevo',
-        createdAt: leadDetail.createdAt,
-        lastActivity: 'Hoy',
-      }
-    }
-    
-    // Fallback: create from conversation only
+    // Fallback: create from conversation data
     return {
       id: selectedConversation.leadId,
       name: selectedConversation.name,
@@ -100,7 +104,7 @@ export const Inbox = () => {
     }
   }
 
-  const unreadCount = CONVERSATIONS.filter(c => c.unread).length
+  const unreadCount = uiConversations.filter(c => c.unread).length
 
   const handleBack = () => {
     setSelectedId(null)
@@ -116,6 +120,17 @@ export const Inbox = () => {
   }
 
   const leadForModal = getLeadForModal()
+
+  if (convsLoading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-[#F8F9FA]">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-500">Cargando conversaciones...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F8F9FA]">
@@ -242,22 +257,40 @@ export const Inbox = () => {
         <div className={`${
           selectedId ? 'hidden lg:flex' : 'flex'
         } w-full lg:w-80 lg:min-w-[320px] flex-shrink-0 flex-col overflow-hidden`}>
-          <ConversationList
-            conversations={filteredConversations}
-            selectedId={selectedId}
-            onSelect={handleSelectConversation}
-          />
+          {filteredConversations.length === 0 && !convsLoading ? (
+            <div className="flex-1 flex items-center justify-center bg-white border-r border-gray-200">
+              <div className="text-center p-4">
+                <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">No hay conversaciones</p>
+              </div>
+            </div>
+          ) : (
+            <ConversationList
+              conversations={filteredConversations}
+              selectedId={selectedId}
+              onSelect={handleSelectConversation}
+            />
+          )}
         </div>
 
         <div className={`${
           selectedId ? 'flex' : 'hidden lg:flex'
         } flex-1 flex-col min-w-0 overflow-hidden`}>
           {selectedConversation ? (
-            <ChatWindow 
-              conversation={selectedConversation} 
-              onBack={handleBack}
-              onViewLead={handleViewLead}
-            />
+            msgsLoading ? (
+              <div className="flex-1 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                  <div className="animate-spin w-6 h-6 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">Cargando mensajes...</p>
+                </div>
+              </div>
+            ) : (
+              <ChatWindow 
+                conversation={selectedConversation} 
+                onBack={handleBack}
+                onViewLead={handleViewLead}
+              />
+            )
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">
               <div className="text-center">

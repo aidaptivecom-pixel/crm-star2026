@@ -2,11 +2,9 @@ import { useState, useMemo } from 'react'
 import { Users, Search, Filter, Download, X, Phone, MessageCircle, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { LeadDetailModal } from '../components/LeadDetailModal'
-import { PIPELINE_LEADS, EMPRENDIMIENTOS } from '../constants'
+import { useLeads, useProjects } from '../hooks'
+import { mapLeadToPipelineLead } from '../lib/mappers'
 import { PipelineLead, AgentType, PipelineStage } from '../types'
-
-// Get unique projects from emprendimientos
-const PROJECTS = Object.values(EMPRENDIMIENTOS).map(e => e.name)
 
 const STAGES: { id: PipelineStage | 'all'; label: string }[] = [
   { id: 'all', label: 'Todos' },
@@ -45,6 +43,21 @@ type SortField = 'name' | 'score' | 'budget' | 'createdAt' | 'lastActivity'
 type SortDirection = 'asc' | 'desc'
 
 export const Leads = () => {
+  // Data from Supabase
+  const { leads: dbLeads, loading: leadsLoading } = useLeads()
+  const { projects, loading: projectsLoading } = useProjects()
+
+  const loading = leadsLoading || projectsLoading
+
+  // Map DB leads to UI PipelineLeads
+  const allLeads = useMemo(
+    () => dbLeads.map(l => mapLeadToPipelineLead(l, projects)),
+    [dbLeads, projects],
+  )
+
+  // Get unique project names from Supabase projects
+  const projectNames = useMemo(() => projects.map(p => p.name), [projects])
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -66,7 +79,7 @@ export const Leads = () => {
 
   // Filter logic
   const filteredLeads = useMemo(() => {
-    return PIPELINE_LEADS.filter(lead => {
+    return allLeads.filter(lead => {
       // Search
       const matchesSearch = lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            lead.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,7 +116,7 @@ export const Leads = () => {
              matchesChannel && matchesScore && matchesAssigned && matchesBudget
     })
   }, [searchQuery, stageFilter, agentTypeFilter, projectFilter, channelFilter, 
-      scoreFilter, assignedFilter, budgetMin, budgetMax])
+      scoreFilter, assignedFilter, budgetMin, budgetMax, allLeads])
 
   // Sort logic
   const sortedLeads = useMemo(() => {
@@ -244,6 +257,17 @@ export const Leads = () => {
     )
   }
 
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-[#F8F9FA]">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-500">Cargando leads...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}
@@ -253,7 +277,7 @@ export const Leads = () => {
             <Users className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">Leads</h1>
             <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
-              {sortedLeads.length} de {PIPELINE_LEADS.length}
+              {sortedLeads.length} de {allLeads.length}
             </span>
           </div>
 
@@ -376,7 +400,7 @@ export const Leads = () => {
                   style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='${projectFilter !== 'all' ? 'white' : '%236B7280'}'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'right 8px center' }}
                 >
                   <option value="all">Todos</option>
-                  {PROJECTS.map(project => (
+                  {projectNames.map(project => (
                     <option key={project} value={project}>{project}</option>
                   ))}
                 </select>
@@ -568,13 +592,22 @@ export const Leads = () => {
           {sortedLeads.length === 0 && (
             <div className="px-4 py-12 text-center">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No se encontraron leads con los filtros aplicados</p>
-              <button
-                onClick={clearFilters}
-                className="mt-2 text-sm text-[#D4A745] hover:text-[#b8923c] font-medium"
-              >
-                Limpiar filtros
-              </button>
+              {allLeads.length === 0 ? (
+                <>
+                  <p className="text-gray-500">No hay leads aún</p>
+                  <p className="text-gray-400 text-sm mt-1">Los leads aparecerán aquí cuando se carguen</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-500">No se encontraron leads con los filtros aplicados</p>
+                  <button
+                    onClick={clearFilters}
+                    className="mt-2 text-sm text-[#D4A745] hover:text-[#b8923c] font-medium"
+                  >
+                    Limpiar filtros
+                  </button>
+                </>
+              )}
             </div>
           )}
 
