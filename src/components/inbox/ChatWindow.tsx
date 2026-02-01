@@ -161,8 +161,15 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
 
       setDraftResponse(null)
       
-      // Force reload to show new message
-      window.location.reload()
+      // Add message to optimistic state instead of reloading
+      setOptimisticMessages(prev => [...prev, {
+        id: `approved-${Date.now()}`,
+        content: text,
+        sender: 'ai' as const,
+        senderName: 'Agente STAR',
+        timestamp: new Date(),
+        pending: false
+      }])
     } catch (error) {
       console.error('Error approving draft:', error)
       alert('Error al enviar el mensaje. Intenta de nuevo.')
@@ -281,7 +288,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         ai_enabled: false,
         status: 'needs_human'
       })
-      window.location.reload()
+      // No reload needed - realtime will update the UI
     } catch (error) {
       console.error('Error taking control:', error)
     }
