@@ -161,15 +161,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
 
       setDraftResponse(null)
       
-      // Add message to optimistic state instead of reloading
-      setOptimisticMessages(prev => [...prev, {
-        id: `approved-${Date.now()}`,
-        content: text,
-        sender: 'ai' as const,
-        senderName: 'Agente STAR',
-        timestamp: new Date(),
-        pending: false
-      }])
+      // Realtime will show the new message automatically
     } catch (error) {
       console.error('Error approving draft:', error)
       alert('Error al enviar el mensaje. Intenta de nuevo.')
