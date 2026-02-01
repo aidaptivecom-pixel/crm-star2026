@@ -129,7 +129,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       await supabaseRest.insert('messages', {
         conversation_id: conversation.id,
         content: text,
-        sender: 'agent',
+        sender: 'ai',
         sender_name: 'Agente STAR',
         message_type: 'text',
         status: 'sent',
@@ -199,7 +199,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       await supabaseRest.insert('messages', {
         conversation_id: conversation.id,
         content: message,
-        sender: 'agent',
+        sender: 'human',
         sender_name: 'Humano',
         message_type: 'text',
         status: 'sent',
@@ -209,7 +209,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       // Update conversation
       await supabaseRest.update('conversations', conversation.id, {
         last_message: message,
-        last_message_by: 'agent',
+        last_message_by: 'human',
         status: 'ai_active'
       })
 
