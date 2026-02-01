@@ -66,7 +66,7 @@ function safeStage(val: string | null | undefined): PipelineStage {
 }
 
 function safeConversationStatus(val: string | null | undefined): ConversationStatus {
-  if (val === 'ai_active' || val === 'needs_human' || val === 'closed') return val
+  if (val === 'ai_active' || val === 'needs_human' || val === 'pending_approval' || val === 'closed') return val
   return 'ai_active'
 }
 
@@ -219,6 +219,8 @@ export function mapDbConversationToUi(conv: DbConversation, messages: DbMessage[
     unread: conv.unread || false,
     isTyping: conv.is_typing || false,
     messages: messages.map(mapDbMessageToUi),
+    draftResponse: (conv as any).draft_response || null,
+    draftCreatedAt: (conv as any).draft_created_at || null,
   }
 }
 

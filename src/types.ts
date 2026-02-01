@@ -67,7 +67,7 @@ export interface AppNotification {
 // ============ INBOX TYPES ============
 
 export type AgentType = 'emprendimientos' | 'inmuebles' | 'tasaciones'
-export type ConversationStatus = 'ai_active' | 'needs_human' | 'closed'
+export type ConversationStatus = 'ai_active' | 'needs_human' | 'pending_approval' | 'closed'
 export type ChannelType = 'whatsapp' | 'instagram' | 'facebook'
 
 export interface Message {
@@ -94,6 +94,8 @@ export interface Conversation {
   unread: boolean
   isTyping: boolean
   messages: Message[]
+  draftResponse?: string | null
+  draftCreatedAt?: string | null
 }
 
 export interface LeadDetail {
