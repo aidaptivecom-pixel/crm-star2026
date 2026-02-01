@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { Conversation, Message } from '../types/database'
 
@@ -12,11 +12,7 @@ export function useConversations(filters?: {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchConversations()
-  }, [filters?.status, filters?.agentType, filters?.channel, filters?.leadId])
-
-  async function fetchConversations() {
+  const fetchConversations = useCallback(async () => {
     if (!isSupabaseConfigured() || !supabase) {
       setConversations([])
       setLoading(false)
@@ -46,12 +42,49 @@ export function useConversations(filters?: {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters?.status, filters?.agentType, filters?.channel, filters?.leadId])
+
+  useEffect(() => {
+    fetchConversations()
+  }, [fetchConversations])
+
+  // Subscribe to realtime conversation updates (for draft_response, status changes)
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return
+
+    const channel = supabase
+      .channel('conversations-realtime')
+      .on('postgres_changes', {
+        event: '*', // Listen to INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'conversations'
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setConversations(prev => [payload.new as Conversation, ...prev])
+        } else if (payload.eventType === 'UPDATE') {
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === (payload.new as Conversation).id 
+                ? payload.new as Conversation 
+                : conv
+            )
+          )
+        } else if (payload.eventType === 'DELETE') {
+          setConversations(prev => 
+            prev.filter(conv => conv.id !== (payload.old as Conversation).id)
+          )
+        }
+      })
+      .subscribe()
+
+    return () => { supabase?.removeChannel(channel) }
+  }, [])
 
   const stats = {
     total: conversations.length,
     active: conversations.filter(c => c.status === 'ai_active').length,
     needsHuman: conversations.filter(c => c.status === 'needs_human').length,
+    pendingApproval: conversations.filter(c => c.status === 'pending_approval').length,
     closed: conversations.filter(c => c.status === 'closed').length,
     unread: conversations.filter(c => c.unread).length,
   }
@@ -64,12 +97,8 @@ export function useMessages(conversationId: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (conversationId) fetchMessages()
-  }, [conversationId])
-
-  async function fetchMessages() {
-    if (!isSupabaseConfigured() || !supabase) {
+  const fetchMessages = useCallback(async () => {
+    if (!isSupabaseConfigured() || !supabase || !conversationId) {
       setMessages([])
       setLoading(false)
       return
@@ -91,7 +120,11 @@ export function useMessages(conversationId: string) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [conversationId])
+
+  useEffect(() => {
+    if (conversationId) fetchMessages()
+  }, [conversationId, fetchMessages])
 
   // Subscribe to realtime messages
   useEffect(() => {
