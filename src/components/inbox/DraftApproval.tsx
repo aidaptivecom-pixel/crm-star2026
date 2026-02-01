@@ -74,6 +74,12 @@ export const DraftApproval = ({
             <textarea
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && editedText.trim()) {
+                  e.preventDefault()
+                  handleApprove()
+                }
+              }}
               className="w-full p-3 bg-white border border-blue-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent min-h-[100px]"
               autoFocus
             />

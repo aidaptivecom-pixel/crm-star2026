@@ -126,23 +126,29 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   }
 
   const handleApprove = async (text: string) => {
+    const messageText = text.trim()
+    if (!messageText) return
+    
+    const tempId = `temp-approve-${Date.now()}`
+    
+    // Optimistic update - show message immediately
+    setOptimisticMessages(prev => [...prev, {
+      id: tempId,
+      content: messageText,
+      sender: 'ai',
+      senderName: 'Agente STAR',
+      timestamp: new Date(),
+      pending: true
+    }])
+    
+    // Clear draft immediately for instant feedback
+    setDraftResponse(null)
+    
     try {
-      // 1. Send message via WhatsApp (call n8n webhook)
-      await fetch('https://star.igreen.com.ar/webhook/send-approved', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversation_id: conversation.id,
-          phone: conversation.phone,
-          message: text,
-          lead_name: conversation.name
-        })
-      }).catch(() => {}) // Don't fail if webhook is not ready
-
-      // 2. Save message to DB
+      // 1. Save message to DB
       await supabaseRest.insert('messages', {
         conversation_id: conversation.id,
-        content: text,
+        content: messageText,
         sender: 'ai',
         sender_name: 'Agente STAR',
         message_type: 'text',
@@ -150,20 +156,36 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         ai_generated: true
       })
 
-      // 3. Clear draft and update conversation
+      // 2. Clear draft and update conversation
       await supabaseRest.update('conversations', conversation.id, {
         draft_response: null,
         draft_created_at: null,
         status: 'ai_active',
-        last_message: text,
+        last_message: messageText,
         last_message_by: 'agent'
       })
 
-      setDraftResponse(null)
-      
-      // Realtime will show the new message automatically
+      // 3. Send via WhatsApp (don't wait)
+      fetch('https://star.igreen.com.ar/webhook/send-approved', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversation_id: conversation.id,
+          phone: conversation.phone,
+          message: messageText,
+          lead_name: conversation.name
+        })
+      }).catch(() => {})
+
+      // Mark as sent (remove pending)
+      setOptimisticMessages(prev => 
+        prev.map(m => m.id === tempId ? { ...m, pending: false } : m)
+      )
     } catch (error) {
       console.error('Error approving draft:', error)
+      // Remove failed message and restore draft
+      setOptimisticMessages(prev => prev.filter(m => m.id !== tempId))
+      setDraftResponse(text)
       alert('Error al enviar el mensaje. Intenta de nuevo.')
     }
   }
@@ -270,7 +292,12 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSend()
+      // If there's a draft waiting, Enter approves it
+      if (draftResponse && !isRegenerating) {
+        handleApprove(draftResponse)
+      } else {
+        handleSend()
+      }
     }
   }
 
@@ -365,9 +392,15 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         {/* Optimistic messages (pending send) */}
         {optimisticMessages.map((msg) => (
           <div key={msg.id} className="flex justify-end">
-            <div className={`max-w-[85%] sm:max-w-[70%] bg-[#D4A745] text-white rounded-2xl rounded-br-md ${msg.pending ? 'opacity-70' : ''}`}>
-              <div className="px-3 sm:px-4 pt-2 pb-0 flex items-center gap-1.5 text-amber-100">
-                <User className="w-3 h-3" />
+            <div className={`max-w-[85%] sm:max-w-[70%] ${
+              msg.sender === 'ai' 
+                ? 'bg-blue-500' 
+                : 'bg-[#D4A745]'
+            } text-white rounded-2xl rounded-br-md ${msg.pending ? 'opacity-70' : ''}`}>
+              <div className={`px-3 sm:px-4 pt-2 pb-0 flex items-center gap-1.5 ${
+                msg.sender === 'ai' ? 'text-blue-100' : 'text-amber-100'
+              }`}>
+                {msg.sender === 'ai' ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
                 <span className="text-[10px] font-medium">{msg.senderName}</span>
                 {msg.pending && <span className="text-[10px]">• Enviando...</span>}
               </div>
