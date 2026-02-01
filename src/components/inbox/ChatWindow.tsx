@@ -70,6 +70,24 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     setOptimisticMessages([])
   }, [conversation.id])
 
+  // Clear optimistic messages when real messages arrive (from realtime)
+  useEffect(() => {
+    if (optimisticMessages.length === 0) return
+    
+    // Remove optimistic messages that now exist in real messages
+    setOptimisticMessages(prev => 
+      prev.filter(optMsg => {
+        // Check if this optimistic message exists in real messages
+        const existsInReal = conversation.messages.some(
+          realMsg => realMsg.content === optMsg.content && 
+                    realMsg.sender === optMsg.sender
+        )
+        // Keep only if NOT in real messages yet
+        return !existsInReal
+      })
+    )
+  }, [conversation.messages])
+
   // Auto-scroll to bottom
   useEffect(() => {
     const container = messagesContainerRef.current
