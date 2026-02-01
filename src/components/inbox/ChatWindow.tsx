@@ -48,6 +48,15 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   const [message, setMessage] = useState('')
   const [draftResponse, setDraftResponse] = useState<string | null>(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [optimisticMessages, setOptimisticMessages] = useState<Array<{
+    id: string
+    content: string
+    sender: 'human' | 'ai'
+    senderName: string
+    timestamp: Date
+    pending?: boolean
+  }>>([])
+  const [isSending, setIsSending] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   // Load draft from conversation data
@@ -55,6 +64,11 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     const draft = conversation.draftResponse
     setDraftResponse(draft || null)
   }, [conversation.id, conversation.draftResponse])
+
+  // Clear optimistic messages when conversation changes
+  useEffect(() => {
+    setOptimisticMessages([])
+  }, [conversation.id])
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -64,7 +78,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         container.scrollTop = container.scrollHeight
       })
     }
-  }, [conversation.messages, conversation.id, draftResponse])
+  }, [conversation.messages, conversation.id, draftResponse, optimisticMessages])
 
   const getAgentBadge = (type: Conversation['agentType']) => {
     switch (type) {
@@ -192,13 +206,28 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   }
 
   const handleSend = async () => {
-    if (!message.trim()) return
+    if (!message.trim() || isSending) return
+    
+    const messageText = message.trim()
+    const tempId = `temp-${Date.now()}`
+    
+    // Optimistic update - show message immediately
+    setOptimisticMessages(prev => [...prev, {
+      id: tempId,
+      content: messageText,
+      sender: 'human',
+      senderName: 'Humano',
+      timestamp: new Date(),
+      pending: true
+    }])
+    setMessage('')
+    setIsSending(true)
     
     try {
       // Save message to DB
       await supabaseRest.insert('messages', {
         conversation_id: conversation.id,
-        content: message,
+        content: messageText,
         sender: 'human',
         sender_name: 'Humano',
         message_type: 'text',
@@ -208,28 +237,34 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
 
       // Update conversation
       await supabaseRest.update('conversations', conversation.id, {
-        last_message: message,
+        last_message: messageText,
         last_message_by: 'human',
         status: 'ai_active'
       })
 
-      // Send via WhatsApp
-      await fetch('https://star.igreen.com.ar/webhook/send-approved', {
+      // Send via WhatsApp (don't wait)
+      fetch('https://star.igreen.com.ar/webhook/send-approved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversation_id: conversation.id,
           phone: conversation.phone,
-          message: message,
+          message: messageText,
           lead_name: conversation.name
         })
       }).catch(() => {})
 
-      setMessage('')
-      window.location.reload()
+      // Mark as sent (remove pending)
+      setOptimisticMessages(prev => 
+        prev.map(m => m.id === tempId ? { ...m, pending: false } : m)
+      )
     } catch (error) {
       console.error('Error sending message:', error)
+      // Remove failed message
+      setOptimisticMessages(prev => prev.filter(m => m.id !== tempId))
       alert('Error al enviar. Intenta de nuevo.')
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -322,6 +357,25 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 <p className={`text-[10px] mt-1 ${msg.sender === 'lead' ? 'text-gray-400' : 'text-white/70'}`}>
                   {msg.timestamp}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Optimistic messages (pending send) */}
+        {optimisticMessages.map((msg) => (
+          <div key={msg.id} className="flex justify-end">
+            <div className={`max-w-[85%] sm:max-w-[70%] bg-[#D4A745] text-white rounded-2xl rounded-br-md ${msg.pending ? 'opacity-70' : ''}`}>
+              <div className="px-3 sm:px-4 pt-2 pb-0 flex items-center gap-1.5 text-amber-100">
+                <User className="w-3 h-3" />
+                <span className="text-[10px] font-medium">{msg.senderName}</span>
+                {msg.pending && <span className="text-[10px]">• Enviando...</span>}
+              </div>
+              <div className="px-3 sm:px-4 py-2">
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-[10px] mt-1 text-white/70">
+                  {msg.timestamp.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>
