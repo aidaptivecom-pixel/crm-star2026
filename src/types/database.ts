@@ -104,7 +104,7 @@ export interface Database {
           phone: string | null
           project: string | null
           agent_type: 'emprendimientos' | 'inmuebles' | 'tasaciones' | null
-          status: 'ai_active' | 'needs_human' | 'closed' | null
+          status: 'ai_active' | 'needs_human' | 'pending_approval' | 'closed' | null
           channel: 'whatsapp' | 'instagram' | 'facebook' | null
           last_message: string | null
           last_message_time: string | null
