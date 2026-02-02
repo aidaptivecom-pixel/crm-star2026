@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook, Type, Volume2, VolumeX, Play, Lock } from 'lucide-react'
+import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, MessageCircle, Instagram, Facebook, Type, Volume2, VolumeX, Play, Lock } from 'lucide-react'
 import { usePreferences } from '../contexts/PreferencesContext'
 import { useNotifications } from '../hooks/useNotifications'
 
