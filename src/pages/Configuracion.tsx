@@ -236,76 +236,108 @@ export const Configuracion = () => {
             <div className="max-w-3xl">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Configuración de Agentes IA</h2>
               
-              <div className="space-y-3 sm:space-y-4">
-                {[
-                  { id: 'emprendimientos', name: 'Agente Emprendimientos', color: 'blue', desc: 'Califica leads de proyectos nuevos' },
-                  { id: 'inmuebles', name: 'Agente Inmuebles', color: 'purple', desc: 'Atiende consultas de propiedades usadas' },
-                  { id: 'tasaciones', name: 'Agente Tasaciones', color: 'amber', desc: 'Recopila datos para tasaciones' },
-                ].map((agent) => (
-                  <div key={agent.id} className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
-                    <div className="flex items-start justify-between mb-3 sm:mb-4">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <div className={`w-8 sm:w-10 h-8 sm:h-10 bg-${agent.color}-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <Bot className={`w-4 sm:w-5 h-4 sm:h-5 text-${agent.color}-600`} />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{agent.name}</h3>
-                          <p className="text-xs sm:text-sm text-gray-500 truncate">{agent.desc}</p>
-                        </div>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
-                        <input
-                          type="checkbox"
-                          checked={agentSettings[agent.id as keyof typeof agentSettings].active}
-                          onChange={(e) => setAgentSettings(prev => ({
-                            ...prev,
-                            [agent.id]: { ...prev[agent.id as keyof typeof prev], active: e.target.checked }
-                          }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4A745]"></div>
-                      </label>
+              {/* Agente Emprendimientos - Activo */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-emerald-600" />
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm text-gray-600">Respuesta auto</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={agentSettings[agent.id as keyof typeof agentSettings].autoReply}
-                            onChange={(e) => setAgentSettings(prev => ({
-                              ...prev,
-                              [agent.id]: { ...prev[agent.id as keyof typeof prev], autoReply: e.target.checked }
-                            }))}
-                            className="sr-only peer"
-                          />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                        </label>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Agente Emprendimientos</h3>
+                        <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-medium">
+                          <Check className="w-3 h-3" />
+                          Activo
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm text-gray-600">Solo horario laboral</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={agentSettings[agent.id as keyof typeof agentSettings].workingHours}
-                            onChange={(e) => setAgentSettings(prev => ({
-                              ...prev,
-                              [agent.id]: { ...prev[agent.id as keyof typeof prev], workingHours: e.target.checked }
-                            }))}
-                            className="sr-only peer"
-                          />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                        </label>
+                      <p className="text-xs sm:text-sm text-gray-500">Califica leads de proyectos nuevos via WhatsApp</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agentSettings.emprendimientos.active}
+                      onChange={(e) => setAgentSettings(prev => ({
+                        ...prev,
+                        emprendimientos: { ...prev.emprendimientos, active: e.target.checked }
+                      }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4A745]"></div>
+                  </label>
+                </div>
+                
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.emprendimientos.autoReply}
+                        onChange={(e) => setAgentSettings(prev => ({
+                          ...prev,
+                          emprendimientos: { ...prev.emprendimientos, autoReply: e.target.checked }
+                        }))}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Solo en horario laboral</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.emprendimientos.workingHours}
+                        onChange={(e) => setAgentSettings(prev => ({
+                          ...prev,
+                          emprendimientos: { ...prev.emprendimientos, workingHours: e.target.checked }
+                        }))}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agentes Próximamente */}
+              <div className="space-y-3 mb-4">
+                {[
+                  { name: 'Agente Inmuebles', desc: 'Atiende consultas de propiedades usadas', color: 'purple' },
+                  { name: 'Agente Tasaciones', desc: 'Recopila datos para tasaciones', color: 'amber' },
+                ].map((agent) => (
+                  <div key={agent.name} className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 opacity-60">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center`}>
+                          <Bot className="w-5 h-5 text-gray-400" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-500 text-sm sm:text-base">{agent.name}</h3>
+                            <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-medium">
+                              <Lock className="w-3 h-3" />
+                              Próximamente
+                            </span>
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-400">{agent.desc}</p>
+                        </div>
+                      </div>
+                      <div className="w-11 h-6 bg-gray-100 rounded-full relative">
+                        <div className="absolute top-[2px] left-[2px] bg-white border-gray-200 border rounded-full h-5 w-5"></div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 sm:mt-6 bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
+              {/* Horario laboral */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
                 <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Horario laboral</h3>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <p className="text-xs text-gray-400 mb-3">El agente solo responderá automáticamente dentro de este horario</p>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Inicio</label>
                     <input
