@@ -62,7 +62,7 @@ export const LeadsChart = () => {
         </div>
       </div>
 
-      <div className="h-[250px] sm:h-[300px] w-full">
+      <div className="h-[300px] sm:h-[380px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={CHART_DATA} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <defs>
