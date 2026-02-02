@@ -121,6 +121,10 @@ export const useNotifications = () => {
     }
   }
 
+  // Debounce ref for message sounds
+  const lastMessageSoundTime = useRef(0)
+  const MESSAGE_SOUND_DEBOUNCE_MS = 3000 // 3 seconds between sounds
+
   // Subscribe to realtime notifications
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) return
@@ -147,6 +151,50 @@ export const useNotifications = () => {
 
     return () => { supabase?.removeChannel(channel) }
   }, [])
+
+  // Subscribe to new messages from leads
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return
+
+    const messagesChannel = supabase
+      .channel('messages-sound-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        const message = payload.new as Record<string, unknown>
+        // Only play sound for messages from leads (not from agent/system)
+        if (message.sender === 'lead') {
+          const now = Date.now()
+          // Debounce: don't play sound if one played recently
+          if (now - lastMessageSoundTime.current > MESSAGE_SOUND_DEBOUNCE_MS) {
+            lastMessageSoundTime.current = now
+            if (soundEnabled) {
+              playNotificationSound()
+            }
+            // Show browser notification if tab is not visible
+            if (!isTabVisible && browserNotificationsEnabled) {
+              const senderName = (message.sender_name as string) || 'Nuevo mensaje'
+              const content = (message.content as string) || ''
+              showBrowserNotification({
+                id: message.id as string,
+                type: 'message',
+                title: `💬 ${senderName}`,
+                message: content.substring(0, 100),
+                conversationId: message.conversation_id as string,
+                read: false,
+                createdAt: new Date().toISOString(),
+                avatar: senderName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+              })
+            }
+          }
+        }
+      })
+      .subscribe()
+
+    return () => { supabase?.removeChannel(messagesChannel) }
+  }, [soundEnabled, isTabVisible, browserNotificationsEnabled])
 
   // Track tab visibility
   useEffect(() => {
