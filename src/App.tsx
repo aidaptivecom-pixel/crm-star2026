@@ -1,16 +1,6 @@
 import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
 import { Sidebar } from './components/Sidebar'
-import { Dashboard } from './pages/Dashboard'
-import { Inbox } from './pages/Inbox'
-import { Pipeline } from './pages/Pipeline'
-import { Leads } from './pages/Leads'
-import { Agentes } from './pages/Agentes'
-import { Emprendimientos } from './pages/Emprendimientos'
-import { Propiedades } from './pages/Propiedades'
-import { Tasaciones } from './pages/Tasaciones'
-import { Reportes } from './pages/Reportes'
-import { Configuracion } from './pages/Configuracion'
+import { AnimatedRoutes } from './components/AnimatedRoutes'
 import { NotificationBell } from './components/NotificationBell'
 import { Menu, X } from 'lucide-react'
 
@@ -58,21 +48,9 @@ function App() {
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </div>
         
-        {/* Main Content - Routes */}
+        {/* Main Content - Animated Routes */}
         <div className="flex-1 overflow-auto">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/inbox" element={<Inbox />} />
-            <Route path="/inbox/:conversationId" element={<Inbox />} />
-            <Route path="/pipeline" element={<Pipeline />} />
-            <Route path="/leads" element={<Leads />} />
-            <Route path="/agentes" element={<Agentes />} />
-            <Route path="/emprendimientos" element={<Emprendimientos />} />
-            <Route path="/propiedades" element={<Propiedades />} />
-            <Route path="/tasaciones" element={<Tasaciones />} />
-            <Route path="/reportes" element={<Reportes />} />
-            <Route path="/configuracion" element={<Configuracion />} />
-          </Routes>
+          <AnimatedRoutes />
         </div>
       </div>
     </div>
