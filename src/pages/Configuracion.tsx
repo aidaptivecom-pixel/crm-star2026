@@ -55,7 +55,7 @@ export const Configuracion = () => {
   })
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
+    <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA] h-full">
       {/* Header */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -87,8 +87,8 @@ export const Configuracion = () => {
       {/* Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar Tabs */}
-        <div className="hidden lg:block w-56 bg-white border-r border-gray-100 flex-shrink-0 overflow-y-auto">
-          <nav className="space-y-1 p-4 sticky top-0">
+        <div className="hidden lg:block w-56 bg-white border-r border-gray-100 flex-shrink-0 self-stretch">
+          <nav className="space-y-1 p-4">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
