@@ -88,7 +88,7 @@ export const Pipeline = () => {
 
   if (loading) {
     return (
-      <main className="flex-1 flex items-center justify-center bg-[#F8F9FA]">
+      <main className="flex-1 h-full min-h-[calc(100vh-64px)] flex items-center justify-center bg-[#F8F9FA]">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-gray-500">Cargando pipeline...</p>

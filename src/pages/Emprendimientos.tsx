@@ -162,7 +162,7 @@ export const Emprendimientos = () => {
   // Loading state
   if (loading) {
     return (
-      <main className="flex-1 flex items-center justify-center bg-[#F8F9FA]">
+      <main className="flex-1 h-full min-h-[calc(100vh-64px)] flex items-center justify-center bg-[#F8F9FA]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-[#D4A745] mx-auto mb-3" />
           <p className="text-gray-600">Cargando emprendimientos...</p>
