@@ -4,6 +4,7 @@ import { AttentionAlerts } from '../components/AttentionAlerts'
 import { LeadsChart } from '../components/LeadsChart'
 import { LiveConversations } from '../components/LiveConversations'
 import { RecentActivityTable } from '../components/RecentActivityTable'
+import { MetricCardSkeleton, AttentionCardSkeleton, ChartSkeleton, LiveConversationsSkeleton, ActivityTableSkeleton } from '../components/Skeleton'
 import { useLeads, useConversations } from '../hooks'
 import { MetricData, AttentionLead, LiveConversation as LiveConvType, LeadActivity } from '../types'
 import { mapLeadToAttentionLead, mapDbConversationToLive, mapLeadToActivity } from '../lib/mappers'
@@ -69,12 +70,38 @@ export const Dashboard = () => {
       <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
         <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
           <Header />
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
-              <p className="text-gray-500">Cargando...</p>
+          
+          {/* Skeleton Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <MetricCardSkeleton key={i} />
+            ))}
+          </div>
+
+          {/* Skeleton Attention Alerts */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <AttentionCardSkeleton />
+              <AttentionCardSkeleton />
             </div>
           </div>
+
+          {/* Skeleton Chart + Live */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 items-stretch">
+            <div className="lg:col-span-2 h-full">
+              <ChartSkeleton />
+            </div>
+            <div className="lg:col-span-1 h-full">
+              <LiveConversationsSkeleton />
+            </div>
+          </div>
+
+          {/* Skeleton Activity Table */}
+          <ActivityTableSkeleton />
         </div>
       </main>
     )
