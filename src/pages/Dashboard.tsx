@@ -97,11 +97,11 @@ export const Dashboard = () => {
         <AttentionAlerts leads={attentionLeads} />
 
         {/* Chart + Live Conversations - Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div>
             <LeadsChart />
           </div>
-          <div className="lg:col-span-1">
+          <div>
             <LiveConversations conversations={liveConversations} />
           </div>
         </div>
