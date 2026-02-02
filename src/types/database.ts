@@ -219,6 +219,58 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['appraisals']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['appraisals']['Insert']>
       }
+      company_settings: {
+        Row: {
+          id: string
+          company_name: string
+          phone: string | null
+          email: string | null
+          address: string | null
+          logo_url: string | null
+          business_hours_start: string
+          business_hours_end: string
+          business_days: number[]
+          timezone: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['company_settings']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['company_settings']['Insert']>
+      }
+      user_settings: {
+        Row: {
+          id: string
+          agent_id: string | null
+          sound_enabled: boolean
+          desktop_notifications: boolean
+          email_notifications: boolean
+          notification_sound: string
+          theme: string
+          language: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['user_settings']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['user_settings']['Insert']>
+      }
+      agent_config: {
+        Row: {
+          id: string
+          agent_type: string
+          is_active: boolean
+          auto_reply_enabled: boolean
+          response_delay_seconds: number
+          max_conversations: number
+          handoff_threshold: number
+          active_hours_start: string | null
+          active_hours_end: string | null
+          active_days: number[] | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['agent_config']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['agent_config']['Insert']>
+      }
     }
   }
 }
@@ -232,3 +284,6 @@ export type Message = Database['public']['Tables']['messages']['Row']
 export type Appraisal = Database['public']['Tables']['appraisals']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type Property = Database['public']['Tables']['properties']['Row']
+export type CompanySettings = Database['public']['Tables']['company_settings']['Row']
+export type UserSettings = Database['public']['Tables']['user_settings']['Row']
+export type AgentConfig = Database['public']['Tables']['agent_config']['Row']
