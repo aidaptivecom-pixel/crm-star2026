@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { Lead } from '../types/database'
 
@@ -12,9 +12,45 @@ export function useLeads(filters?: {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Función para actualizar un lead en el estado
+  const updateLeadInState = useCallback((updatedLead: Lead) => {
+    setLeads(current => 
+      current.map(lead => 
+        lead.id === updatedLead.id ? { ...lead, ...updatedLead } : lead
+      )
+    )
+  }, [])
+
   useEffect(() => {
     fetchLeads()
-  }, [filters?.stage, filters?.agentType, filters?.projectId])
+
+    // Suscribirse a cambios en tiempo real
+    if (isSupabaseConfigured() && supabase) {
+      const channel = supabase
+        .channel('leads-realtime')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'leads' },
+          (payload) => {
+            console.log('Lead actualizado en tiempo real:', payload.new)
+            updateLeadInState(payload.new as Lead)
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'leads' },
+          (payload) => {
+            console.log('Nuevo lead:', payload.new)
+            setLeads(current => [payload.new as Lead, ...current])
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [filters?.stage, filters?.agentType, filters?.projectId, updateLeadInState])
 
   async function fetchLeads() {
     if (!isSupabaseConfigured() || !supabase) {
