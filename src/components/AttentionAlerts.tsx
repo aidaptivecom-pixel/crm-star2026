@@ -66,7 +66,7 @@ export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900">Requieren Atención</h2>
-          <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
             {leads.length}
           </span>
         </div>
@@ -84,7 +84,7 @@ export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
         {leads.map((lead) => (
           <div
             key={lead.id}
-            className={`p-3 sm:p-4 rounded-xl border ${getReasonBg(lead.reason)} hover:shadow-md transition-all cursor-pointer`}
+            className={`p-3 sm:p-4 rounded-xl border ${getReasonBg(lead.reason)} hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer`}
           >
             <div className="flex items-start gap-3">
               <Avatar name={lead.name} size="md" />

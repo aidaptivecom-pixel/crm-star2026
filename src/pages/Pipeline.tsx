@@ -201,7 +201,7 @@ export const Pipeline = () => {
                         draggable
                         onDragStart={() => handleDragStart(lead)}
                         onClick={() => setSelectedLead(lead)}
-                        className={`bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-gray-200 transition-all ${
+                        className={`bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-200 transition-all duration-200 ${
                           draggedLead?.id === lead.id ? 'opacity-50 scale-95' : ''
                         }`}
                       >

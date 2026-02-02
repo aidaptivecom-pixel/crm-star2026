@@ -149,7 +149,7 @@ const NavItem = ({ to, icon: Icon, label, badge, disabled, onNavigate }: NavItem
             <span>{label}</span>
           </div>
           {badge && (
-            <span className="bg-[#D4A745] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="bg-[#D4A745] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
               {badge}
             </span>
           )}

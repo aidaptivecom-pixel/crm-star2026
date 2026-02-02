@@ -7,7 +7,7 @@ interface MetricCardProps {
 
 export const MetricCard = ({ data }: MetricCardProps) => {
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-md transition-shadow">
+    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-xl hover:-translate-y-1 hover:border-gray-200 transition-all duration-200 cursor-pointer">
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-sm font-medium text-gray-500">{data.title}</h3>
         {data.change && (

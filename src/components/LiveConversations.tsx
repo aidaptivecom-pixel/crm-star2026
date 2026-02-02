@@ -30,7 +30,7 @@ export const LiveConversations = ({ conversations = [] }: LiveConversationsProps
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-[#D4A745]" />
           <h3 className="font-bold text-gray-900 text-sm sm:text-base">En Vivo</h3>
-          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
             {conversations.length}
           </span>
         </div>
