@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Users, Search, Filter, Download, X, Phone, MessageCircle, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { LeadDetailModal } from '../components/LeadDetailModal'
@@ -43,6 +44,8 @@ type SortField = 'name' | 'score' | 'budget' | 'createdAt' | 'lastActivity'
 type SortDirection = 'asc' | 'desc'
 
 export const Leads = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  
   // Data from Supabase
   const { leads: dbLeads, loading: leadsLoading } = useLeads()
   const { projects, loading: projectsLoading } = useProjects()
@@ -76,6 +79,19 @@ export const Leads = () => {
   
   // Modal
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null)
+  
+  // Handle ?selected=leadId from URL
+  useEffect(() => {
+    const selectedId = searchParams.get('selected')
+    if (selectedId && allLeads.length > 0) {
+      const lead = allLeads.find(l => l.id === selectedId)
+      if (lead) {
+        setSelectedLead(lead)
+        // Clear the URL param after opening
+        setSearchParams({}, { replace: true })
+      }
+    }
+  }, [searchParams, allLeads, setSearchParams])
 
   // Filter logic
   const filteredLeads = useMemo(() => {

@@ -84,6 +84,7 @@ export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
         {leads.map((lead) => (
           <div
             key={lead.id}
+            onClick={() => navigate(`/leads?selected=${lead.id}`)}
             className={`p-3 sm:p-4 rounded-xl border ${getReasonBg(lead.reason)} hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer`}
           >
             <div className="flex items-start gap-3">
