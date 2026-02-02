@@ -1,4 +1,5 @@
 import { AlertTriangle, ArrowRight, Clock, MessageSquareWarning, TrendingUp } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { AttentionLead } from '../types'
 import { Avatar } from './Avatar'
 
@@ -7,6 +8,8 @@ interface AttentionAlertsProps {
 }
 
 export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
+  const navigate = useNavigate()
+  
   const getReasonIcon = (reason: string) => {
     switch (reason) {
       case 'human_requested':
@@ -67,7 +70,10 @@ export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
             {leads.length}
           </span>
         </div>
-        <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors">
+        <button 
+          onClick={() => navigate('/leads?filter=attention')}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors"
+        >
           <span className="hidden sm:inline">Ver todos</span>
           <ArrowRight className="w-4 h-4" />
         </button>

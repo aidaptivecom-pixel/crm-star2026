@@ -1,4 +1,5 @@
 import { ArrowRight, Bot, User, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { LeadActivity } from '../types'
 import { Avatar } from './Avatar'
 
@@ -7,6 +8,8 @@ interface RecentActivityTableProps {
 }
 
 export const RecentActivityTable = ({ activities = [] }: RecentActivityTableProps) => {
+  const navigate = useNavigate()
+  
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'bg-emerald-100 text-emerald-700'
     if (score >= 60) return 'bg-amber-100 text-amber-700'
@@ -32,7 +35,10 @@ export const RecentActivityTable = ({ activities = [] }: RecentActivityTableProp
       {/* Header */}
       <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
         <h3 className="font-bold text-gray-900 text-sm sm:text-base">Actividad Reciente</h3>
-        <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors">
+        <button 
+          onClick={() => navigate('/leads')}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#D4A745] transition-colors"
+        >
           <span className="hidden sm:inline">Ver Todo</span>
           <ArrowRight className="w-4 h-4" />
         </button>

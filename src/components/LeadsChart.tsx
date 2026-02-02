@@ -40,6 +40,34 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export const LeadsChart = () => {
+  const handleDownloadCSV = () => {
+    const headers = ['Fecha', 'Total', 'Calificados']
+    const rows = CHART_DATA.map(d => [d.date, d.total, d.qualified])
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `leads-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      await navigator.share({ title: 'Leads por Día', url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      alert('Link copiado al portapapeles')
+    }
+  }
+  
+  const handleRefresh = () => {
+    window.location.reload()
+  }
+  
   return (
     <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] h-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
@@ -49,14 +77,26 @@ export const LeadsChart = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+          <button 
+            onClick={handleRefresh}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            title="Actualizar"
+          >
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm">
+          <button 
+            onClick={handleDownloadCSV}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+            title="Descargar CSV"
+          >
             <Download className="w-3 h-3" />
             <span className="hidden sm:inline">CSV</span>
           </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+          <button 
+            onClick={handleShare}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            title="Compartir"
+          >
             <Share2 className="w-4 h-4" />
           </button>
         </div>

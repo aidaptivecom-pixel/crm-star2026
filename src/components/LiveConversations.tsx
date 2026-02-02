@@ -1,4 +1,5 @@
 import { MessageCircle, ArrowRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { LiveConversation } from '../types'
 import { Avatar } from './Avatar'
 
@@ -7,6 +8,8 @@ interface LiveConversationsProps {
 }
 
 export const LiveConversations = ({ conversations = [] }: LiveConversationsProps) => {
+  const navigate = useNavigate()
+  
   const getAgentDot = (type: string) => {
     switch (type) {
       case 'emprendimientos':
@@ -31,7 +34,10 @@ export const LiveConversations = ({ conversations = [] }: LiveConversationsProps
             {conversations.length}
           </span>
         </div>
-        <button className="text-sm text-gray-500 hover:text-[#D4A745] transition-colors flex items-center gap-1">
+        <button 
+          onClick={() => navigate('/conversaciones')}
+          className="text-sm text-gray-500 hover:text-[#D4A745] transition-colors flex items-center gap-1"
+        >
           <span className="hidden sm:inline">Ver todos</span>
           <ArrowRight className="w-4 h-4" />
         </button>
