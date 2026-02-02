@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook, Type } from 'lucide-react'
+import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight, Shield, Palette, Mail, Phone, MessageCircle, Instagram, Facebook, Type, Volume2, VolumeX, Play, Lock } from 'lucide-react'
 import { usePreferences } from '../contexts/PreferencesContext'
+import { useNotifications } from '../hooks/useNotifications'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
@@ -14,10 +15,8 @@ interface TeamMember {
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
-  { id: '1', name: 'Jonathan Martinez', email: 'jonathan@star.com', role: 'admin', avatar: 'https://picsum.photos/40/40?random=100', active: true },
-  { id: '2', name: 'María García', email: 'maria@star.com', role: 'vendedor', avatar: 'https://picsum.photos/40/40?random=101', active: true },
-  { id: '3', name: 'Carlos López', email: 'carlos@star.com', role: 'vendedor', avatar: 'https://picsum.photos/40/40?random=102', active: true },
-  { id: '4', name: 'Ana Rodríguez', email: 'ana@star.com', role: 'viewer', avatar: 'https://picsum.photos/40/40?random=103', active: false },
+  { id: '1', name: 'Jony Martinez', email: 'jony@starinmobiliaria.com', role: 'admin', avatar: 'https://picsum.photos/40/40?random=100', active: true },
+  { id: '2', name: 'Matias', email: 'matias@aidaptive.com', role: 'admin', avatar: 'https://picsum.photos/40/40?random=101', active: true },
 ]
 
 const TABS: { id: Tab; label: string; shortLabel: string; icon: React.ElementType }[] = [
@@ -37,6 +36,7 @@ const FONT_SIZES = [
 
 export const Configuracion = () => {
   const { fontSize, setFontSize } = usePreferences()
+  const { soundEnabled, toggleSound, testSound, browserNotificationsEnabled } = useNotifications()
   const [activeTab, setActiveTab] = useState<Tab>('perfil')
   const [agentSettings, setAgentSettings] = useState({
     emprendimientos: { active: true, autoReply: true, workingHours: true },
@@ -115,13 +115,11 @@ export const Configuracion = () => {
               
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <img
-                    src="https://picsum.photos/80/80?random=100"
-                    alt="Profile"
-                    className="w-16 sm:w-20 h-16 sm:h-20 rounded-full object-cover border-2 border-gray-100"
-                  />
+                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-xl sm:text-2xl font-bold border-2 border-[#D4A745]/20">
+                    JM
+                  </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Jonathan Martinez</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Jony Martinez</h3>
                     <p className="text-xs sm:text-sm text-gray-500">Administrador</p>
                     <button className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#D4A745] font-medium hover:underline">
                       Cambiar foto
@@ -134,7 +132,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nombre</label>
                     <input
                       type="text"
-                      defaultValue="Jonathan"
+                      defaultValue="Jony"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                     />
                   </div>
@@ -150,7 +148,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input
                       type="email"
-                      defaultValue="jonathan@star.com"
+                      defaultValue="jony@starinmobiliaria.com"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                     />
                   </div>
@@ -158,7 +156,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                     <input
                       type="tel"
-                      defaultValue="+54 11 5555-1234"
+                      defaultValue="+54 9 11 6214-8113"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
                     />
                   </div>
@@ -202,19 +200,25 @@ export const Configuracion = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
-                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
-                  <Shield className="w-4 h-4 text-gray-400" />
-                  Seguridad
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 opacity-60">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center justify-between text-sm sm:text-base">
+                  <span className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-gray-400" />
+                    Seguridad
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                    <Lock className="w-3 h-3" />
+                    Próximamente
+                  </span>
                 </h3>
                 <div className="space-y-2 sm:space-y-3">
-                  <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <span className="text-xs sm:text-sm font-medium text-gray-700">Cambiar contraseña</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  <button disabled className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-not-allowed">
+                    <span className="text-xs sm:text-sm font-medium text-gray-400">Cambiar contraseña</span>
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
                   </button>
-                  <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <span className="text-xs sm:text-sm font-medium text-gray-700">Autenticación 2FA</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  <button disabled className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-not-allowed">
+                    <span className="text-xs sm:text-sm font-medium text-gray-400">Autenticación 2FA</span>
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
                   </button>
                 </div>
               </div>
@@ -330,10 +334,10 @@ export const Configuracion = () => {
               
               <div className="space-y-3 sm:space-y-4">
                 {[
-                  { name: 'WhatsApp Business', icon: MessageCircle, connected: true, color: 'emerald', account: '+54 11 5555-0000' },
-                  { name: 'Instagram', icon: Instagram, connected: true, color: 'pink', account: '@star_real_estate' },
+                  { name: 'WhatsApp Business', icon: MessageCircle, connected: true, color: 'emerald', account: '+54 9 11 3556-5132' },
+                  { name: 'Instagram', icon: Instagram, connected: false, color: 'pink', account: null },
                   { name: 'Facebook', icon: Facebook, connected: false, color: 'blue', account: null },
-                  { name: 'Email (SMTP)', icon: Mail, connected: true, color: 'gray', account: 'ventas@star.com' },
+                  { name: 'Email (SMTP)', icon: Mail, connected: false, color: 'gray', account: null },
                 ].map((integration) => (
                   <div key={integration.name} className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-3">
@@ -397,18 +401,79 @@ export const Configuracion = () => {
             <div className="max-w-2xl">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Notificaciones</h2>
               
+              {/* Sonido */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base flex items-center gap-2">
+                  {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-500" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
+                  Sonido
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium">Sonido de notificaciones</span>
+                      <p className="text-xs text-gray-400 mt-0.5">Reproduce un sonido cuando llega un mensaje nuevo</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={soundEnabled}
+                        onChange={toggleSound}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <button
+                    onClick={testSound}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+                  >
+                    <Play className="w-4 h-4" />
+                    Probar sonido
+                  </button>
+                </div>
+              </div>
+
+              {/* Permisos del navegador */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4 sm:mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-gray-400" />
+                  Notificaciones del navegador
+                </h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs sm:text-sm text-gray-700 font-medium">Push notifications</span>
+                    <p className="text-xs text-gray-400 mt-0.5">Muestra notificaciones aunque la pestaña esté minimizada</p>
+                  </div>
+                  {browserNotificationsEnabled ? (
+                    <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded font-medium">
+                      <Check className="w-3 h-3" />
+                      Activado
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => window.Notification?.requestPermission()}
+                      className="px-3 py-1.5 bg-[#D4A745] text-white rounded-lg text-xs font-medium hover:bg-[#c49a3d]"
+                    >
+                      Activar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Eventos */}
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4 sm:mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Eventos</h3>
                 <div className="space-y-3 sm:space-y-4">
                   {[
-                    { key: 'newLead', label: 'Nuevo lead recibido' },
-                    { key: 'leadQualified', label: 'Lead calificado' },
-                    { key: 'handoff', label: 'Derivación a humano' },
-                    { key: 'dailyReport', label: 'Reporte diario' },
-                    { key: 'weeklyReport', label: 'Reporte semanal' },
+                    { key: 'newLead', label: 'Nuevo lead recibido', desc: 'Cuando un contacto nuevo escribe' },
+                    { key: 'leadQualified', label: 'Lead calificado (score alto)', desc: 'Cuando el score supera 80' },
+                    { key: 'handoff', label: 'Derivación a humano', desc: 'Cuando el agente escala la conversación' },
                   ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-gray-700">{item.label}</span>
+                    <div key={item.key} className="flex items-center justify-between py-1">
+                      <div>
+                        <span className="text-xs sm:text-sm text-gray-700 font-medium">{item.label}</span>
+                        <p className="text-xs text-gray-400">{item.desc}</p>
+                      </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
@@ -423,27 +488,30 @@ export const Configuracion = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
-                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Canales</h3>
+              {/* Reportes - Próximamente */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 opacity-60">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base flex items-center justify-between">
+                  <span>Reportes automáticos</span>
+                  <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                    <Lock className="w-3 h-3" />
+                    Próximamente
+                  </span>
+                </h3>
                 <div className="space-y-3 sm:space-y-4">
                   {[
-                    { key: 'emailNotif', label: 'Email', icon: Mail },
-                    { key: 'pushNotif', label: 'Push (navegador)', icon: Bell },
-                    { key: 'whatsappNotif', label: 'WhatsApp', icon: Phone },
+                    { key: 'dailyReport', label: 'Reporte diario' },
+                    { key: 'weeklyReport', label: 'Reporte semanal' },
                   ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <item.icon className="w-4 h-4 text-gray-400" />
-                        <span className="text-xs sm:text-sm text-gray-700">{item.label}</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                    <div key={item.key} className="flex items-center justify-between py-1">
+                      <span className="text-xs sm:text-sm text-gray-400">{item.label}</span>
+                      <label className="relative inline-flex items-center cursor-not-allowed">
                         <input
                           type="checkbox"
-                          checked={notifications[item.key as keyof typeof notifications]}
-                          onChange={(e) => setNotifications(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                          disabled
+                          checked={false}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D4A745]"></div>
+                        <div className="w-9 h-5 bg-gray-100 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-4 after:w-4"></div>
                       </label>
                     </div>
                   ))}
@@ -554,10 +622,10 @@ export const Configuracion = () => {
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="w-12 sm:w-16 h-12 sm:h-16 bg-[#D4A745] rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Building className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                    <span className="text-white font-bold text-lg sm:text-xl">★</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">STAR Real Estate</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Star Inmobiliaria</h3>
                     <p className="text-xs sm:text-sm text-gray-500">Desarrolladora inmobiliaria</p>
                   </div>
                 </div>
@@ -567,7 +635,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nombre de la empresa</label>
                     <input
                       type="text"
-                      defaultValue="STAR Real Estate"
+                      defaultValue="Star Inmobiliaria"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
                     />
                   </div>
@@ -575,7 +643,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email general</label>
                     <input
                       type="email"
-                      defaultValue="info@star.com"
+                      defaultValue="info@starinmobiliaria.com"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
                     />
                   </div>
@@ -583,7 +651,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                     <input
                       type="tel"
-                      defaultValue="+54 11 4555-0000"
+                      defaultValue="+54 9 11 3556-5132"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
                     />
                   </div>
@@ -591,7 +659,7 @@ export const Configuracion = () => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Dirección</label>
                     <input
                       type="text"
-                      defaultValue="Av. del Libertador 1234, CABA"
+                      defaultValue="Buenos Aires, Argentina"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50"
                     />
                   </div>
