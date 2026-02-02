@@ -85,10 +85,10 @@ export const Configuracion = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex overflow-hidden h-full">
+      <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar Tabs */}
-        <div className="hidden lg:flex lg:flex-col w-56 bg-white border-r border-gray-100 p-4 flex-shrink-0 min-h-full">
-          <nav className="space-y-1">
+        <div className="hidden lg:block w-56 bg-white border-r border-gray-100 flex-shrink-0 overflow-y-auto">
+          <nav className="space-y-1 p-4 sticky top-0">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
