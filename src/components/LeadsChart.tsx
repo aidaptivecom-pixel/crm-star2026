@@ -41,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export const LeadsChart = () => {
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
+    <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] h-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-gray-900">Leads por Día</h2>
