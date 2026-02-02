@@ -74,7 +74,7 @@ export const AttentionAlerts = ({ leads = [] }: AttentionAlertsProps) => {
       </div>
 
       {/* Cards - Responsive Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 ${leads.length > 2 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 max-w-3xl'}`}>
         {leads.map((lead) => (
           <div
             key={lead.id}
