@@ -191,7 +191,8 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
           conversation_id: conversation.id,
           phone: conversation.phone,
           message: messageText,
-          lead_name: conversation.name
+          lead_name: conversation.name,
+          draft_original: draftResponse
         })
       }).catch(() => {})
 
