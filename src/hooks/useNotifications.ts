@@ -2,34 +2,17 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AppNotification } from '../types'
 
-// Sound frequencies for notification alert
+// Notification sound using audio file
+const notificationAudio = new Audio('/notification.mp3')
+notificationAudio.volume = 0.5
+
 const playNotificationSound = () => {
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    const audioContext = new AudioContextClass()
-    
-    const playTone = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      
-      oscillator.frequency.value = frequency
-      oscillator.type = 'sine'
-      
-      gainNode.gain.setValueAtTime(0, startTime)
-      gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05)
-      gainNode.gain.linearRampToValueAtTime(0, startTime + duration)
-      
-      oscillator.start(startTime)
-      oscillator.stop(startTime + duration)
-    }
-    
-    const now = audioContext.currentTime
-    playTone(880, now, 0.15)
-    playTone(1108.73, now + 0.15, 0.2)
-    
+    // Reset and play
+    notificationAudio.currentTime = 0
+    notificationAudio.play().catch(err => {
+      console.warn('Could not play notification sound:', err)
+    })
   } catch (error) {
     console.warn('Could not play notification sound:', error)
   }
