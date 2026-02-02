@@ -47,7 +47,7 @@ export function useLeads(filters?: {
         .subscribe()
 
       return () => {
-        supabase.removeChannel(channel)
+        supabase?.removeChannel(channel)
       }
     }
   }, [filters?.stage, filters?.agentType, filters?.projectId, updateLeadInState])
