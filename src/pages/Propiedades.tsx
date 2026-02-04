@@ -484,62 +484,70 @@ function PropertyDetailView({
             )}
           </div>
 
-          {/* Price & Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 p-4 bg-white rounded-xl border border-gray-100">
+          {/* Price & Actions - More prominent */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 p-5 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl shadow-lg">
             <div>
-              <p className="text-3xl font-bold text-[#D4A745]">{formatPrice(property.price, property.currency)}</p>
+              <p className="text-3xl sm:text-4xl font-bold text-white">{formatPrice(property.price, property.currency)}</p>
               {property.expenses && (
-                <p className="text-sm text-gray-500 mt-1">Expensas: ${property.expenses.toLocaleString()}</p>
+                <p className="text-sm text-gray-300 mt-1">Expensas: ${property.expenses.toLocaleString()}</p>
               )}
             </div>
             {property.zonaprop_url && (
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-all hover:scale-105 shadow-md"
                 >
                   <Send className="w-4 h-4" />
                   {linkCopied ? '¡Copiado!' : 'Copiar Link'}
                 </button>
                 <button
                   onClick={() => window.open(property.zonaprop_url!, '_blank')}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-white/10 text-white rounded-xl text-sm font-semibold hover:bg-white/20 transition-all border border-white/20"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Ver en ZonaProp
+                  ZonaProp
                 </button>
               </div>
             )}
           </div>
 
-          {/* Key Info Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {/* Key Info Cards - More visual */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             {property.rooms && (
-              <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-                <Bed className="w-6 h-6 text-[#D4A745] mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{property.rooms}</p>
-                <p className="text-xs text-gray-500">Ambientes</p>
+              <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow text-center group">
+                <div className="w-12 h-12 bg-[#D4A745]/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#D4A745]/20 transition-colors">
+                  <Bed className="w-6 h-6 text-[#D4A745]" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{property.rooms}</p>
+                <p className="text-sm text-gray-500 mt-1">Ambientes</p>
               </div>
             )}
             {property.sqm_total && (
-              <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-                <Square className="w-6 h-6 text-[#D4A745] mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{property.sqm_total}</p>
-                <p className="text-xs text-gray-500">m² totales</p>
+              <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow text-center group">
+                <div className="w-12 h-12 bg-[#D4A745]/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#D4A745]/20 transition-colors">
+                  <Square className="w-6 h-6 text-[#D4A745]" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{property.sqm_total}</p>
+                <p className="text-sm text-gray-500 mt-1">m² totales</p>
               </div>
             )}
             {property.bathrooms && (
-              <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-                <Bath className="w-6 h-6 text-[#D4A745] mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{property.bathrooms}</p>
-                <p className="text-xs text-gray-500">Baños</p>
+              <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow text-center group">
+                <div className="w-12 h-12 bg-[#D4A745]/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#D4A745]/20 transition-colors">
+                  <Bath className="w-6 h-6 text-[#D4A745]" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{property.bathrooms}</p>
+                <p className="text-sm text-gray-500 mt-1">Baños</p>
               </div>
             )}
             {property.antiquity !== null && property.antiquity !== undefined && (
-              <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-                <Calendar className="w-6 h-6 text-[#D4A745] mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-900">{property.antiquity}</p>
-                <p className="text-xs text-gray-500">Años</p>
+              <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow text-center group">
+                <div className="w-12 h-12 bg-[#D4A745]/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#D4A745]/20 transition-colors">
+                  <Calendar className="w-6 h-6 text-[#D4A745]" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{property.antiquity}</p>
+                <p className="text-sm text-gray-500 mt-1">Años</p>
               </div>
             )}
           </div>
@@ -547,97 +555,108 @@ function PropertyDetailView({
           {/* Additional Info - 3 columns */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             {/* Details */}
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-3">Detalles</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tipo</span>
-                  <span className="font-medium">{TIPO_CONFIG[property.type as PropertyType] || property.type}</span>
+            <div className="bg-white rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Home className="w-4 h-4 text-blue-600" />
                 </div>
-                <div className="flex justify-between">
+                Detalles
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                  <span className="text-gray-500">Tipo</span>
+                  <span className="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{TIPO_CONFIG[property.type as PropertyType] || property.type}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-50">
                   <span className="text-gray-500">Operación</span>
-                  <span className="font-medium capitalize">{property.operation}</span>
+                  <span className="font-semibold text-gray-900 capitalize">{property.operation}</span>
                 </div>
                 {property.sqm_covered && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
                     <span className="text-gray-500">m² cubiertos</span>
-                    <span className="font-medium">{property.sqm_covered}</span>
+                    <span className="font-semibold text-gray-900">{property.sqm_covered}</span>
                   </div>
                 )}
                 {property.floor && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
                     <span className="text-gray-500">Piso</span>
-                    <span className="font-medium">{property.floor}</span>
+                    <span className="font-semibold text-gray-900">{property.floor}</span>
                   </div>
                 )}
                 {property.orientation && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
                     <span className="text-gray-500">Orientación</span>
-                    <span className="font-medium">{property.orientation}</span>
+                    <span className="font-semibold text-gray-900">{property.orientation}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center py-2">
                   <span className="text-gray-500">Cochera</span>
-                  <span className="font-medium">{property.garage ? 'Sí' : 'No'}</span>
+                  <span className={`font-semibold px-2 py-0.5 rounded ${property.garage ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    {property.garage ? 'Sí' : 'No'}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Características + Ambientes */}
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-3">Características</h3>
-              <div className="space-y-2 text-sm mb-4">
+            <div className="bg-white rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Square className="w-4 h-4 text-purple-600" />
+                </div>
+                Características
+              </h3>
+              <div className="space-y-3 text-sm mb-4">
                 {property.antiquity !== null && property.antiquity !== undefined && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
                     <span className="text-gray-500">Antigüedad</span>
-                    <span className="font-medium">{property.antiquity} años</span>
+                    <span className="font-semibold text-gray-900">{property.antiquity} años</span>
                   </div>
                 )}
                 {property.floor && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Cantidad plantas</span>
-                    <span className="font-medium">{property.floor}</span>
-                  </div>
-                )}
-                {property.garage && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Cobertura cochera</span>
-                    <span className="font-medium">Cubierta</span>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Plantas</span>
+                    <span className="font-semibold text-gray-900">{property.floor}</span>
                   </div>
                 )}
                 {property.sqm_covered && property.sqm_total && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Sup. semicubierta</span>
-                    <span className="font-medium">{Math.max(0, property.sqm_total - property.sqm_covered)} m²</span>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Semicubierta</span>
+                    <span className="font-semibold text-gray-900">{Math.max(0, property.sqm_total - property.sqm_covered)} m²</span>
                   </div>
                 )}
                 {property.storage && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
                     <span className="text-gray-500">Baulera</span>
-                    <span className="font-medium">Sí</span>
+                    <span className="font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded">Sí</span>
                   </div>
                 )}
               </div>
               
               {/* Ambientes */}
-              <h4 className="font-medium text-gray-700 mb-2 text-sm">Ambientes</h4>
-              <div className="grid grid-cols-2 gap-1.5 text-xs">
-                {property.features && property.features.map((f) => (
-                  <div key={f} className="flex items-center gap-1.5 text-gray-600">
-                    <span className="w-1.5 h-1.5 bg-[#D4A745] rounded-full"></span>
-                    {f}
+              {property.features && property.features.length > 0 && (
+                <>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Ambientes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {property.features.map((f) => (
+                      <span key={f} className="text-xs bg-[#D4A745]/10 text-[#D4A745] px-2.5 py-1 rounded-full font-medium">
+                        {f}
+                      </span>
+                    ))}
                   </div>
-                ))}
-                {(!property.features || property.features.length === 0) && (
-                  <p className="text-gray-400 col-span-2">Sin ambientes cargados</p>
-                )}
-              </div>
+                </>
+              )}
             </div>
 
             {/* Map */}
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-3">Ubicación</h3>
-              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+            <div className="bg-white rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-green-600" />
+                </div>
+                Ubicación
+              </h3>
+              <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 shadow-inner">
                 <iframe
                   title="Ubicación"
                   width="100%"
@@ -649,8 +668,8 @@ function PropertyDetailView({
                   )}&zoom=15`}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
+              <p className="text-sm text-gray-600 mt-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-gray-400" />
                 {property.address}
               </p>
             </div>
