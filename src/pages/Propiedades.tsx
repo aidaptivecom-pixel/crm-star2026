@@ -583,10 +583,10 @@ function PropertyDetailView({
               </div>
             </div>
 
-            {/* Características */}
+            {/* Características + Ambientes */}
             <div className="bg-white rounded-xl p-4 border border-gray-100">
               <h3 className="font-semibold text-gray-900 mb-3">Características</h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-sm mb-4">
                 {property.antiquity !== null && property.antiquity !== undefined && (
                   <div className="flex justify-between">
                     <span className="text-gray-500">Antigüedad</span>
@@ -618,14 +618,20 @@ function PropertyDetailView({
                   </div>
                 )}
               </div>
-              {/* Feature tags */}
-              {property.features && property.features.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
-                  {property.features.map((f) => (
-                    <span key={f} className="text-xs bg-[#D4A745]/10 text-[#D4A745] px-2 py-1 rounded-full font-medium">{f}</span>
-                  ))}
-                </div>
-              )}
+              
+              {/* Ambientes */}
+              <h4 className="font-medium text-gray-700 mb-2 text-sm">Ambientes</h4>
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {property.features && property.features.map((f) => (
+                  <div key={f} className="flex items-center gap-1.5 text-gray-600">
+                    <span className="w-1.5 h-1.5 bg-[#D4A745] rounded-full"></span>
+                    {f}
+                  </div>
+                ))}
+                {(!property.features || property.features.length === 0) && (
+                  <p className="text-gray-400 col-span-2">Sin ambientes cargados</p>
+                )}
+              </div>
             </div>
 
             {/* Map */}
