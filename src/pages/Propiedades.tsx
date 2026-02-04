@@ -387,6 +387,8 @@ function PropertyDetailModal({
   onSendLink: (property: Property, e: React.MouseEvent) => void
   onOpenZonaProp: (url: string | null, e: React.MouseEvent) => void
 }) {
+  const [showFullDescription, setShowFullDescription] = useState(false)
+  
   const formatPrice = (precio: number | null, moneda: string | null) => {
     if (!precio) return 'Consultar'
     if (moneda === 'USD') return `USD ${precio.toLocaleString()}`
@@ -398,116 +400,142 @@ function PropertyDetailModal({
     return 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&auto=format&fit=crop'
   }
 
+  const truncateDescription = (text: string | null, maxLength: number = 150) => {
+    if (!text) return ''
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength).trim() + '...'
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Image Gallery */}
-        <div className="relative h-48 sm:h-64">
+      <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Header with Image */}
+        <div className="relative h-44 sm:h-52">
           <img src={getMainPhoto(property)} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <button
             onClick={onClose}
-            className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-white/80 hover:bg-white rounded-full"
+            className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
-            <span className={`text-xs font-medium px-2 py-1 rounded ${STATUS_CONFIG[property.status as PropertyStatus]?.bg || 'bg-gray-100'} ${STATUS_CONFIG[property.status as PropertyStatus]?.color || 'text-gray-700'}`}>
+          <div className="absolute top-3 left-3">
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_CONFIG[property.status as PropertyStatus]?.bg || 'bg-gray-100'} ${STATUS_CONFIG[property.status as PropertyStatus]?.color || 'text-gray-700'}`}>
               {STATUS_CONFIG[property.status as PropertyStatus]?.label || property.status}
             </span>
           </div>
-          <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
-            <p className="text-xl sm:text-2xl font-bold text-white drop-shadow-lg">{formatPrice(property.price, property.currency)}</p>
-            {property.expenses && (
-              <p className="text-sm text-white/90 drop-shadow">Expensas: ${property.expenses.toLocaleString()}</p>
-            )}
+          {/* Price overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <p className="text-2xl font-bold text-white">{formatPrice(property.price, property.currency)}</p>
+            <div className="flex items-center gap-3 text-white/90 text-sm mt-1">
+              {property.expenses && <span>Exp: ${property.expenses.toLocaleString()}</span>}
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                {property.neighborhood}, {property.city}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-12rem)] sm:max-h-[calc(90vh-16rem)]">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{property.address}</h2>
-          <div className="flex items-center gap-1 text-gray-500 text-sm mb-4">
-            <MapPin className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{property.neighborhood}, {property.city}</span>
+        <div className="p-4 sm:p-5 overflow-y-auto max-h-[calc(95vh-11rem)] sm:max-h-[calc(90vh-13rem)]">
+          {/* Address */}
+          <h2 className="text-lg font-bold text-gray-900 mb-4">{property.address}</h2>
+
+          {/* Quick Stats - Compact */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {property.rooms && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm">
+                <Bed className="w-4 h-4 text-gray-500" />
+                <span className="font-medium">{property.rooms}</span> amb
+              </span>
+            )}
+            {property.sqm_total && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm">
+                <Square className="w-4 h-4 text-gray-500" />
+                <span className="font-medium">{property.sqm_total}</span> m²
+              </span>
+            )}
+            {property.bathrooms && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm">
+                <Bath className="w-4 h-4 text-gray-500" />
+                <span className="font-medium">{property.bathrooms}</span> baños
+              </span>
+            )}
+            {property.antiquity !== null && property.antiquity !== undefined && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm">
+                <span className="font-medium">{property.antiquity}</span> años
+              </span>
+            )}
+            {property.garage && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm">
+                🚗 Cochera
+              </span>
+            )}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <p className="text-base sm:text-lg font-bold text-gray-900">{property.rooms || '-'}</p>
-              <p className="text-xs text-gray-500">Ambientes</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <p className="text-base sm:text-lg font-bold text-gray-900">{property.sqm_total || '-'}m²</p>
-              <p className="text-xs text-gray-500">Superficie</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <p className="text-base sm:text-lg font-bold text-gray-900">{property.bathrooms || '-'}</p>
-              <p className="text-xs text-gray-500">Baños</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <p className="text-base sm:text-lg font-bold text-gray-900">{property.antiquity || '-'}</p>
-              <p className="text-xs text-gray-500">Antigüedad</p>
-            </div>
-          </div>
-
-          {/* Description */}
-          {property.description && (
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Descripción</h3>
-              <p className="text-sm text-gray-600">{property.description}</p>
-            </div>
-          )}
-
-          {/* Features */}
+          {/* Features - Inline */}
           {property.features && property.features.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Características</h3>
-              <div className="flex flex-wrap gap-2">
-                {property.features.map((f) => (
-                  <span key={f} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{f}</span>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {property.features.map((f) => (
+                <span key={f} className="text-xs bg-[#D4A745]/10 text-[#D4A745] px-2 py-1 rounded-full font-medium">{f}</span>
+              ))}
             </div>
           )}
 
-          {/* ZonaProp Actions */}
+          {/* Description - Truncated */}
+          {property.description && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {showFullDescription ? property.description : truncateDescription(property.description)}
+              </p>
+              {property.description.length > 150 && (
+                <button 
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  className="text-sm text-[#D4A745] font-medium mt-1 hover:underline"
+                >
+                  {showFullDescription ? 'Ver menos' : 'Ver más'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Photo Gallery - Compact */}
+          {property.photos && property.photos.length > 1 && (
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              {property.photos.slice(0, 5).map((photo, idx) => (
+                <img 
+                  key={idx} 
+                  src={photo} 
+                  alt={`Foto ${idx + 1}`} 
+                  className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 flex-shrink-0"
+                  onClick={() => window.open(photo, '_blank')}
+                />
+              ))}
+              {property.photos.length > 5 && (
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs text-gray-500 font-medium">+{property.photos.length - 5}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons - Fixed at bottom */}
           {property.zonaprop_url && (
-            <div className="flex gap-2 mb-6">
+            <div className="flex gap-2 pt-2 border-t border-gray-100">
               <button
                 onClick={(e) => onSendLink(property, e)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] transition-colors"
               >
                 <Send className="w-4 h-4" />
                 Copiar Link
               </button>
               <button
                 onClick={(e) => onOpenZonaProp(property.zonaprop_url, e)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 Ver en ZonaProp
               </button>
-            </div>
-          )}
-
-          {/* Photo Gallery */}
-          {property.photos && property.photos.length > 1 && (
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                Fotos ({property.photos.length})
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                {property.photos.slice(0, 6).map((photo, idx) => (
-                  <img 
-                    key={idx} 
-                    src={photo} 
-                    alt={`Foto ${idx + 1}`} 
-                    className="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-80"
-                    onClick={() => window.open(photo, '_blank')}
-                  />
-                ))}
-              </div>
             </div>
           )}
         </div>
