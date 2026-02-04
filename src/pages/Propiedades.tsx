@@ -437,10 +437,10 @@ function PropertyDetailView({
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto p-4 sm:p-6">
-          {/* Photo Gallery */}
+        <div className="p-4 sm:p-6">
+          {/* Photo Gallery - Full Width Carousel */}
           <div className="mb-6">
-            <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-gray-100 mb-3">
+            <div className="relative aspect-[21/9] rounded-xl overflow-hidden bg-gray-100 mb-3">
               <img 
                 src={photos[activePhotoIndex]} 
                 alt={property.address}
@@ -450,30 +450,31 @@ function PropertyDetailView({
                 <>
                   <button 
                     onClick={() => setActivePhotoIndex(i => i > 0 ? i - 1 : photos.length - 1)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-transform hover:scale-105"
                   >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-6 h-6" />
                   </button>
                   <button 
                     onClick={() => setActivePhotoIndex(i => i < photos.length - 1 ? i + 1 : 0)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg rotate-180"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg rotate-180 transition-transform hover:scale-105"
                   >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-6 h-6" />
                   </button>
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 rounded-full text-white text-sm">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/70 rounded-full text-white text-sm font-medium">
                     {activePhotoIndex + 1} / {photos.length}
                   </div>
                 </>
               )}
             </div>
+            {/* Thumbnails */}
             {photos.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 px-1">
                 {photos.map((photo, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActivePhotoIndex(idx)}
-                    className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-colors ${
-                      idx === activePhotoIndex ? 'border-[#D4A745]' : 'border-transparent hover:border-gray-300'
+                    className={`flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      idx === activePhotoIndex ? 'border-[#D4A745] ring-2 ring-[#D4A745]/30' : 'border-transparent hover:border-gray-300 opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={photo} alt="" className="w-full h-full object-cover" />
