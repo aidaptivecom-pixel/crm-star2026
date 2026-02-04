@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Home, MapPin, Bed, Bath, Square, Eye, Search, Plus, LayoutGrid, List, X, ExternalLink, Send, Loader2, Image as ImageIcon } from 'lucide-react'
+import { Home, MapPin, Bed, Bath, Square, Eye, Search, Plus, LayoutGrid, List, X, ExternalLink, Send, Loader2 } from 'lucide-react'
 import { useProperties, Property, PropertyInput } from '../hooks/useProperties'
 
 type PropertyStatus = 'disponible' | 'reservada' | 'vendida'
