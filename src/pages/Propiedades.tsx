@@ -544,8 +544,8 @@ function PropertyDetailView({
             )}
           </div>
 
-          {/* Additional Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* Additional Info - 3 columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             {/* Details */}
             <div className="bg-white rounded-xl p-4 border border-gray-100">
               <h3 className="font-semibold text-gray-900 mb-3">Detalles</h3>
@@ -583,18 +583,70 @@ function PropertyDetailView({
               </div>
             </div>
 
-            {/* Features */}
+            {/* Características */}
             <div className="bg-white rounded-xl p-4 border border-gray-100">
               <h3 className="font-semibold text-gray-900 mb-3">Características</h3>
-              {property.features && property.features.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-2 text-sm">
+                {property.antiquity !== null && property.antiquity !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Antigüedad</span>
+                    <span className="font-medium">{property.antiquity} años</span>
+                  </div>
+                )}
+                {property.floor && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Cantidad plantas</span>
+                    <span className="font-medium">{property.floor}</span>
+                  </div>
+                )}
+                {property.garage && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Cobertura cochera</span>
+                    <span className="font-medium">Cubierta</span>
+                  </div>
+                )}
+                {property.sqm_covered && property.sqm_total && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Sup. semicubierta</span>
+                    <span className="font-medium">{Math.max(0, property.sqm_total - property.sqm_covered)} m²</span>
+                  </div>
+                )}
+                {property.storage && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Baulera</span>
+                    <span className="font-medium">Sí</span>
+                  </div>
+                )}
+              </div>
+              {/* Feature tags */}
+              {property.features && property.features.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
                   {property.features.map((f) => (
-                    <span key={f} className="text-sm bg-[#D4A745]/10 text-[#D4A745] px-3 py-1.5 rounded-full font-medium">{f}</span>
+                    <span key={f} className="text-xs bg-[#D4A745]/10 text-[#D4A745] px-2 py-1 rounded-full font-medium">{f}</span>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-gray-400">Sin características cargadas</p>
               )}
+            </div>
+
+            {/* Map */}
+            <div className="bg-white rounded-xl p-4 border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-3">Ubicación</h3>
+              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <iframe
+                  title="Ubicación"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(
+                    `${property.address}, ${property.neighborhood || ''}, ${property.city || 'Buenos Aires'}, Argentina`
+                  )}&zoom=15`}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {property.address}
+              </p>
             </div>
           </div>
 
