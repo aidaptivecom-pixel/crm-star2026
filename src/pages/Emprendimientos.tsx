@@ -920,10 +920,24 @@ function ProjectFormModal({
     setSaveError(null)
 
     const input = formDataToInput(formData)
-    const success = await onSave(input, project?.id)
-
-    if (!success) {
-      setSaveError('Error al guardar. Revisá los datos e intentá de nuevo.')
+    
+    // If creating, try with slug, and if duplicate, add suffix
+    if (!isEditing) {
+      const success = await onSave(input, undefined)
+      if (!success) {
+        // Retry with timestamp suffix (likely duplicate slug)
+        const slugSuffix = `-${Date.now().toString(36).slice(-4)}`
+        input.slug = (input.slug || '') + slugSuffix
+        const retrySuccess = await onSave(input, undefined)
+        if (!retrySuccess) {
+          setSaveError('Error al guardar. Es posible que este emprendimiento ya exista.')
+        }
+      }
+    } else {
+      const success = await onSave(input, project?.id)
+      if (!success) {
+        setSaveError('Error al guardar. Revisá los datos e intentá de nuevo.')
+      }
     }
     setSaving(false)
   }
