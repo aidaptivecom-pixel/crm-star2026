@@ -161,20 +161,16 @@ export async function extractProjectDataWithClaude(
 
 /**
  * Full brochure processing pipeline:
- * 1. Upload PDF to storage
- * 2. Extract text with pdf.js
- * 3. Send to Claude for data extraction
- * Returns extracted data + brochure URL
+ * 1. Extract text with pdf.js
+ * 2. Send to Claude for data extraction
+ * 3. (Optional) Upload PDF to storage if RLS permits
+ * Returns extracted data + brochure URL (if uploaded)
  */
 export async function processBrochure(
   file: File,
   onProgress?: (step: string) => void
 ): Promise<{ data: BrochureExtractionResult; brochureUrl: string }> {
-  // Step 1: Upload to storage
-  onProgress?.('Subiendo PDF a storage...')
-  const brochureUrl = await uploadBrochureToStorage(file)
-
-  // Step 2: Extract text
+  // Step 1: Extract text
   onProgress?.('Extrayendo texto del PDF...')
   const pdfText = await extractTextFromPDF(file)
 
@@ -184,9 +180,19 @@ export async function processBrochure(
     )
   }
 
-  // Step 3: Send to Claude
+  // Step 2: Send to Claude
   onProgress?.('Analizando con IA...')
   const data = await extractProjectDataWithClaude(pdfText)
+
+  // Step 3: Try to upload PDF (non-blocking)
+  let brochureUrl = ''
+  try {
+    onProgress?.('Guardando PDF...')
+    brochureUrl = await uploadBrochureToStorage(file)
+  } catch (err) {
+    console.warn('No se pudo subir el PDF a storage (RLS):', err)
+    // Not critical — extraction already succeeded
+  }
 
   return { data, brochureUrl }
 }
