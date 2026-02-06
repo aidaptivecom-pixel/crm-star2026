@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Calculator, MapPin, Phone, Mail, Calendar, User, Home, Clock, CheckCircle, XCircle, AlertCircle, Plus, FileText, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight } from 'lucide-react'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
