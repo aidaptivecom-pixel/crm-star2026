@@ -168,6 +168,17 @@ export const Tasaciones = () => {
     }
   }
 
+  // Capitalizar y limpiar texto (departamento → Departamento, muy-bueno → Muy Bueno)
+  const formatText = (text?: string | null) => {
+    if (!text) return null
+    return text
+      .replace(/-/g, ' ')  // guiones a espacios
+      .replace(/_/g, ' ')  // underscores a espacios
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
   const formatPrice = (min?: number | null, max?: number | null) => {
     if (min && max && min !== max) return `USD ${(min/1000).toFixed(0)}k - ${(max/1000).toFixed(0)}k`
     if (max) return `USD ${max.toLocaleString()}`
@@ -373,7 +384,7 @@ export const Tasaciones = () => {
                     {/* Tipo + características */}
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Building className="w-4 h-4 text-gray-400" />
-                      <span>{appraisal.property_type || 'Propiedad'}</span>
+                      <span>{formatText(appraisal.property_type) || 'Propiedad'}</span>
                       <span>·</span>
                       <span>{appraisal.ambientes || '?'} amb</span>
                       <span>·</span>
@@ -382,7 +393,7 @@ export const Tasaciones = () => {
                         <>
                           <span>·</span>
                           <span className={appraisal.condition.toLowerCase().includes('reciclar') ? 'text-orange-600 font-medium' : ''}>
-                            {appraisal.condition}
+                            {formatText(appraisal.condition)}
                           </span>
                         </>
                       )}
@@ -589,7 +600,7 @@ export const Tasaciones = () => {
                       <div className="bg-gray-50 rounded-xl p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.property_type || '-'}</p>
+                            <p className="text-lg font-bold text-gray-900">{formatText(selectedAppraisal.property_type) || '-'}</p>
                             <p className="text-xs text-gray-500">Tipo</p>
                           </div>
                           <div>
@@ -612,7 +623,7 @@ export const Tasaciones = () => {
                                 ? 'bg-orange-100 text-orange-700' 
                                 : 'bg-gray-200 text-gray-700'
                             }`}>
-                              Estado: {selectedAppraisal.condition}
+                              Estado: {formatText(selectedAppraisal.condition)}
                             </span>
                             {selectedAppraisal.has_garage && (
                               <span className="ml-2 text-sm px-2 py-1 rounded bg-blue-100 text-blue-700">
