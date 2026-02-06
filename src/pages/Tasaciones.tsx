@@ -523,15 +523,19 @@ export const Tasaciones = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
-                            {config.label}
-                          </span>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
                             {isWeb ? '🌐 Web' : '📋 Formal'}
                           </span>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color}`}>
-                            {scoreClass.emoji} Score: {score}
-                          </span>
+                          {config.label !== 'Web' && (
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
+                              {config.label}
+                            </span>
+                          )}
+                          {score > 0 && (
+                            <span className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color}`}>
+                              {scoreClass.emoji} Score: {score}
+                            </span>
+                          )}
                         </div>
                         <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                           {selectedAppraisal.address || selectedAppraisal.neighborhood || 'Tasación'}
