@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Calculator, MapPin, Phone, Mail, Calendar, User, Home, Clock, CheckCircle, XCircle, AlertCircle, Plus, ChevronRight, FileText, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, Calendar, User, Home, Clock, CheckCircle, XCircle, AlertCircle, Plus, FileText, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight } from 'lucide-react'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
@@ -89,21 +89,8 @@ const KANBAN_COLUMNS: { id: KanbanColumn; label: string; icon: string; statuses:
   { id: 'cerradas', label: 'Cerradas', icon: '📤', statuses: ['delivered', 'cancelled'] },
 ]
 
-const STATUS_ICONS: Record<AppraisalStatus, React.ElementType> = {
-  web_estimate: Clock,
-  visit_scheduled: Calendar,
-  visit_completed: CheckCircle,
-  processing: Loader2,
-  draft: FileText,
-  pending_review: AlertCircle,
-  approved_by_admin: CheckCircle,
-  signed: CheckCircle,
-  delivered: CheckCircle,
-  cancelled: XCircle,
-}
-
 export const Tasaciones = () => {
-  const { appraisals, loading, error, stats, refetch } = useAppraisals()
+  const { appraisals, loading, error, refetch } = useAppraisals()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterColumn, setFilterColumn] = useState<KanbanColumn | 'todas'>('todas')
   const [filterType, setFilterType] = useState<'todas' | 'market_valuation' | 'formal_appraisal'>('todas')
@@ -133,7 +120,7 @@ export const Tasaciones = () => {
       const query = searchQuery.toLowerCase()
       result = result.filter(a => 
         (a.client_name || '').toLowerCase().includes(query) ||
-        (a.property_address || '').toLowerCase().includes(query) ||
+        (a.address || '').toLowerCase().includes(query) ||
         (a.neighborhood || '').toLowerCase().includes(query) ||
         (a.client_phone || '').includes(query)
       )
@@ -348,9 +335,8 @@ export const Tasaciones = () => {
             {filteredAppraisals.map((appraisal) => {
               const status = appraisal.status as AppraisalStatus
               const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
-              const StatusIcon = STATUS_ICONS[status] || Clock
               const priceRange = formatPrice(appraisal.estimated_value_min, appraisal.estimated_value_max)
-              const { score, factors } = calculatePropertyScore(appraisal)
+              const { score } = calculatePropertyScore(appraisal)
               const scoreClass = getScoreClassification(score)
               const isWeb = appraisal.type === 'market_valuation'
               
@@ -365,7 +351,7 @@ export const Tasaciones = () => {
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate group-hover:text-[#D4A745] transition-colors">
-                          {appraisal.property_address || appraisal.neighborhood || 'Sin dirección'}
+                          {appraisal.address || appraisal.neighborhood || 'Sin dirección'}
                         </h3>
                         <div className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
                           <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
@@ -491,7 +477,6 @@ export const Tasaciones = () => {
             {(() => {
               const status = selectedAppraisal.status as AppraisalStatus
               const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
-              const StatusIcon = STATUS_ICONS[status] || Clock
               const priceRange = formatPrice(selectedAppraisal.estimated_value_min, selectedAppraisal.estimated_value_max)
               const { score, factors } = calculatePropertyScore(selectedAppraisal)
               const scoreClass = getScoreClassification(score)
@@ -515,7 +500,7 @@ export const Tasaciones = () => {
                           </span>
                         </div>
                         <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                          {selectedAppraisal.property_address || selectedAppraisal.neighborhood || 'Tasación'}
+                          {selectedAppraisal.address || selectedAppraisal.neighborhood || 'Tasación'}
                         </h2>
                         <p className="text-sm text-gray-500 mt-1">
                           {selectedAppraisal.neighborhood}, {selectedAppraisal.city || 'CABA'}
@@ -788,7 +773,7 @@ export const Tasaciones = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
           <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
-            <p className="text-sm text-gray-500 mb-4">{selectedAppraisal.property_address || selectedAppraisal.neighborhood}</p>
+            <p className="text-sm text-gray-500 mb-4">{selectedAppraisal.address || selectedAppraisal.neighborhood}</p>
             <input
               type="datetime-local"
               value={scheduleDate}
