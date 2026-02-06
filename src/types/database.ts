@@ -196,6 +196,7 @@ export interface Database {
         Row: {
           id: string
           lead_id: string | null
+          type: 'market_valuation' | 'formal_appraisal' | null
           property_type: string | null
           address: string | null
           neighborhood: string | null
@@ -204,14 +205,28 @@ export interface Database {
           rooms: number | null
           bathrooms: number | null
           size_m2: number | null
+          building_age: number | null
+          condition: string | null
           has_garage: boolean | null
           has_storage: boolean | null
           amenities: Json | null
           estimated_value: number | null
+          estimated_value_min: number | null
+          estimated_value_max: number | null
           estimated_currency: string | null
-          status: 'pending' | 'in_progress' | 'completed' | null
+          price_per_m2: number | null
+          zone_average_price: number | null
+          comparables_used: Json | null
+          status: 'web_estimate' | 'visit_scheduled' | 'visit_completed' | 'processing' | 'draft' | 'pending_review' | 'approved_by_admin' | 'signed' | 'delivered' | 'cancelled' | null
+          client_name: string | null
+          client_phone: string | null
+          client_email: string | null
           notes: string | null
           photos: Json | null
+          pdf_url: string | null
+          assigned_agent_id: string | null
+          visit_scheduled_at: string | null
+          visited_at: string | null
           created_at: string | null
           completed_at: string | null
           updated_at: string | null
