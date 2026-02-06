@@ -358,13 +358,15 @@ export const Tasaciones = () => {
                           <span className="truncate">{appraisal.neighborhood || appraisal.city || 'CABA'}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
-                          {config.label}
-                        </span>
+                      <div className="flex items-center gap-1">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
                           {isWeb ? '🌐 Web' : '📋 Formal'}
                         </span>
+                        {config.label !== 'Web' && (
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
+                            {config.label}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -391,19 +393,26 @@ export const Tasaciones = () => {
                   <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
                     <div>
                       {priceRange ? (
-                        <p className="text-lg font-bold text-[#D4A745]">{priceRange}</p>
+                        <>
+                          <p className="text-lg font-bold text-[#D4A745]">{priceRange}</p>
+                          {appraisal.price_per_m2 && (
+                            <p className="text-xs text-gray-500">USD {appraisal.price_per_m2.toLocaleString()}/m²</p>
+                          )}
+                        </>
                       ) : (
-                        <p className="text-sm text-gray-400">Sin valuación</p>
-                      )}
-                      {appraisal.price_per_m2 && (
-                        <p className="text-xs text-gray-500">USD {appraisal.price_per_m2.toLocaleString()}/m²</p>
+                        <p className="text-sm text-gray-400 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          Pendiente de valuación
+                        </p>
                       )}
                     </div>
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${scoreClass.bgColor}`}>
-                      <TrendingUp className={`w-4 h-4 ${scoreClass.color}`} />
-                      <span className={`text-sm font-bold ${scoreClass.color}`}>{score}</span>
-                      <span className="text-base">{scoreClass.emoji}</span>
-                    </div>
+                    {score > 0 && (
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${scoreClass.bgColor}`}>
+                        <TrendingUp className={`w-4 h-4 ${scoreClass.color}`} />
+                        <span className={`text-sm font-bold ${scoreClass.color}`}>{score}</span>
+                        <span className="text-base">{scoreClass.emoji}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Cliente */}
@@ -414,7 +423,9 @@ export const Tasaciones = () => {
                           <User className="w-4 h-4 text-gray-500" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{appraisal.client_name || 'Sin nombre'}</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {appraisal.client_name || (appraisal.client_phone ? appraisal.client_phone : 'Lead anónimo')}
+                          </p>
                           <p className="text-xs text-gray-500">{getTimeAgo(appraisal.created_at)}</p>
                         </div>
                       </div>
@@ -429,6 +440,18 @@ export const Tasaciones = () => {
 
                   {/* Acciones */}
                   <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2">
+                    {status === 'web_estimate' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedId(appraisal.id)
+                          setShowScheduleModal(true)
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-white bg-[#D4A745] hover:bg-[#c49a3d] rounded-lg transition-colors font-medium"
+                      >
+                        📅 Agendar
+                      </button>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
