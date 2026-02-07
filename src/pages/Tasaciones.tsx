@@ -99,6 +99,7 @@ export const Tasaciones = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewModal, setShowNewModal] = useState(false)
   const [estimating, setEstimating] = useState(false)
+  const [estimateType, setEstimateType] = useState<'express' | 'formal'>('express')
   const [newForm, setNewForm] = useState({
     neighborhood: '',
     property_type: 'departamentos',
@@ -118,7 +119,7 @@ export const Tasaciones = () => {
     client_email: '',
   })
 
-  const SCRAPER_URL = '/api'
+  const SCRAPER_URL = 'http://135.181.24.249:3050'
 
   const handleNewEstimate = async () => {
     const totalArea = newForm.total_area_m2 || newForm.covered_area_m2
@@ -149,7 +150,7 @@ export const Tasaciones = () => {
         client_phone: newForm.client_phone || null,
         client_email: newForm.client_email || null,
         status: 'web_estimate' as const,
-        type: 'market_valuation' as const,
+        type: estimateType === 'formal' ? 'formal_appraisal' as const : 'market_valuation' as const,
         city: 'CABA',
       }
       
@@ -162,8 +163,9 @@ export const Tasaciones = () => {
       if (insertError) throw insertError
       const appraisalId = (appraisal as any)?.id
 
-      // 2. Call estimate API
-      const resp = await fetch(`${SCRAPER_URL}/estimate`, {
+      // 2. Call estimate API (express or formal)
+      const endpoint = estimateType === 'formal' ? '/estimate-formal' : '/estimate'
+      const resp = await fetch(`${SCRAPER_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,16 +188,21 @@ export const Tasaciones = () => {
 
       if (result.success && appraisalId) {
         // 3. Update appraisal with estimation
+        const updateData: any = {
+          estimated_value_min: result.estimation.min,
+          estimated_value_max: result.estimation.max,
+          estimated_value: result.estimation.value,
+          price_per_m2: result.estimation.price_per_m2,
+          zone_average_price: result.estimation.price_per_m2_base || result.estimation.price_per_m2,
+          comparables_used: result.comparables_used || result.ai_analysis?.details,
+        }
+        if (result.ai_analysis) {
+          updateData.ai_analysis = result.ai_analysis
+          updateData.status = 'processing'
+        }
         await (supabase as any)
           .from('appraisals')
-          .update({
-            estimated_value_min: result.estimation.min,
-            estimated_value_max: result.estimation.max,
-            estimated_value: result.estimation.value,
-            price_per_m2: result.estimation.price_per_m2,
-            zone_average_price: result.estimation.price_per_m2,
-            comparables_used: result.comparables_used,
-          })
+          .update(updateData)
           .eq('id', appraisalId)
       }
 
@@ -786,6 +793,47 @@ export const Tasaciones = () => {
                       </div>
                     )}
 
+                    {/* AI Analysis (Formal) */}
+                    {(selectedAppraisal as any).ai_analysis && (
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          🔍 Análisis IA de Comparables
+                        </h3>
+                        <div className="space-y-2">
+                          {((selectedAppraisal as any).ai_analysis?.details || []).map((det: any, idx: number) => (
+                            <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm font-medium text-gray-900">{det.address}</span>
+                                <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                                  det.ai_score >= 8 ? 'bg-green-100 text-green-700' :
+                                  det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' :
+                                  det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span>USD {det.price_usd?.toLocaleString()}</span>
+                                <span>{det.total_area_m2}m²</span>
+                                <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
+                              </div>
+                              {det.highlights && det.highlights.length > 0 && (
+                                <p className="text-xs text-green-600 mt-1">✅ {det.highlights.join(', ')}</p>
+                              )}
+                              {det.issues && det.issues.length > 0 && (
+                                <p className="text-xs text-orange-600 mt-0.5">⚠️ {det.issues.join(', ')}</p>
+                              )}
+                            </div>
+                          ))}
+                          <p className="text-xs text-gray-400 text-right">
+                            Costo IA: USD {(selectedAppraisal as any).ai_analysis?.estimated_cost_usd || '0.00'} · 
+                            {(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} analizados con fotos
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Timeline */}
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -962,7 +1010,35 @@ export const Tasaciones = () => {
       {showNewModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Nueva Tasación Express</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">📋 Nueva Tasación</h3>
+            
+            {/* Express / Formal Toggle */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
+              <button
+                type="button"
+                onClick={() => setEstimateType('express')}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  estimateType === 'express' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ⚡ Express
+              </button>
+              <button
+                type="button"
+                onClick={() => setEstimateType('formal')}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  estimateType === 'formal' ? 'bg-[#D4A745] text-white shadow' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🔍 Formal (IA)
+              </button>
+            </div>
+            {estimateType === 'formal' && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800">
+                <p className="font-medium">🔍 Tasación Formal con IA</p>
+                <p className="mt-1">Analiza fotos de comparables con GPT-4o mini para detectar estado real. Más precisa. ~15 seg, costo ~USD 0.01</p>
+              </div>
+            )}
             
             <div className="space-y-3">
               <div>
@@ -1205,7 +1281,9 @@ export const Tasaciones = () => {
 
             {estimating && (
               <p className="text-xs text-center text-gray-500 mt-3">
-                Buscando comparables en ZonaProp... puede tardar hasta 30 segundos.
+                {estimateType === 'formal' 
+                  ? '🔍 Analizando fotos de comparables con IA... ~15 segundos.'
+                  : 'Buscando comparables en ZonaProp... puede tardar hasta 30 segundos.'}
               </p>
             )}
           </div>
