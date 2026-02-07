@@ -97,6 +97,89 @@ export const Tasaciones = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [scheduleDate, setScheduleDate] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showNewModal, setShowNewModal] = useState(false)
+  const [estimating, setEstimating] = useState(false)
+  const [newForm, setNewForm] = useState({
+    neighborhood: '',
+    property_type: 'departamentos',
+    total_area_m2: '',
+    rooms: '',
+    address: '',
+    client_name: '',
+    client_phone: '',
+    client_email: '',
+  })
+
+  const SCRAPER_URL = 'http://135.181.24.249:3050'
+
+  const handleNewEstimate = async () => {
+    if (!newForm.neighborhood || !newForm.total_area_m2) return
+    setEstimating(true)
+    try {
+      // 1. Create appraisal in Supabase first
+      const { supabase } = await import('../lib/supabase')
+      if (!supabase) throw new Error('Supabase not configured')
+      
+      const { data: appraisal, error: insertError } = await supabase
+        .from('appraisals')
+        .insert({
+          neighborhood: newForm.neighborhood,
+          property_type: newForm.property_type === 'departamentos' ? 'departamento' : newForm.property_type.replace(/s$/, ''),
+          address: newForm.address || `${newForm.neighborhood}, CABA`,
+          size_m2: parseInt(newForm.total_area_m2),
+          rooms: newForm.rooms ? parseInt(newForm.rooms) : null,
+          client_name: newForm.client_name || null,
+          client_phone: newForm.client_phone || null,
+          client_email: newForm.client_email || null,
+          status: 'web_estimate',
+          type: 'market_valuation',
+          city: 'CABA',
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      // 2. Call estimate API
+      const resp = await fetch(`${SCRAPER_URL}/estimate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          neighborhood: newForm.neighborhood,
+          property_type: newForm.property_type,
+          total_area_m2: parseInt(newForm.total_area_m2),
+          rooms: newForm.rooms ? parseInt(newForm.rooms) : undefined,
+          appraisal_id: appraisal.id,
+        }),
+      })
+      const result = await resp.json()
+
+      if (result.success) {
+        // 3. Update appraisal with estimation
+        await supabase
+          .from('appraisals')
+          .update({
+            estimated_value_min: result.estimation.min,
+            estimated_value_max: result.estimation.max,
+            comparables_used: result.comparables_used,
+          })
+          .eq('id', appraisal.id)
+      }
+
+      // 4. Refresh list and close modal
+      refetch()
+      setShowNewModal(false)
+      setNewForm({
+        neighborhood: '', property_type: 'departamentos', total_area_m2: '',
+        rooms: '', address: '', client_name: '', client_phone: '', client_email: '',
+      })
+    } catch (err) {
+      console.error('Error creating estimate:', err)
+      alert('Error al crear tasación: ' + (err as Error).message)
+    } finally {
+      setEstimating(false)
+    }
+  }
 
   // Filtrar tasaciones
   const filteredAppraisals = useMemo(() => {
@@ -256,7 +339,10 @@ export const Tasaciones = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50"
             />
-            <button className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+            <button 
+              onClick={() => setShowNewModal(true)}
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]"
+            >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Nueva</span>
             </button>
@@ -833,6 +919,157 @@ export const Tasaciones = () => {
                 Confirmar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Nueva Tasación */}
+      {showNewModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Nueva Tasación Express</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Barrio *</label>
+                <select
+                  value={newForm.neighborhood}
+                  onChange={(e) => setNewForm(f => ({ ...f, neighborhood: e.target.value }))}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="">Seleccionar barrio</option>
+                  <option value="Recoleta">Recoleta</option>
+                  <option value="Belgrano">Belgrano</option>
+                  <option value="Palermo">Palermo</option>
+                  <option value="Núñez">Núñez</option>
+                  <option value="Caballito">Caballito</option>
+                  <option value="Villa Urquiza">Villa Urquiza</option>
+                  <option value="Almagro">Almagro</option>
+                  <option value="Villa Crespo">Villa Crespo</option>
+                  <option value="San Telmo">San Telmo</option>
+                  <option value="Puerto Madero">Puerto Madero</option>
+                  <option value="Flores">Flores</option>
+                  <option value="Barracas">Barracas</option>
+                  <option value="Colegiales">Colegiales</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de propiedad</label>
+                <select
+                  value={newForm.property_type}
+                  onChange={(e) => setNewForm(f => ({ ...f, property_type: e.target.value }))}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="departamentos">Departamento</option>
+                  <option value="casas">Casa</option>
+                  <option value="ph">PH</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Superficie m² *</label>
+                  <input
+                    type="number"
+                    value={newForm.total_area_m2}
+                    onChange={(e) => setNewForm(f => ({ ...f, total_area_m2: e.target.value }))}
+                    placeholder="80"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ambientes</label>
+                  <input
+                    type="number"
+                    value={newForm.rooms}
+                    onChange={(e) => setNewForm(f => ({ ...f, rooms: e.target.value }))}
+                    placeholder="3"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                <input
+                  type="text"
+                  value={newForm.address}
+                  onChange={(e) => setNewForm(f => ({ ...f, address: e.target.value }))}
+                  placeholder="Av. Libertador 1234, 5°B"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+
+              <hr className="my-2" />
+              <p className="text-xs text-gray-500 font-medium">Datos del cliente (opcional)</p>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  value={newForm.client_name}
+                  onChange={(e) => setNewForm(f => ({ ...f, client_name: e.target.value }))}
+                  placeholder="Juan Pérez"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={newForm.client_phone}
+                    onChange={(e) => setNewForm(f => ({ ...f, client_phone: e.target.value }))}
+                    placeholder="+54 11..."
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={newForm.client_email}
+                    onChange={(e) => setNewForm(f => ({ ...f, client_email: e.target.value }))}
+                    placeholder="juan@email.com"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowNewModal(false)}
+                disabled={estimating}
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleNewEstimate}
+                disabled={estimating || !newForm.neighborhood || !newForm.total_area_m2}
+                className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {estimating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Estimando...
+                  </>
+                ) : (
+                  <>
+                    <Calculator className="w-4 h-4" />
+                    Tasar
+                  </>
+                )}
+              </button>
+            </div>
+
+            {estimating && (
+              <p className="text-xs text-center text-gray-500 mt-3">
+                Buscando comparables en ZonaProp... puede tardar hasta 30 segundos.
+              </p>
+            )}
           </div>
         </div>
       )}
