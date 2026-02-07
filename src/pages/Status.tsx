@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, Activity, Server, Database, Brain, Zap, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react'
 
-const SCRAPER_URL = 'http://135.181.24.249:3050'
+const SCRAPER_URL = 'https://scraper-star.135.181.24.249.sslip.io'
 
 interface HealthData {
   status: 'ok' | 'degraded' | 'error'

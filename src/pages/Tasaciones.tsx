@@ -125,7 +125,7 @@ export const Tasaciones = () => {
     client_email: '',
   })
 
-  const SCRAPER_URL = 'http://135.181.24.249:3050'
+  const SCRAPER_URL = 'https://scraper-star.135.181.24.249.sslip.io'
 
   const handleNewEstimate = async () => {
     const totalArea = newForm.total_area_m2 || newForm.covered_area_m2
