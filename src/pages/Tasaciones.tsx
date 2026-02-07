@@ -253,8 +253,9 @@ export const Tasaciones = () => {
       })
       const result = await resp.json()
       if (result.success) {
-        const supabase = (await import('../lib/supabase')).supabase
-        await supabase.from('appraisals').update({
+        const { supabase } = await import('../lib/supabase')
+        // @ts-ignore - dynamic update fields
+        await (supabase as any).from('appraisals').update({
           type: 'formal_appraisal',
           estimated_value_min: result.valuation?.min || result.min,
           estimated_value_max: result.valuation?.max || result.max,
