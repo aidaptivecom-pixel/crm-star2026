@@ -164,6 +164,9 @@ export const Tasaciones = () => {
           .update({
             estimated_value_min: result.estimation.min,
             estimated_value_max: result.estimation.max,
+            estimated_value: result.estimation.value,
+            price_per_m2: result.estimation.price_per_m2,
+            zone_average_price: result.estimation.price_per_m2,
             comparables_used: result.comparables_used,
           })
           .eq('id', appraisalId)
@@ -475,7 +478,7 @@ export const Tasaciones = () => {
                       <Building className="w-4 h-4 text-gray-400" />
                       <span>{formatText(appraisal.property_type) || 'Propiedad'}</span>
                       <span>·</span>
-                      <span>{appraisal.ambientes || '?'} amb</span>
+                      <span>{appraisal.rooms || appraisal.ambientes || '?'} amb</span>
                       <span>·</span>
                       <span>{appraisal.size_m2 || '?'}m²</span>
                       {appraisal.condition && (
@@ -701,11 +704,11 @@ export const Tasaciones = () => {
                             <p className="text-xs text-gray-500">Superficie</p>
                           </div>
                           <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.ambientes || '-'}</p>
+                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.rooms || selectedAppraisal.ambientes || '-'}</p>
                             <p className="text-xs text-gray-500">Ambientes</p>
                           </div>
                           <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.building_age || '-'}a</p>
+                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.building_age ? `${selectedAppraisal.building_age}a` : '-'}</p>
                             <p className="text-xs text-gray-500">Antigüedad</p>
                           </div>
                         </div>
