@@ -120,25 +120,28 @@ export const Tasaciones = () => {
       const { supabase } = await import('../lib/supabase')
       if (!supabase) throw new Error('Supabase not configured')
       
+      const insertData = {
+        neighborhood: newForm.neighborhood,
+        property_type: newForm.property_type === 'departamentos' ? 'departamento' : newForm.property_type.replace(/s$/, ''),
+        address: newForm.address || `${newForm.neighborhood}, CABA`,
+        size_m2: parseInt(newForm.total_area_m2),
+        rooms: newForm.rooms ? parseInt(newForm.rooms) : null,
+        client_name: newForm.client_name || null,
+        client_phone: newForm.client_phone || null,
+        client_email: newForm.client_email || null,
+        status: 'web_estimate' as const,
+        type: 'market_valuation' as const,
+        city: 'CABA',
+      }
+      
       const { data: appraisal, error: insertError } = await supabase
         .from('appraisals')
-        .insert({
-          neighborhood: newForm.neighborhood,
-          property_type: newForm.property_type === 'departamentos' ? 'departamento' : newForm.property_type.replace(/s$/, ''),
-          address: newForm.address || `${newForm.neighborhood}, CABA`,
-          size_m2: parseInt(newForm.total_area_m2),
-          rooms: newForm.rooms ? parseInt(newForm.rooms) : null,
-          client_name: newForm.client_name || null,
-          client_phone: newForm.client_phone || null,
-          client_email: newForm.client_email || null,
-          status: 'web_estimate',
-          type: 'market_valuation',
-          city: 'CABA',
-        })
+        .insert(insertData as any)
         .select()
         .single()
 
       if (insertError) throw insertError
+      const appraisalId = (appraisal as any)?.id
 
       // 2. Call estimate API
       const resp = await fetch(`${SCRAPER_URL}/estimate`, {
@@ -149,12 +152,12 @@ export const Tasaciones = () => {
           property_type: newForm.property_type,
           total_area_m2: parseInt(newForm.total_area_m2),
           rooms: newForm.rooms ? parseInt(newForm.rooms) : undefined,
-          appraisal_id: appraisal.id,
+          appraisal_id: appraisalId,
         }),
       })
       const result = await resp.json()
 
-      if (result.success) {
+      if (result.success && appraisalId) {
         // 3. Update appraisal with estimation
         await supabase
           .from('appraisals')
@@ -162,8 +165,8 @@ export const Tasaciones = () => {
             estimated_value_min: result.estimation.min,
             estimated_value_max: result.estimation.max,
             comparables_used: result.comparables_used,
-          })
-          .eq('id', appraisal.id)
+          } as any)
+          .eq('id', appraisalId)
       }
 
       // 4. Refresh list and close modal
