@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight } from 'lucide-react'
+import { useState, useMemo, useRef, useCallback } from 'react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye } from 'lucide-react'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
@@ -101,6 +101,10 @@ export const Tasaciones = () => {
   const [estimating, setEstimating] = useState(false)
   const [estimateType, setEstimateType] = useState<'express' | 'formal'>('express')
   const [convertingToFormal, setConvertingToFormal] = useState(false)
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [analyzingTarget, setAnalyzingTarget] = useState(false)
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
   const [newForm, setNewForm] = useState({
     neighborhood: '',
     property_type: 'departamentos',
@@ -277,6 +281,99 @@ export const Tasaciones = () => {
     }
   }
 
+  const selectedAppraisal = appraisals.find(a => a.id === selectedId)
+
+  const handlePhotoUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0 || !selectedAppraisal) return
+    setUploadingPhotos(true)
+    try {
+      const { supabase } = await import('../lib/supabase')
+      if (!supabase) throw new Error('Supabase not configured')
+
+      const existingPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+      const newUrls: string[] = []
+
+      for (const file of Array.from(files)) {
+        const ext = file.name.split('.').pop() || 'jpg'
+        const fileName = `${selectedAppraisal.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('appraisal-evidence')
+          .upload(fileName, file, { contentType: file.type, upsert: false })
+        if (uploadError) throw uploadError
+        const { data: urlData } = supabase.storage.from('appraisal-evidence').getPublicUrl(fileName)
+        newUrls.push(urlData.publicUrl)
+      }
+
+      const allPhotos = [...existingPhotos, ...newUrls]
+      const currentData = (selectedAppraisal as any).property_data || {}
+      await (supabase as any).from('appraisals').update({
+        property_data: { ...currentData, target_photos: allPhotos },
+      }).eq('id', selectedAppraisal.id)
+
+      refetch()
+    } catch (err) {
+      console.error('Error uploading photos:', err)
+      alert('Error al subir fotos: ' + (err as Error).message)
+    } finally {
+      setUploadingPhotos(false)
+    }
+  }, [selectedAppraisal, refetch])
+
+  const handleDeletePhoto = useCallback(async (photoUrl: string) => {
+    if (!selectedAppraisal || !confirm('¿Eliminar esta foto?')) return
+    try {
+      const { supabase } = await import('../lib/supabase')
+      if (!supabase) throw new Error('Supabase not configured')
+      const currentPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+      const filtered = currentPhotos.filter(u => u !== photoUrl)
+      const currentData = (selectedAppraisal as any).property_data || {}
+      await (supabase as any).from('appraisals').update({
+        property_data: { ...currentData, target_photos: filtered },
+      }).eq('id', selectedAppraisal.id)
+      // Try to delete from storage
+      const path = photoUrl.split('/appraisal-evidence/')[1]
+      if (path) await supabase.storage.from('appraisal-evidence').remove([decodeURIComponent(path)])
+      refetch()
+    } catch (err) {
+      console.error('Error deleting photo:', err)
+    }
+  }, [selectedAppraisal, refetch])
+
+  const handleAnalyzeTarget = useCallback(async () => {
+    if (!selectedAppraisal) return
+    const photos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+    if (photos.length === 0) return alert('Subí fotos primero')
+    setAnalyzingTarget(true)
+    try {
+      const resp = await fetch(`${SCRAPER_URL}/analyze-target`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appraisal_id: selectedAppraisal.id,
+          photo_urls: photos,
+          property_info: {
+            address: selectedAppraisal.address || selectedAppraisal.neighborhood,
+            rooms: selectedAppraisal.rooms || (selectedAppraisal as any).ambientes,
+            total_area_m2: selectedAppraisal.size_m2,
+            condition_declared: selectedAppraisal.condition || null,
+          },
+        }),
+      })
+      const result = await resp.json()
+      if (result.success) {
+        refetch()
+        alert('✅ Análisis completado')
+      } else {
+        throw new Error(result.error || 'Error en análisis')
+      }
+    } catch (err) {
+      console.error('Error analyzing target:', err)
+      alert('Error: ' + (err as Error).message)
+    } finally {
+      setAnalyzingTarget(false)
+    }
+  }, [selectedAppraisal, refetch])
+
   // Filtrar tasaciones
   const filteredAppraisals = useMemo(() => {
     let result = appraisals
@@ -323,8 +420,6 @@ export const Tasaciones = () => {
     })
     return stats
   }, [appraisals])
-
-  const selectedAppraisal = appraisals.find(a => a.id === selectedId)
 
   const handleScheduleVisit = async () => {
     if (!selectedId || !scheduleDate) return
@@ -845,6 +940,125 @@ export const Tasaciones = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* 📸 Evidencia de visita - Photo Upload */}
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Camera className="w-4 h-4" /> 📸 Evidencia de visita
+                      </h3>
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        {/* Thumbnail Grid */}
+                        {(() => {
+                          const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+                          return (
+                            <>
+                              {targetPhotos.length > 0 && (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                                  {targetPhotos.map((url, idx) => (
+                                    <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-200">
+                                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewPhoto(url)} />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                                        <button onClick={() => setPreviewPhoto(url)} className="p-1 bg-white/90 rounded-full"><Eye className="w-3.5 h-3.5 text-gray-700" /></button>
+                                        <button onClick={() => handleDeletePhoto(url)} className="p-1 bg-white/90 rounded-full"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <input ref={photoInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e.target.files)} />
+                                <button
+                                  onClick={() => photoInputRef.current?.click()}
+                                  disabled={uploadingPhotos}
+                                  className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50"
+                                >
+                                  {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
+                                </button>
+                                {targetPhotos.length > 0 && !(selectedAppraisal as any).property_data?.target_analysis && (
+                                  <button
+                                    onClick={handleAnalyzeTarget}
+                                    disabled={analyzingTarget}
+                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+                                  >
+                                    {analyzingTarget ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</> : '🔍 Analizar con IA'}
+                                  </button>
+                                )}
+                              </div>
+                              {targetPhotos.length === 0 && (
+                                <p className="text-xs text-gray-400 mt-2 text-center">Subí fotos de la propiedad para análisis con IA</p>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Target Analysis Results */}
+                    {(selectedAppraisal as any).property_data?.target_analysis && (() => {
+                      const ta = (selectedAppraisal as any).property_data.target_analysis
+                      const disc = ta.discrepancy
+                      const hasDiscrepancy = disc && disc.difference_pct && Math.abs(disc.difference_pct) > 10
+                      return (
+                        <div>
+                          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            🏠 Análisis de Propiedad Target
+                          </h3>
+                          {/* Discrepancy Alert */}
+                          {hasDiscrepancy && (
+                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-3">
+                              <p className="text-sm font-medium text-amber-800">
+                                ⚠️ Cliente declaró <span className="font-bold">{disc.declared?.replace(/_/g, ' ') || '—'}</span>, IA detectó <span className="font-bold">{disc.detected?.replace(/_/g, ' ')}</span> ({disc.difference_pct > 0 ? '+' : ''}{disc.difference_pct}% diferencia)
+                              </p>
+                            </div>
+                          )}
+                          {/* Condition Badge */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${
+                              (ta.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' :
+                              (ta.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {(ta.condition_detected || ta.condition || '').replace(/_/g, ' ')} — {ta.condition_score}/10
+                            </span>
+                            {ta.estimated_renovation_cost_usd && (
+                              <span className="text-xs text-gray-500">Renovación est.: USD {ta.estimated_renovation_cost_usd.toLocaleString()}</span>
+                            )}
+                          </div>
+                          {/* Details Breakdown */}
+                          {ta.details && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                              {Object.entries(ta.details).map(([key, val]) => (
+                                <div key={key} className="bg-gray-50 rounded-lg p-2 text-center">
+                                  <p className="text-xs text-gray-500 capitalize">{key}</p>
+                                  <p className={`text-sm font-medium ${
+                                    String(val).match(/malo|baja/) ? 'text-red-600' :
+                                    String(val).match(/regular|media/) ? 'text-yellow-600' :
+                                    'text-green-600'
+                                  }`}>{String(val).replace(/_/g, ' ')}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Highlights & Issues */}
+                          {ta.highlights?.length > 0 && (
+                            <p className="text-xs text-green-600 mb-1">✅ {ta.highlights.join(' · ')}</p>
+                          )}
+                          {ta.issues?.length > 0 && (
+                            <p className="text-xs text-orange-600 mb-1">⚠️ {ta.issues.join(' · ')}</p>
+                          )}
+                          {/* Recalculated Values */}
+                          {ta.recalculated && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <p className="text-sm font-medium text-gray-700 mb-1">📊 Valor recalculado con estado detectado:</p>
+                              <p className="text-lg font-bold text-[#D4A745]">
+                                USD {(ta.recalculated.min / 1000).toFixed(0)}k - {(ta.recalculated.max / 1000).toFixed(0)}k
+                              </p>
+                              <p className="text-xs text-gray-500">USD {ta.recalculated.price_per_m2?.toLocaleString()}/m²</p>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                     {/* AI Analysis (Formal) */}
                     {(selectedAppraisal as any).ai_analysis && (
@@ -1383,6 +1597,15 @@ export const Tasaciones = () => {
               </p>
             )}
           </div>
+        </div>
+      )}
+      {/* Photo Preview Modal */}
+      {previewPhoto && (
+        <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4" onClick={() => setPreviewPhoto(null)}>
+          <img src={previewPhoto} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" />
+          <button onClick={() => setPreviewPhoto(null)} className="absolute top-4 right-4 text-white/80 hover:text-white">
+            <XCircle className="w-8 h-8" />
+          </button>
         </div>
       )}
     </main>
