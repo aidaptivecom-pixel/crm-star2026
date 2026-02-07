@@ -11,6 +11,7 @@ import { Propiedades } from './pages/Propiedades'
 import { Tasaciones } from './pages/Tasaciones'
 import { Reportes } from './pages/Reportes'
 import { Configuracion } from './pages/Configuracion'
+import { Status } from './pages/Status'
 import { NotificationBell } from './components/NotificationBell'
 import { Menu, X } from 'lucide-react'
 
@@ -72,6 +73,7 @@ function App() {
             <Route path="/tasaciones" element={<Tasaciones />} />
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/configuracion" element={<Configuracion />} />
+            <Route path="/status" element={<Status />} />
           </Routes>
         </div>
       </div>

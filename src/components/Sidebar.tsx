@@ -12,7 +12,8 @@ import {
   BarChart3, 
   Settings, 
   HelpCircle,
-  Star
+  Star,
+  Activity
 } from 'lucide-react'
 import { CONVERSATIONS } from '../constants'
 
@@ -90,6 +91,7 @@ export const Sidebar = ({ onNavigate }: SidebarProps) => {
       {/* Bottom Actions */}
       <div className="px-4 pb-4 mt-auto">
         <div className="border-t border-gray-100 pt-4 mb-4 space-y-0.5">
+           <NavItem to="/status" icon={Activity} label="Estado" onNavigate={onNavigate} />
            <NavItem to="/configuracion" icon={Settings} label="Configuración" onNavigate={onNavigate} />
            <NavItem to="/ayuda" icon={HelpCircle} label="Ayuda" disabled onNavigate={onNavigate} />
         </div>
