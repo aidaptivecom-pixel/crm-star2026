@@ -100,6 +100,7 @@ export const Tasaciones = () => {
   const [showNewModal, setShowNewModal] = useState(false)
   const [estimating, setEstimating] = useState(false)
   const [estimateType, setEstimateType] = useState<'express' | 'formal'>('express')
+  const [convertingToFormal, setConvertingToFormal] = useState(false)
   const [newForm, setNewForm] = useState({
     neighborhood: '',
     property_type: 'departamentos',
@@ -113,6 +114,7 @@ export const Tasaciones = () => {
     condition: '',
     building_age: '',
     amenities: [] as string[],
+    comparables_count: '',
     address: '',
     client_name: '',
     client_phone: '',
@@ -181,6 +183,8 @@ export const Tasaciones = () => {
           condition: newForm.condition || undefined,
           building_age: newForm.building_age ? parseInt(newForm.building_age) : undefined,
           amenities: newForm.amenities.length > 0 ? newForm.amenities : undefined,
+          comparables_count: newForm.comparables_count ? parseInt(newForm.comparables_count) : undefined,
+          max_comparables_to_analyze: newForm.comparables_count ? parseInt(newForm.comparables_count) : undefined,
           appraisal_id: appraisalId,
         }),
       })
@@ -213,7 +217,7 @@ export const Tasaciones = () => {
         neighborhood: '', property_type: 'departamentos', total_area_m2: '',
         covered_area_m2: '', semi_covered_area_m2: '', uncovered_area_m2: '',
         rooms: '', has_garage: false, garage_count: '', condition: '',
-        building_age: '', amenities: [], address: '', client_name: '',
+        building_age: '', amenities: [], comparables_count: '', address: '', client_name: '',
         client_phone: '', client_email: '',
       })
     } catch (err) {
@@ -221,6 +225,54 @@ export const Tasaciones = () => {
       alert('Error al crear tasación: ' + (err as Error).message)
     } finally {
       setEstimating(false)
+    }
+  }
+
+  const handleConvertToFormal = async (appraisal: Appraisal) => {
+    if (!confirm('¿Convertir esta tasación express a formal? Se analizarán fotos de comparables con IA (~15 seg).')) return
+    setConvertingToFormal(true)
+    try {
+      const resp = await fetch(`${SCRAPER_URL}/estimate-formal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          neighborhood: appraisal.neighborhood,
+          property_type: appraisal.property_type,
+          total_area_m2: appraisal.size_m2,
+          rooms: appraisal.rooms || (appraisal as any).ambientes,
+          covered_area_m2: (appraisal as any).property_data?.covered_area_m2,
+          semi_covered_area_m2: (appraisal as any).property_data?.semi_covered_area_m2,
+          uncovered_area_m2: (appraisal as any).property_data?.uncovered_area_m2,
+          has_garage: appraisal.has_garage,
+          garage_count: (appraisal as any).property_data?.garage_count,
+          condition: appraisal.condition,
+          building_age: appraisal.building_age,
+          amenities: appraisal.amenities,
+          appraisal_id: appraisal.id,
+        }),
+      })
+      const result = await resp.json()
+      if (result.success) {
+        const supabase = (await import('../lib/supabase')).supabase
+        await supabase.from('appraisals').update({
+          type: 'formal_appraisal',
+          estimated_value_min: result.valuation?.min || result.min,
+          estimated_value_max: result.valuation?.max || result.max,
+          estimated_value_avg: result.valuation?.avg || result.avg,
+          price_per_m2: result.valuation?.price_per_m2 || result.price_per_m2,
+          ai_analysis: result.ai_analysis,
+          comparables_used: result.comparables_used || result.ai_analysis?.details,
+        }).eq('id', appraisal.id)
+        refetch()
+        alert('✅ Tasación convertida a formal exitosamente')
+      } else {
+        throw new Error(result.error || 'Error en tasación formal')
+      }
+    } catch (err) {
+      console.error('Error converting to formal:', err)
+      alert('Error: ' + (err as Error).message)
+    } finally {
+      setConvertingToFormal(false)
     }
   }
 
@@ -896,6 +948,23 @@ export const Tasaciones = () => {
                     </button>
 
                     {/* Acciones según estado */}
+                    {/* Convert Express → Formal */}
+                    {isWeb && !(selectedAppraisal as any).ai_analysis && (
+                      <button 
+                        onClick={() => handleConvertToFormal(selectedAppraisal)}
+                        disabled={convertingToFormal}
+                        className="flex-1 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {convertingToFormal ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Analizando...
+                          </>
+                        ) : (
+                          '🔍 Convertir a Formal'
+                        )}
+                      </button>
+                    )}
                     {status === 'web_estimate' && (
                       <button 
                         onClick={() => setShowScheduleModal(true)}
@@ -1222,6 +1291,22 @@ export const Tasaciones = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Comparables a analizar</label>
+                <select
+                  value={newForm.comparables_count}
+                  onChange={(e) => setNewForm(f => ({ ...f, comparables_count: e.target.value }))}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="">Auto ({estimateType === 'formal' ? '8' : '15'})</option>
+                  <option value="5">5 comparables</option>
+                  <option value="8">8 comparables</option>
+                  <option value="10">10 comparables</option>
+                  <option value="15">15 comparables</option>
+                  <option value="20">20 comparables</option>
+                </select>
               </div>
 
               <hr className="my-2" />
