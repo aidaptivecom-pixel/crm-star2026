@@ -745,7 +745,7 @@ export const Tasaciones = () => {
                             <p className="text-xs text-gray-500">Ambientes</p>
                           </div>
                           <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.building_age ? `${selectedAppraisal.building_age}a` : '-'}</p>
+                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.building_age ? `${selectedAppraisal.building_age} años` : '-'}</p>
                             <p className="text-xs text-gray-500">Antigüedad</p>
                           </div>
                         </div>
@@ -797,7 +797,7 @@ export const Tasaciones = () => {
                     {(selectedAppraisal as any).ai_analysis && (
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          🔍 Análisis IA de Comparables
+                          🔍 Análisis de Comparables
                         </h3>
                         <div className="space-y-2">
                           {((selectedAppraisal as any).ai_analysis?.details || []).map((det: any, idx: number) => (
@@ -824,11 +824,21 @@ export const Tasaciones = () => {
                               {det.issues && det.issues.length > 0 && (
                                 <p className="text-xs text-orange-600 mt-0.5">⚠️ {det.issues.join(', ')}</p>
                               )}
+                              {det.source_url && (
+                                <a
+                                  href={det.source_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 mt-1.5 text-xs text-[#D4A745] hover:text-[#c49a3d] font-medium"
+                                >
+                                  <ArrowUpRight className="w-3 h-3" />
+                                  Ver en ZonaProp
+                                </a>
+                              )}
                             </div>
                           ))}
                           <p className="text-xs text-gray-400 text-right">
-                            Costo IA: USD {(selectedAppraisal as any).ai_analysis?.estimated_cost_usd || '0.00'} · 
-                            {(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} analizados con fotos
+                            {(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} comparables analizados
                           </p>
                         </div>
                       </div>
@@ -1035,8 +1045,8 @@ export const Tasaciones = () => {
             </div>
             {estimateType === 'formal' && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800">
-                <p className="font-medium">🔍 Tasación Formal con IA</p>
-                <p className="mt-1">Analiza fotos de comparables con GPT-4o mini para detectar estado real. Más precisa. ~15 seg, costo ~USD 0.01</p>
+                <p className="font-medium">🔍 Tasación Formal</p>
+                <p className="mt-1">Analiza fotos de comparables para detectar estado real. Mayor precisión. ~15 seg.</p>
               </div>
             )}
             
@@ -1282,7 +1292,7 @@ export const Tasaciones = () => {
             {estimating && (
               <p className="text-xs text-center text-gray-500 mt-3">
                 {estimateType === 'formal' 
-                  ? '🔍 Analizando fotos de comparables con IA... ~15 segundos.'
+                  ? '🔍 Analizando fotos de comparables... ~15 segundos.'
                   : 'Buscando comparables en ZonaProp... puede tardar hasta 30 segundos.'}
               </p>
             )}
