@@ -110,7 +110,7 @@ export const Tasaciones = () => {
     client_email: '',
   })
 
-  const SCRAPER_URL = 'http://135.181.24.249:3050'
+  const SCRAPER_URL = '/api'
 
   const handleNewEstimate = async () => {
     if (!newForm.neighborhood || !newForm.total_area_m2) return
