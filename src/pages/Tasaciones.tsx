@@ -159,13 +159,13 @@ export const Tasaciones = () => {
 
       if (result.success && appraisalId) {
         // 3. Update appraisal with estimation
-        await supabase
+        await (supabase as any)
           .from('appraisals')
           .update({
             estimated_value_min: result.estimation.min,
             estimated_value_max: result.estimation.max,
             comparables_used: result.comparables_used,
-          } as any)
+          })
           .eq('id', appraisalId)
       }
 
