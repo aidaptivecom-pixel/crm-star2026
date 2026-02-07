@@ -103,7 +103,15 @@ export const Tasaciones = () => {
     neighborhood: '',
     property_type: 'departamentos',
     total_area_m2: '',
+    covered_area_m2: '',
+    semi_covered_area_m2: '',
+    uncovered_area_m2: '',
     rooms: '',
+    has_garage: false,
+    garage_count: '',
+    condition: '',
+    building_age: '',
+    amenities: [] as string[],
     address: '',
     client_name: '',
     client_phone: '',
@@ -113,7 +121,8 @@ export const Tasaciones = () => {
   const SCRAPER_URL = '/api'
 
   const handleNewEstimate = async () => {
-    if (!newForm.neighborhood || !newForm.total_area_m2) return
+    const totalArea = newForm.total_area_m2 || newForm.covered_area_m2
+    if (!newForm.neighborhood || !totalArea) return
     setEstimating(true)
     try {
       // 1. Create appraisal in Supabase first
@@ -124,8 +133,18 @@ export const Tasaciones = () => {
         neighborhood: newForm.neighborhood,
         property_type: newForm.property_type === 'departamentos' ? 'departamento' : newForm.property_type.replace(/s$/, ''),
         address: newForm.address || `${newForm.neighborhood}, CABA`,
-        size_m2: parseInt(newForm.total_area_m2),
+        size_m2: parseInt(totalArea),
         rooms: newForm.rooms ? parseInt(newForm.rooms) : null,
+        has_garage: newForm.has_garage,
+        condition: newForm.condition || null,
+        building_age: newForm.building_age ? parseInt(newForm.building_age) : null,
+        amenities: newForm.amenities.length > 0 ? newForm.amenities : null,
+        property_data: {
+          covered_area_m2: newForm.covered_area_m2 ? parseFloat(newForm.covered_area_m2) : null,
+          semi_covered_area_m2: newForm.semi_covered_area_m2 ? parseFloat(newForm.semi_covered_area_m2) : null,
+          uncovered_area_m2: newForm.uncovered_area_m2 ? parseFloat(newForm.uncovered_area_m2) : null,
+          garage_count: newForm.garage_count ? parseInt(newForm.garage_count) : 0,
+        },
         client_name: newForm.client_name || null,
         client_phone: newForm.client_phone || null,
         client_email: newForm.client_email || null,
@@ -150,8 +169,16 @@ export const Tasaciones = () => {
         body: JSON.stringify({
           neighborhood: newForm.neighborhood,
           property_type: newForm.property_type,
-          total_area_m2: parseInt(newForm.total_area_m2),
+          total_area_m2: parseInt(totalArea),
           rooms: newForm.rooms ? parseInt(newForm.rooms) : undefined,
+          covered_area_m2: newForm.covered_area_m2 ? parseFloat(newForm.covered_area_m2) : undefined,
+          semi_covered_area_m2: newForm.semi_covered_area_m2 ? parseFloat(newForm.semi_covered_area_m2) : undefined,
+          uncovered_area_m2: newForm.uncovered_area_m2 ? parseFloat(newForm.uncovered_area_m2) : undefined,
+          has_garage: newForm.has_garage,
+          garage_count: newForm.garage_count ? parseInt(newForm.garage_count) : 0,
+          condition: newForm.condition || undefined,
+          building_age: newForm.building_age ? parseInt(newForm.building_age) : undefined,
+          amenities: newForm.amenities.length > 0 ? newForm.amenities : undefined,
           appraisal_id: appraisalId,
         }),
       })
@@ -177,7 +204,10 @@ export const Tasaciones = () => {
       setShowNewModal(false)
       setNewForm({
         neighborhood: '', property_type: 'departamentos', total_area_m2: '',
-        rooms: '', address: '', client_name: '', client_phone: '', client_email: '',
+        covered_area_m2: '', semi_covered_area_m2: '', uncovered_area_m2: '',
+        rooms: '', has_garage: false, garage_count: '', condition: '',
+        building_age: '', amenities: [], address: '', client_name: '',
+        client_phone: '', client_email: '',
       })
     } catch (err) {
       console.error('Error creating estimate:', err)
@@ -972,29 +1002,6 @@ export const Tasaciones = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Superficie m² *</label>
-                  <input
-                    type="number"
-                    value={newForm.total_area_m2}
-                    onChange={(e) => setNewForm(f => ({ ...f, total_area_m2: e.target.value }))}
-                    placeholder="80"
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ambientes</label>
-                  <input
-                    type="number"
-                    value={newForm.rooms}
-                    onChange={(e) => setNewForm(f => ({ ...f, rooms: e.target.value }))}
-                    placeholder="3"
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
                 <input
@@ -1004,6 +1011,131 @@ export const Tasaciones = () => {
                   placeholder="Av. Libertador 1234, 5°B"
                   className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ambientes *</label>
+                  <input
+                    type="number"
+                    value={newForm.rooms}
+                    onChange={(e) => setNewForm(f => ({ ...f, rooms: e.target.value }))}
+                    placeholder="3"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (años)</label>
+                  <input
+                    type="number"
+                    value={newForm.building_age}
+                    onChange={(e) => setNewForm(f => ({ ...f, building_age: e.target.value }))}
+                    placeholder="15"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500 font-medium mt-1">Superficies</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Cubierta m² *</label>
+                  <input
+                    type="number"
+                    value={newForm.covered_area_m2 || newForm.total_area_m2}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setNewForm(f => ({ ...f, covered_area_m2: val, total_area_m2: val || f.total_area_m2 }))
+                    }}
+                    placeholder="65"
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Semi-cub. m²</label>
+                  <input
+                    type="number"
+                    value={newForm.semi_covered_area_m2}
+                    onChange={(e) => setNewForm(f => ({ ...f, semi_covered_area_m2: e.target.value }))}
+                    placeholder="10"
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Descub. m²</label>
+                  <input
+                    type="number"
+                    value={newForm.uncovered_area_m2}
+                    onChange={(e) => setNewForm(f => ({ ...f, uncovered_area_m2: e.target.value }))}
+                    placeholder="5"
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select
+                  value={newForm.condition}
+                  onChange={(e) => setNewForm(f => ({ ...f, condition: e.target.value }))}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="">Sin especificar</option>
+                  <option value="malo">Malo</option>
+                  <option value="regular">Regular</option>
+                  <option value="bueno">Bueno</option>
+                  <option value="muy_bueno">Muy bueno</option>
+                  <option value="a_estrenar">A estrenar</option>
+                  <option value="reciclado">Reciclado</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newForm.has_garage}
+                    onChange={(e) => setNewForm(f => ({ ...f, has_garage: e.target.checked, garage_count: e.target.checked ? (f.garage_count || '1') : '' }))}
+                    className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Cochera</span>
+                </label>
+                {newForm.has_garage && (
+                  <input
+                    type="number"
+                    value={newForm.garage_count}
+                    onChange={(e) => setNewForm(f => ({ ...f, garage_count: e.target.value }))}
+                    placeholder="1"
+                    min="1"
+                    max="5"
+                    className="w-16 p-2 border border-gray-200 rounded-lg text-sm"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Pileta', 'Gimnasio', 'SUM', 'Parrilla', 'Laundry', 'Seguridad 24hs', 'Balcón', 'Terraza'].map(amenity => (
+                    <button
+                      key={amenity}
+                      type="button"
+                      onClick={() => setNewForm(f => ({
+                        ...f,
+                        amenities: f.amenities.includes(amenity)
+                          ? f.amenities.filter(a => a !== amenity)
+                          : [...f.amenities, amenity]
+                      }))}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        newForm.amenities.includes(amenity)
+                          ? 'bg-[#D4A745] text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {amenity}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <hr className="my-2" />
@@ -1054,7 +1186,7 @@ export const Tasaciones = () => {
               </button>
               <button
                 onClick={handleNewEstimate}
-                disabled={estimating || !newForm.neighborhood || !newForm.total_area_m2}
+                disabled={estimating || !newForm.neighborhood || !(newForm.total_area_m2 || newForm.covered_area_m2)}
                 className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {estimating ? (
