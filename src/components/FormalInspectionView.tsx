@@ -380,7 +380,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain bg-[#F8F9FA] pb-24">
+      <div className="flex-1 overflow-y-scroll bg-[#F8F9FA] pb-24" style={{ minHeight: 0 }}>
         <div className="p-4 flex gap-4">
         
         {/* Left sidebar - context info */}
