@@ -854,6 +854,9 @@ export const Tasaciones = () => {
               const { score } = calculatePropertyScore(appraisal)
               const scoreClass = getScoreClassification(score)
               const isWeb = appraisal.type === 'market_valuation'
+              const photoCount = ((appraisal as any).property_data?.target_photos || []).length
+              const audioCount = ((appraisal as any).property_data?.voice_notes || []).length
+              const hasEvidence = photoCount > 0 || audioCount > 0
               
               return (
                 <div
@@ -952,6 +955,63 @@ export const Tasaciones = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Evidencia de visita */}
+                  {!isWeb && hasEvidence && (
+                    <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2">
+                      {photoCount > 0 && (
+                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600">
+                          📸 {photoCount} foto{photoCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {audioCount > 0 && (
+                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-purple-50 text-purple-600">
+                          🎤 {audioCount} audio{audioCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {(status === 'visit_scheduled' || status === 'visit_completed' || status === 'processing') && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedId(appraisal.id)
+                            // Pre-fill and open formal view
+                            const pd = (appraisal as any).property_data || {}
+                            const voiceNotes: any[] = pd.voice_notes || []
+                            const merged: Record<string, any> = {}
+                            for (const note of voiceNotes) {
+                              const ff = note.extraction?.form_fields
+                              if (!ff) continue
+                              for (const [k, v] of Object.entries(ff)) {
+                                if (v != null && k !== 'amenities') merged[k] = v
+                                if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
+                                  merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
+                                }
+                              }
+                            }
+                            setFormalFormData({
+                              address: appraisal.address || merged.address || '',
+                              covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
+                              semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
+                              uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
+                              garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
+                              condition: appraisal.condition || merged.condition || '',
+                              building_age: appraisal.building_age?.toString() || merged.building_age?.toString() || '',
+                              bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
+                              floors: pd.floors?.toString() || merged.floors?.toString() || '1',
+                              has_gas: pd.has_gas ?? merged.has_gas ?? true,
+                              has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
+                              has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
+                              amenities: [...new Set([...(appraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
+                            } as any)
+                            setShowFormalForm(true)
+                          }}
+                          className="ml-auto flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-[#D4A745] text-white hover:bg-[#c49a3d] transition-colors"
+                        >
+                          📝 Generar borrador
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Acciones */}
                   <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2">
