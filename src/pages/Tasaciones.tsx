@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import FormalInspectionView from '../components/FormalInspectionView'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
@@ -1044,9 +1045,17 @@ export const Tasaciones = () => {
                     </div>
                   </div>
 
+                  {showFormalForm ? (
+                    <FormalInspectionView
+                      appraisal={selectedAppraisal}
+                      onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+                      onClose={() => setShowFormalForm(false)}
+                      onRefetch={refetch}
+                    />
+                  ) : (
                   <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth p-4 sm:p-6 space-y-4">
-                    {showFormalForm ? (
-                      /* ── Formal Conversion Form (replaces normal content) ── */
+                    {false ? (
+                      /* ── Old Formal Form (replaced by FormalInspectionView) ── */
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h3 className="font-bold text-gray-900 text-lg">🔍 Convertir a Tasación Formal</h3>
@@ -1893,8 +1902,9 @@ export const Tasaciones = () => {
                   </>
                   )}
                   </div>
-
-                  {/* Actions - Sticky at bottom */}
+                  )}
+                  {/* Actions - Sticky at bottom (hidden when FormalInspectionView is shown) */}
+                  {!showFormalForm && (
                   <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row gap-2">
                     {/* Botón historial */}
                     <button
@@ -2036,6 +2046,7 @@ export const Tasaciones = () => {
                       </button>
                     )}
                   </div>
+                  )}
                 </>
               )
             })()}
