@@ -1717,7 +1717,7 @@ export const Tasaciones = () => {
                             has_gas: (selectedAppraisal as any).property_data?.has_gas ?? true,
                             has_private_terrace: (selectedAppraisal as any).property_data?.has_private_terrace ?? false,
                             has_private_garden: (selectedAppraisal as any).property_data?.has_private_garden ?? false,
-                            amenities: selectedAppraisal.amenities || [],
+                            amenities: (selectedAppraisal.amenities as string[] || []),
                           })
                           setShowFormalForm(true)
                         }}
