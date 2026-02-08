@@ -374,8 +374,60 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-24">
-        <div className="max-w-2xl mx-auto space-y-3">
+      <div className="flex-1 overflow-y-auto overscroll-contain bg-[#F8F9FA] pb-24">
+        <div className="max-w-6xl mx-auto p-4 flex gap-4">
+        
+        {/* Left sidebar - context info */}
+        <div className="hidden lg:block w-72 flex-shrink-0 space-y-3 sticky top-4 self-start">
+          {/* Client info */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">👤 Cliente</h3>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-gray-400 text-xs">Nombre</span><p className="font-medium text-gray-900">{appraisal.client_name || appraisal.property_data?.client_name || 'Sin asignar'}</p></div>
+              <div><span className="text-gray-400 text-xs">Teléfono</span><p className="font-medium text-gray-900">{appraisal.client_phone || appraisal.property_data?.client_phone || '-'}</p></div>
+              <div><span className="text-gray-400 text-xs">Email</span><p className="font-medium text-gray-900">{appraisal.client_email || appraisal.property_data?.client_email || '-'}</p></div>
+            </div>
+          </div>
+
+          {/* Property summary */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">🏠 Propiedad</h3>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-gray-400 text-xs">Dirección</span><p className="font-medium text-gray-900">{appraisal.address || '-'}</p></div>
+              <div><span className="text-gray-400 text-xs">Barrio</span><p className="font-medium text-gray-900">{appraisal.neighborhood || '-'}</p></div>
+              <div><span className="text-gray-400 text-xs">Tipo</span><p className="font-medium text-gray-900 capitalize">{appraisal.property_type || '-'}</p></div>
+              <div><span className="text-gray-400 text-xs">Superficie total</span><p className="font-medium text-gray-900">{appraisal.size_m2 ? `${appraisal.size_m2} m²` : '-'}</p></div>
+              <div><span className="text-gray-400 text-xs">Ambientes</span><p className="font-medium text-gray-900">{appraisal.rooms || '-'}</p></div>
+              {appraisal.estimated_value_avg && (
+                <div><span className="text-gray-400 text-xs">Valuación web</span><p className="font-bold text-[#D4A745]">USD {Math.round(appraisal.estimated_value_avg).toLocaleString()}</p></div>
+              )}
+            </div>
+          </div>
+
+          {/* Next steps */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">📋 Próximos pasos</h3>
+            <div className="space-y-2">
+              {[
+                { done: voiceNotes.length > 0, label: 'Audio de visita' },
+                { done: photos.length > 0, label: 'Fotos de la propiedad' },
+                { done: pct >= 80, label: 'Relevamiento >80%' },
+                { done: !!appraisal.ai_analysis, label: 'Tasación formal procesada' },
+                { done: appraisal.status === 'approved_by_admin', label: 'Aprobada por admin' },
+                { done: appraisal.status === 'approved_by_broker', label: 'Firma del martillero' },
+                { done: appraisal.status === 'delivered', label: 'PDF enviado al cliente' },
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  {step.done ? <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />}
+                  <span className={step.done ? 'text-gray-500 line-through' : 'text-gray-700'}>{step.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Main content - cards */}
+        <div className="flex-1 min-w-0 space-y-3">
         {/* Photo strip */}
         {photos.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -480,6 +532,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
             )}
           </div>
         )}
+        </div>
         </div>
       </div>
 
