@@ -468,6 +468,65 @@ async function handleSubmit(e) {
     });
     const data = await res.json();
     showResults(data);
+
+    // Save to Supabase so it appears in the dashboard
+    try {
+      const SUPABASE_URL = 'https://wuoptaejdobinsmmkmoq.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_71JeldswzCokzfErELwMyw_yJLMz9gz';
+      const est = data.estimation || {};
+      const contactoNombre = document.getElementById('contactoNombre')?.value || null;
+      const contactoTel = document.getElementById('contactoTel')?.value || null;
+      const contactoEmail = document.getElementById('contactoEmail')?.value || null;
+
+      const insertData = {
+        neighborhood: body.neighborhood,
+        property_type: (body.property_type || 'departamentos').replace(/s$/, ''),
+        address: body.neighborhood + ', CABA',
+        size_m2: body.total_area_m2,
+        rooms: body.rooms || null,
+        has_garage: body.has_garage || false,
+        condition: body.condition || null,
+        building_age: body.building_age || null,
+        amenities: body.amenities || [],
+        property_data: {
+          bathrooms: body.bathrooms || null,
+          floors: body.floors || 1,
+          has_gas: body.has_gas !== undefined ? body.has_gas : true,
+          has_private_terrace: body.has_private_terrace || false,
+          has_private_garden: body.has_private_garden || false,
+          has_private_elevator: false,
+          garage_count: body.garage_count || 0,
+          source: 'web_express',
+          ref_id: refId
+        },
+        client_name: contactoNombre,
+        client_phone: contactoTel,
+        client_email: contactoEmail,
+        status: 'web_estimate',
+        type: 'market_valuation',
+        city: 'CABA',
+        estimated_value: est.value || null,
+        estimated_value_min: est.min || null,
+        estimated_value_max: est.max || null,
+        price_per_m2: est.price_per_m2 || null,
+        zone_average_price: est.price_per_m2_base || est.price_per_m2 || null,
+        comparables_used: data.comparables_count || null,
+      };
+
+      await fetch(SUPABASE_URL + '/rest/v1/appraisals', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(insertData)
+      });
+      console.log('Tasación guardada en Supabase:', refId);
+    } catch (saveErr) {
+      console.warn('No se pudo guardar en Supabase:', saveErr);
+    }
   } catch (err) {
     alert('Error al conectar con el servidor. Intentá de nuevo.');
     console.error(err);
