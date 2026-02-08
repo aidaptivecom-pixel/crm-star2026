@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
@@ -104,7 +104,10 @@ export const Tasaciones = () => {
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [analyzingTarget, setAnalyzingTarget] = useState(false)
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
+  const [uploadingAudio, setUploadingAudio] = useState(false)
+  const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const audioInputRef = useRef<HTMLInputElement>(null)
   const [newForm, setNewForm] = useState({
     neighborhood: '',
     property_type: 'departamentos',
@@ -371,6 +374,62 @@ export const Tasaciones = () => {
       alert('Error: ' + (err as Error).message)
     } finally {
       setAnalyzingTarget(false)
+    }
+  }, [selectedAppraisal, refetch])
+
+  const handleAudioUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0 || !selectedAppraisal) return
+    setUploadingAudio(true)
+    try {
+      const file = files[0]
+      // Convert to base64
+      const reader = new FileReader()
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string
+          resolve(result.split(',')[1]) // strip data:...;base64,
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+
+      // Send to transcribe endpoint
+      const resp = await fetch(`${SCRAPER_URL}/transcribe-audio`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audio_base64: base64,
+          appraisal_id: selectedAppraisal.id,
+        }),
+      })
+      const result = await resp.json()
+
+      if (result.success) {
+        // Save voice note to property_data.voice_notes
+        const { supabase } = await import('../lib/supabase')
+        if (!supabase) throw new Error('Supabase not configured')
+        const currentData = (selectedAppraisal as any).property_data || {}
+        const existingNotes: any[] = currentData.voice_notes || []
+        const newNote = {
+          filename: file.name,
+          timestamp: new Date().toISOString(),
+          transcription: result.transcription,
+          extraction: result.extraction,
+          tokens_used: result.tokens_used,
+          cost_usd: result.cost_usd,
+        }
+        await (supabase as any).from('appraisals').update({
+          property_data: { ...currentData, voice_notes: [...existingNotes, newNote] },
+        }).eq('id', selectedAppraisal.id)
+        refetch()
+      } else {
+        throw new Error(result.error || 'Error en transcripción')
+      }
+    } catch (err) {
+      console.error('Error uploading audio:', err)
+      alert('Error al transcribir audio: ' + (err as Error).message)
+    } finally {
+      setUploadingAudio(false)
     }
   }, [selectedAppraisal, refetch])
 
@@ -986,6 +1045,165 @@ export const Tasaciones = () => {
                               </div>
                               {targetPhotos.length === 0 && (
                                 <p className="text-xs text-gray-400 mt-2 text-center">Subí fotos de la propiedad para análisis con IA</p>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* 🎤 Notas de voz */}
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Mic className="w-4 h-4" /> 🎤 Notas de voz
+                      </h3>
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        {/* Existing voice notes */}
+                        {(() => {
+                          const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
+                          return (
+                            <>
+                              {voiceNotes.length > 0 && (
+                                <div className="space-y-3 mb-4">
+                                  {voiceNotes.map((note: any, idx: number) => {
+                                    const isExpanded = expandedVoiceNote === idx
+                                    const ext = note.extraction || {}
+                                    return (
+                                      <div key={idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                        {/* Note header - always visible */}
+                                        <button
+                                          onClick={() => setExpandedVoiceNote(isExpanded ? null : idx)}
+                                          className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                                        >
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <Mic className="w-3.5 h-3.5 text-[#D4A745] flex-shrink-0" />
+                                              <span className="text-xs text-gray-500">
+                                                {note.timestamp ? new Date(note.timestamp).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : `Nota ${idx + 1}`}
+                                              </span>
+                                              {note.filename && <span className="text-xs text-gray-400 truncate max-w-[120px]">{note.filename}</span>}
+                                              {ext.condition_detected && (
+                                                <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                                                  (ext.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' :
+                                                  (ext.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' :
+                                                  'bg-red-100 text-red-700'
+                                                }`}>
+                                                  {ext.condition_detected.replace(/_/g, ' ')} {ext.condition_score}/10
+                                                </span>
+                                              )}
+                                            </div>
+                                            <p className="text-sm text-gray-700 truncate">
+                                              {note.transcription ? note.transcription.slice(0, 100) + (note.transcription.length > 100 ? '...' : '') : 'Sin transcripción'}
+                                            </p>
+                                          </div>
+                                          {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                                        </button>
+
+                                        {/* Expanded content */}
+                                        {isExpanded && (
+                                          <div className="px-3 pb-3 space-y-3 border-t border-gray-100 pt-3">
+                                            {/* Full transcription */}
+                                            <div>
+                                              <p className="text-xs font-medium text-gray-500 mb-1">Transcripción completa</p>
+                                              <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap">
+                                                {note.transcription || 'Sin transcripción'}
+                                              </div>
+                                            </div>
+
+                                            {/* Extraction data */}
+                                            {ext.condition_detected && (
+                                              <div>
+                                                <p className="text-xs font-medium text-gray-500 mb-2">Datos extraídos</p>
+
+                                                {/* Condition + discrepancy alert */}
+                                                {(() => {
+                                                  const declared = selectedAppraisal.condition
+                                                  const detected = ext.condition_detected
+                                                  const hasDisc = declared && detected && declared.toLowerCase().replace(/_/g, ' ') !== detected.toLowerCase().replace(/_/g, ' ')
+                                                  return hasDisc ? (
+                                                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 mb-2">
+                                                      <p className="text-xs font-medium text-amber-800">
+                                                        ⚠️ Cliente declaró <span className="font-bold">{declared?.replace(/_/g, ' ')}</span>, audio indica <span className="font-bold">{detected.replace(/_/g, ' ')}</span>
+                                                      </p>
+                                                    </div>
+                                                  ) : null
+                                                })()}
+
+                                                {/* Info pills */}
+                                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                                  {ext.noise_level && (
+                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">🔊 Ruido: {ext.noise_level}</span>
+                                                  )}
+                                                  {ext.natural_light && (
+                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">☀️ Luz: {ext.natural_light}</span>
+                                                  )}
+                                                  {ext.view && (
+                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">👁️ Vista: {ext.view}</span>
+                                                  )}
+                                                </div>
+
+                                                {/* Rooms */}
+                                                {ext.rooms && ext.rooms.length > 0 && (
+                                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                                                    {ext.rooms.map((room: any, ri: number) => (
+                                                      <div key={ri} className="bg-white border border-gray-200 rounded-lg p-2">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                          <span className="text-xs font-medium text-gray-900">{room.name || `Ambiente ${ri + 1}`}</span>
+                                                          {room.condition && (
+                                                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                                              String(room.condition).match(/buen|excelent/i) ? 'bg-green-100 text-green-700' :
+                                                              String(room.condition).match(/regular|medio/i) ? 'bg-yellow-100 text-yellow-700' :
+                                                              'bg-red-100 text-red-700'
+                                                            }`}>{room.condition}</span>
+                                                          )}
+                                                        </div>
+                                                        {room.notes && <p className="text-xs text-gray-500">{room.notes}</p>}
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                )}
+
+                                                {/* Highlights & Issues */}
+                                                {ext.highlights && ext.highlights.length > 0 && (
+                                                  <p className="text-xs text-green-600 mb-1">✅ {ext.highlights.join(' · ')}</p>
+                                                )}
+                                                {ext.issues && ext.issues.length > 0 && (
+                                                  <p className="text-xs text-orange-600 mb-1">⚠️ {ext.issues.join(' · ')}</p>
+                                                )}
+
+                                                {/* Neighborhood notes */}
+                                                {ext.neighborhood_notes && (
+                                                  <p className="text-xs text-gray-500 mt-1">🏘️ {ext.neighborhood_notes}</p>
+                                                )}
+                                              </div>
+                                            )}
+
+                                            {note.cost_usd && (
+                                              <p className="text-xs text-gray-400 text-right">Costo: USD {note.cost_usd.toFixed(4)}</p>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )}
+
+                              {/* Upload button */}
+                              <input ref={audioInputRef} type="file" accept=".mp3,.m4a,.wav,.ogg,.webm,audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+                              <button
+                                onClick={() => audioInputRef.current?.click()}
+                                disabled={uploadingAudio}
+                                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50 min-h-[48px]"
+                              >
+                                {uploadingAudio ? (
+                                  <><Loader2 className="w-5 h-5 animate-spin" /> Transcribiendo...</>
+                                ) : (
+                                  <><Mic className="w-5 h-5" /> Subir nota de voz</>
+                                )}
+                              </button>
+                              {voiceNotes.length === 0 && (
+                                <p className="text-xs text-gray-400 mt-2 text-center">Subí audios grabados durante la visita para transcripción con IA</p>
                               )}
                             </>
                           )
