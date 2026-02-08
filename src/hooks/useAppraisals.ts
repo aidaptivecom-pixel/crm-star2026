@@ -210,7 +210,8 @@ export async function scheduleVisit(id: string, visitDate: string) {
   const { data, error } = await (supabase as any)
     .from('appraisals')
     .update({ 
-      status: 'visit_scheduled', 
+      status: 'visit_scheduled',
+      type: 'formal_appraisal',
       visit_scheduled_at: visitDate,
       updated_at: new Date().toISOString() 
     })
