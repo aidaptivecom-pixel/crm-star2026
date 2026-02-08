@@ -589,10 +589,10 @@ function DetailModal({
   onDelete: () => void
 }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Modal Header Image */}
-        <div className="relative h-48 sm:h-64">
+        <div className="relative h-40 sm:h-64">
           <img src={property.image} alt={property.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <button onClick={onClose} className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white">
@@ -943,9 +943,9 @@ function ProjectFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-xl sm:rounded-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

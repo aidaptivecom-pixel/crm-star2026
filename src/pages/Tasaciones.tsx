@@ -1,8 +1,39 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
+
+// Collapsible Section Component for mobile-friendly detail modal
+function CollapsibleSection({ title, icon, defaultOpen = false, badge, children }: {
+  title: string
+  icon?: React.ReactNode
+  defaultOpen?: boolean
+  badge?: React.ReactNode
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-gray-100 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-gray-50 transition-colors min-h-[48px]"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {icon}
+          <span className="font-semibold text-gray-900 text-sm sm:text-base">{title}</span>
+          {badge}
+        </div>
+        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-90' : ''}`} />
+      </button>
+      <div className={`transition-all duration-200 ease-in-out ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className="p-3 sm:p-4 pt-0 bg-white">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // Ubicaciones premium para scoring
 const PREMIUM_LOCATIONS = ['Belgrano', 'Recoleta', 'Palermo', 'Puerto Madero', 'Núñez', 'Cañitas']
@@ -842,8 +873,8 @@ export const Tasaciones = () => {
 
       {/* Detail Modal */}
       {selectedAppraisal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setSelectedId(null)}>
-          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={() => setSelectedId(null)}>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
             {(() => {
               const status = selectedAppraisal.status as AppraisalStatus
               const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
@@ -886,7 +917,7 @@ export const Tasaciones = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 sm:p-6 space-y-5">
+                  <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth p-4 sm:p-6 space-y-4">
                     {/* Score breakdown */}
                     {factors.length > 0 && (
                       <div className={`p-3 rounded-xl ${scoreClass.bgColor}`}>
@@ -905,38 +936,32 @@ export const Tasaciones = () => {
 
                     {/* Cliente */}
                     {(selectedAppraisal.client_name || selectedAppraisal.client_phone) && (
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <User className="w-4 h-4" /> Cliente
-                        </h3>
+                      <CollapsibleSection title="Cliente" icon={<User className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
                         <div className="bg-gray-50 rounded-xl p-4">
                           <p className="font-medium text-gray-900">{selectedAppraisal.client_name || 'Sin nombre'}</p>
                           <div className="flex flex-wrap items-center gap-3 mt-2">
                             {selectedAppraisal.client_phone && (
                               <button
                                 onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
-                                className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700"
+                                className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 min-h-[44px]"
                               >
                                 <Phone className="w-4 h-4" />
                                 {selectedAppraisal.client_phone}
                               </button>
                             )}
                             {selectedAppraisal.client_email && (
-                              <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-sm text-[#D4A745]">
+                              <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-sm text-[#D4A745] min-h-[44px]">
                                 <Mail className="w-4 h-4" />
                                 {selectedAppraisal.client_email}
                               </a>
                             )}
                           </div>
                         </div>
-                      </div>
+                      </CollapsibleSection>
                     )}
 
                     {/* Propiedad */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Home className="w-4 h-4" /> Propiedad
-                      </h3>
+                    <CollapsibleSection title="Propiedad" icon={<Home className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
                       <div className="bg-gray-50 rounded-xl p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           <div>
@@ -973,23 +998,21 @@ export const Tasaciones = () => {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </CollapsibleSection>
 
                     {/* Valuación */}
                     {priceRange && (
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <Calculator className="w-4 h-4" /> Valuación
-                        </h3>
+                      <CollapsibleSection title="Valuación" icon={<Calculator className="w-4 h-4 text-[#D4A745]" />} defaultOpen={true}
+                        badge={<span className="text-sm font-bold text-[#D4A745] ml-2">{priceRange}</span>}>
                         <div className="bg-[#D4A745]/10 rounded-xl p-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                              <p className="text-2xl font-bold text-[#D4A745]">{priceRange}</p>
+                              <p className="text-xl sm:text-2xl font-bold text-[#D4A745]">{priceRange}</p>
                               <p className="text-sm text-gray-600">Valor estimado</p>
                             </div>
                             {selectedAppraisal.price_per_m2 && (
                               <div>
-                                <p className="text-2xl font-bold text-gray-900">
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                                   USD {selectedAppraisal.price_per_m2.toLocaleString()}/m²
                                 </p>
                                 <p className="text-sm text-gray-600">Precio por m²</p>
@@ -997,14 +1020,11 @@ export const Tasaciones = () => {
                             )}
                           </div>
                         </div>
-                      </div>
+                      </CollapsibleSection>
                     )}
 
                     {/* 📸 Evidencia de visita - Photo Upload */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Camera className="w-4 h-4" /> 📸 Evidencia de visita
-                      </h3>
+                    <CollapsibleSection title="📸 Evidencia de visita" icon={<Camera className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
                       <div className="bg-gray-50 rounded-xl p-4">
                         {/* Thumbnail Grid */}
                         {(() => {
@@ -1050,13 +1070,10 @@ export const Tasaciones = () => {
                           )
                         })()}
                       </div>
-                    </div>
+                    </CollapsibleSection>
 
                     {/* 🎤 Notas de voz */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Mic className="w-4 h-4" /> 🎤 Notas de voz
-                      </h3>
+                    <CollapsibleSection title="🎤 Notas de voz" icon={<Mic className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
                       <div className="bg-gray-50 rounded-xl p-4">
                         {/* Existing voice notes */}
                         {(() => {
@@ -1209,7 +1226,7 @@ export const Tasaciones = () => {
                           )
                         })()}
                       </div>
-                    </div>
+                    </CollapsibleSection>
 
                     {/* Target Analysis Results */}
                     {(selectedAppraisal as any).property_data?.target_analysis && (() => {
@@ -1369,8 +1386,8 @@ export const Tasaciones = () => {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row gap-2">
+                  {/* Actions - Sticky at bottom */}
+                  <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row gap-2">
                     {/* Botón historial */}
                     <button
                       onClick={() => alert('Historial de conversación - próximamente')}

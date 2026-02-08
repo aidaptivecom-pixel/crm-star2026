@@ -137,7 +137,7 @@ const NavItem = ({ to, icon: Icon, label, badge, disabled, onNavigate }: NavItem
       end={to === '/'}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+        `flex items-center justify-between px-3 py-2 min-h-[40px] rounded-md text-sm font-medium transition-colors ${
           isActive
             ? 'bg-gray-100 text-gray-900'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'

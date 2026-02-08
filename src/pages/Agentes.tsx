@@ -370,8 +370,8 @@ export const Agentes = () => {
 
       {/* Agent Detail Modal */}
       {selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setSelectedAgent(null)}>
-          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg p-4 sm:p-6" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={() => setSelectedAgent(null)}>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <div className={`w-10 sm:w-12 h-10 sm:h-12 ${selectedAgent.bgColor} rounded-xl flex items-center justify-center`}>
@@ -431,7 +431,7 @@ export const Agentes = () => {
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => toggleAgentStatus(selectedAgent.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-lg text-sm font-medium transition-colors ${
                   selectedAgent.status === 'active'
                     ? 'bg-red-100 text-red-700 hover:bg-red-200'
                     : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
@@ -443,7 +443,7 @@ export const Agentes = () => {
                   <><Play className="w-4 h-4" /> Activar</>
                 )}
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 min-h-[44px] bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
                 <Settings className="w-4 h-4" />
                 Configurar
               </button>
