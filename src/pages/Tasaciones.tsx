@@ -1910,21 +1910,42 @@ export const Tasaciones = () => {
                     {isWeb && !(selectedAppraisal as any).ai_analysis && !showFormalForm && (
                       <button 
                         onClick={() => {
+                          const pd = (selectedAppraisal as any).property_data || {}
+                          // Merge all voice_note extractions (oldest first, newest wins)
+                          const voiceNotes: any[] = pd.voice_notes || []
+                          const merged: Record<string, any> = {}
+                          for (const note of voiceNotes) {
+                            const ff = note.extraction?.form_fields
+                            if (!ff) continue
+                            for (const [k, v] of Object.entries(ff)) {
+                              if (v != null && k !== 'amenities') merged[k] = v
+                              if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
+                                merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
+                              }
+                            }
+                          }
                           setFormalFormData({
-                            address: selectedAppraisal.address || '',
-                            covered_area_m2: (selectedAppraisal as any).property_data?.covered_area_m2?.toString() || '',
-                            semi_covered_area_m2: (selectedAppraisal as any).property_data?.semi_covered_area_m2?.toString() || '',
-                            uncovered_area_m2: (selectedAppraisal as any).property_data?.uncovered_area_m2?.toString() || '',
-                            garage_count: (selectedAppraisal as any).property_data?.garage_count?.toString() || '',
-                            condition: selectedAppraisal.condition || '',
-                            building_age: selectedAppraisal.building_age?.toString() || '',
-                            bathrooms: (selectedAppraisal as any).property_data?.bathrooms?.toString() || '',
-                            floors: (selectedAppraisal as any).property_data?.floors?.toString() || '1',
-                            has_gas: (selectedAppraisal as any).property_data?.has_gas ?? true,
-                            has_private_terrace: (selectedAppraisal as any).property_data?.has_private_terrace ?? false,
-                            has_private_garden: (selectedAppraisal as any).property_data?.has_private_garden ?? false,
-                            amenities: (selectedAppraisal.amenities as string[] || []),
-                          })
+                            address: selectedAppraisal.address || merged.address || '',
+                            covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
+                            semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
+                            uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
+                            garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
+                            condition: selectedAppraisal.condition || merged.condition || '',
+                            building_age: selectedAppraisal.building_age?.toString() || merged.building_age?.toString() || '',
+                            bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
+                            floors: pd.floors?.toString() || merged.floors?.toString() || '1',
+                            has_gas: pd.has_gas ?? merged.has_gas ?? true,
+                            has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
+                            has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
+                            amenities: [...new Set([...(selectedAppraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
+                            // Extra fields from extraction
+                            ...(merged.floor_number != null ? { floor_number: String(merged.floor_number) } : {}),
+                            ...(merged.expensas != null ? { expensas: String(merged.expensas) } : {}),
+                            ...(merged.orientation ? { orientacion: merged.orientation } : {}),
+                            ...(merged.has_storage != null ? { baulera: merged.has_storage ? 'si' : 'no' } : {}),
+                            ...(merged.has_ac != null ? { aire_acondicionado: merged.has_ac ? 'si' : 'no' } : {}),
+                            ...(merged.heating_type ? { calefaccion: merged.heating_type } : {}),
+                          } as any)
                           setShowFormalForm(true)
                         }}
                         className="flex-1 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center justify-center gap-2"
