@@ -352,20 +352,13 @@ export const Tasaciones = () => {
       for (const file of Array.from(files)) {
         const ext = file.name.split('.').pop() || 'jpg'
         const fileName = `${selectedAppraisal.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-        // Convert file to base64 (chunked to avoid stack overflow)
-        const arrayBuffer = await file.arrayBuffer()
-        const bytes = new Uint8Array(arrayBuffer)
-        let binary = ''
-        const chunkSize = 8192
-        for (let i = 0; i < bytes.length; i += chunkSize) {
-          binary += String.fromCharCode(...bytes.slice(i, i + chunkSize))
-        }
-        const base64 = btoa(binary)
-        // Upload via scraper proxy (bypasses RLS)
-        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence`, {
+        // Upload via scraper proxy using FormData (bypasses RLS, handles large files)
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('fileName', fileName)
+        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName, fileBase64: base64, contentType: file.type }),
+          body: formData,
         })
         const uploadResult = await uploadResp.json()
         if (!uploadResult.success) throw new Error(uploadResult.error || 'Upload failed')
