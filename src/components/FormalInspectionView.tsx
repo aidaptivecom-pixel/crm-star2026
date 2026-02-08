@@ -375,7 +375,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto overscroll-contain bg-[#F8F9FA] pb-24">
-        <div className="max-w-6xl mx-auto p-4 flex gap-4">
+        <div className="p-4 flex gap-4">
         
         {/* Left sidebar - context info */}
         <div className="hidden lg:block w-72 flex-shrink-0 space-y-3 sticky top-4 self-start">
@@ -427,7 +427,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
         </div>
 
         {/* Main content - cards */}
-        <div className="flex-1 min-w-0 space-y-3">
+        <div className="flex-1 min-w-0 flex flex-col items-center"><div className="w-full max-w-2xl space-y-3">
         {/* Photo strip */}
         {photos.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -532,6 +532,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
             )}
           </div>
         )}
+        </div>
         </div>
         </div>
       </div>
