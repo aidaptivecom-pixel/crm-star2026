@@ -726,23 +726,9 @@ export const Tasaciones = () => {
     )
   }
 
-  // Fullscreen formal inspection view (replaces entire page content)
-  if (showFormalForm && selectedAppraisal) {
-    return (
-      <main className="flex-1 flex flex-col overflow-hidden bg-white">
-        <FormalInspectionView
-          appraisal={selectedAppraisal}
-          onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
-          onClose={() => { setShowFormalForm(false); }}
-          onRefetch={refetch}
-        />
-      </main>
-    )
-  }
-
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
-      {/* Header */}
+      {/* Header - always visible */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -773,6 +759,15 @@ export const Tasaciones = () => {
         </div>
       </div>
 
+      {/* Formal Inspection View - replaces body content */}
+      {showFormalForm && selectedAppraisal ? (
+        <FormalInspectionView
+          appraisal={selectedAppraisal}
+          onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+          onClose={() => { setShowFormalForm(false); }}
+          onRefetch={refetch}
+        />
+      ) : (<>
       {/* Stats por columna Kanban */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200">
         <div className="grid grid-cols-5 gap-2 sm:gap-4">
@@ -2086,6 +2081,7 @@ export const Tasaciones = () => {
           </button>
         </div>
       )}
+      </>)}
     </main>
   )
 }
