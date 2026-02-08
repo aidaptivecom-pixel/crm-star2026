@@ -1613,17 +1613,40 @@ export const Tasaciones = () => {
                         ✅ Marcar visitada
                       </button>
                     )}
-                    {status === 'visit_completed' && (
+                    {(status === 'visit_completed' || status === 'processing') && (
                       <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'processing')}
-                        className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
-                      >
-                        🔄 Procesar tasación
-                      </button>
-                    )}
-                    {status === 'processing' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'draft')}
+                        onClick={() => {
+                          // Merge voice note extractions for form pre-fill
+                          const pd = (selectedAppraisal as any).property_data || {}
+                          const voiceNotes: any[] = pd.voice_notes || []
+                          const merged: Record<string, any> = {}
+                          for (const note of voiceNotes) {
+                            const ff = note.extraction?.form_fields
+                            if (!ff) continue
+                            for (const [k, v] of Object.entries(ff)) {
+                              if (v != null && k !== 'amenities') merged[k] = v
+                              if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
+                                merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
+                              }
+                            }
+                          }
+                          setFormalFormData({
+                            address: selectedAppraisal.address || merged.address || '',
+                            covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
+                            semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
+                            uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
+                            garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
+                            condition: selectedAppraisal.condition || merged.condition || '',
+                            building_age: selectedAppraisal.building_age?.toString() || merged.building_age?.toString() || '',
+                            bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
+                            floors: pd.floors?.toString() || merged.floors?.toString() || '1',
+                            has_gas: pd.has_gas ?? merged.has_gas ?? true,
+                            has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
+                            has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
+                            amenities: [...new Set([...(selectedAppraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
+                          } as any)
+                          setShowFormalForm(true)
+                        }}
                         className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
                       >
                         📝 Generar borrador
