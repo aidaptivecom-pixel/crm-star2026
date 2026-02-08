@@ -961,6 +961,257 @@ export const Tasaciones = () => {
                   </div>
 
                   <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth p-4 sm:p-6 space-y-4">
+                    {showFormalForm ? (
+                      /* ── Formal Conversion Form (replaces normal content) ── */
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-gray-900 text-lg">🔍 Convertir a Tasación Formal</h3>
+                          <button onClick={() => setShowFormalForm(false)} className="text-gray-400 hover:text-gray-600">
+                            <XCircle className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        {/* Web estimate summary (read-only) */}
+                        <div className="bg-blue-50 rounded-xl p-4">
+                          <p className="text-xs font-medium text-blue-600 mb-2">📋 Datos de tasación web</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div><p className="text-xs text-gray-500">Barrio</p><p className="text-sm font-medium">{selectedAppraisal.neighborhood}</p></div>
+                            <div><p className="text-xs text-gray-500">Tipo</p><p className="text-sm font-medium capitalize">{selectedAppraisal.property_type}</p></div>
+                            <div><p className="text-xs text-gray-500">Superficie</p><p className="text-sm font-medium">{selectedAppraisal.size_m2} m²</p></div>
+                            <div><p className="text-xs text-gray-500">Ambientes</p><p className="text-sm font-medium">{selectedAppraisal.rooms || '-'}</p></div>
+                          </div>
+                          {priceRange && (
+                            <div className="mt-2 pt-2 border-t border-blue-100">
+                              <p className="text-xs text-gray-500">Valuación web</p>
+                              <p className="text-sm font-bold text-[#D4A745]">{priceRange}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Campos a completar */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+                          <p className="text-xs font-medium text-purple-600">✏️ Completar para tasación formal</p>
+                          
+                          <div>
+                            <label className="text-xs font-medium text-gray-700 block mb-1">Dirección exacta</label>
+                            <input type="text" value={formalFormData.address} onChange={e => setFormalFormData({...formalFormData, address: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Av. Callao 1410, Piso 4, Depto A" />
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">m² cubiertos</label>
+                              <input type="number" value={formalFormData.covered_area_m2} onChange={e => setFormalFormData({...formalFormData, covered_area_m2: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">m² semicub.</label>
+                              <input type="number" value={formalFormData.semi_covered_area_m2} onChange={e => setFormalFormData({...formalFormData, semi_covered_area_m2: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">m² descub.</label>
+                              <input type="number" value={formalFormData.uncovered_area_m2} onChange={e => setFormalFormData({...formalFormData, uncovered_area_m2: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-4 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Cocheras</label>
+                              <input type="number" value={formalFormData.garage_count} onChange={e => setFormalFormData({...formalFormData, garage_count: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Antigüedad</label>
+                              <input type="number" value={formalFormData.building_age} onChange={e => setFormalFormData({...formalFormData, building_age: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="años" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Baños</label>
+                              <input type="number" value={formalFormData.bathrooms} onChange={e => setFormalFormData({...formalFormData, bathrooms: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Pisos</label>
+                              <select value={formalFormData.floors} onChange={e => setFormalFormData({...formalFormData, floors: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option value="1">1 (Mono)</option>
+                                <option value="2">2 (Dúplex)</option>
+                                <option value="3">3 (Tríplex)</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-700 block mb-1">Estado</label>
+                            <select value={formalFormData.condition} onChange={e => setFormalFormData({...formalFormData, condition: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                              <option value="">Seleccionar...</option>
+                              <option value="excelente">Excelente</option>
+                              <option value="muy_bueno">Muy Bueno</option>
+                              <option value="bueno">Bueno</option>
+                              <option value="regular">Regular</option>
+                              <option value="malo">Malo</option>
+                            </select>
+                          </div>
+
+                          {/* Toggles */}
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { key: 'has_gas', label: '🔥 Gas natural', color: 'orange' },
+                              { key: 'has_private_terrace', label: '🏗️ Terraza propia', color: 'blue' },
+                              { key: 'has_private_garden', label: '🌿 Espacio verde', color: 'green' },
+                            ].map(({ key, label, color }) => (
+                              <button key={key}
+                                onClick={() => setFormalFormData({...formalFormData, [key]: !(formalFormData as any)[key]})}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                                  (formalFormData as any)[key] 
+                                    ? `bg-${color}-100 border-${color}-300 text-${color}-700` 
+                                    : 'bg-gray-50 border-gray-200 text-gray-400'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Amenities */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-700 block mb-2">Amenities</label>
+                            <div className="flex flex-wrap gap-3">
+                              {['pileta', 'gimnasio', 'SUM', 'seguridad 24hs', 'laundry'].map(a => (
+                                <label key={a} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+                                  <input type="checkbox" checked={formalFormData.amenities.includes(a)}
+                                    onChange={e => {
+                                      const newAmenities = e.target.checked 
+                                        ? [...formalFormData.amenities, a]
+                                        : formalFormData.amenities.filter((x: string) => x !== a)
+                                      setFormalFormData({...formalFormData, amenities: newAmenities})
+                                    }} className="rounded border-gray-300" />
+                                  {a}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Fotos de la propiedad */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                          <label className="text-xs font-medium text-gray-700 mb-2 block">📸 Fotos de la propiedad</label>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            {(() => {
+                              const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+                              return (
+                                <>
+                                  {targetPhotos.length > 0 && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                                      {targetPhotos.map((url, idx) => (
+                                        <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-200">
+                                          <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <input ref={photoInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e.target.files)} />
+                                  <button onClick={() => photoInputRef.current?.click()} disabled={uploadingPhotos}
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-colors disabled:opacity-50">
+                                    {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
+                                  </button>
+                                </>
+                              )
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Notas de voz */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                          <label className="text-xs font-medium text-gray-700 mb-2 block">🎤 Notas de voz</label>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            {(() => {
+                              const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
+                              return (
+                                <>
+                                  {voiceNotes.length > 0 && (
+                                    <p className="text-sm text-gray-600 mb-2">{voiceNotes.length} nota(s) de voz cargada(s)</p>
+                                  )}
+                                  <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+                                  <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
+                                    className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-colors disabled:opacity-50">
+                                    {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Mic className="w-4 h-4" /> Grabar / subir audio</>}
+                                  </button>
+                                </>
+                              )
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Submit */}
+                        <button
+                          onClick={async () => {
+                            setConvertingToFormal(true)
+                            try {
+                              const { supabase } = await import('../lib/supabase')
+                              if (!supabase) throw new Error('Supabase not configured')
+                              await (supabase as any).from('appraisals').update({
+                                address: formalFormData.address || selectedAppraisal.address,
+                                condition: formalFormData.condition || selectedAppraisal.condition,
+                                building_age: formalFormData.building_age ? parseInt(formalFormData.building_age) : selectedAppraisal.building_age,
+                                has_garage: parseInt(formalFormData.garage_count || '0') > 0,
+                                amenities: formalFormData.amenities.length > 0 ? formalFormData.amenities : selectedAppraisal.amenities,
+                                property_data: {
+                                  ...((selectedAppraisal as any).property_data || {}),
+                                  covered_area_m2: formalFormData.covered_area_m2 ? parseFloat(formalFormData.covered_area_m2) : null,
+                                  semi_covered_area_m2: formalFormData.semi_covered_area_m2 ? parseFloat(formalFormData.semi_covered_area_m2) : null,
+                                  uncovered_area_m2: formalFormData.uncovered_area_m2 ? parseFloat(formalFormData.uncovered_area_m2) : null,
+                                  garage_count: formalFormData.garage_count ? parseInt(formalFormData.garage_count) : null,
+                                  bathrooms: formalFormData.bathrooms ? parseInt(formalFormData.bathrooms) : null,
+                                  floors: formalFormData.floors ? parseInt(formalFormData.floors) : 1,
+                                  has_gas: formalFormData.has_gas,
+                                  has_private_terrace: formalFormData.has_private_terrace,
+                                  has_private_garden: formalFormData.has_private_garden,
+                                },
+                              }).eq('id', selectedAppraisal.id)
+                              const updatedAppraisal = {
+                                ...selectedAppraisal,
+                                address: formalFormData.address || selectedAppraisal.address,
+                                condition: formalFormData.condition || selectedAppraisal.condition,
+                                building_age: formalFormData.building_age ? parseInt(formalFormData.building_age) : selectedAppraisal.building_age,
+                                has_garage: parseInt(formalFormData.garage_count || '0') > 0,
+                                amenities: formalFormData.amenities.length > 0 ? formalFormData.amenities : selectedAppraisal.amenities,
+                                property_data: {
+                                  ...((selectedAppraisal as any).property_data || {}),
+                                  covered_area_m2: formalFormData.covered_area_m2 ? parseFloat(formalFormData.covered_area_m2) : null,
+                                  semi_covered_area_m2: formalFormData.semi_covered_area_m2 ? parseFloat(formalFormData.semi_covered_area_m2) : null,
+                                  uncovered_area_m2: formalFormData.uncovered_area_m2 ? parseFloat(formalFormData.uncovered_area_m2) : null,
+                                  garage_count: formalFormData.garage_count ? parseInt(formalFormData.garage_count) : null,
+                                  bathrooms: formalFormData.bathrooms ? parseInt(formalFormData.bathrooms) : null,
+                                  floors: formalFormData.floors ? parseInt(formalFormData.floors) : 1,
+                                  has_gas: formalFormData.has_gas,
+                                  has_private_terrace: formalFormData.has_private_terrace,
+                                  has_private_garden: formalFormData.has_private_garden,
+                                },
+                              } as Appraisal
+                              setShowFormalForm(false)
+                              handleConvertToFormal(updatedAppraisal)
+                            } catch (err) {
+                              console.error('Error updating appraisal:', err)
+                              alert('Error: ' + (err as Error).message)
+                              setConvertingToFormal(false)
+                            }
+                          }}
+                          disabled={convertingToFormal}
+                          className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2 text-base"
+                        >
+                          {convertingToFormal ? (
+                            <><Loader2 className="w-5 h-5 animate-spin" /> Ejecutando tasación formal...</>
+                          ) : (
+                            '🚀 Ejecutar Tasación Formal'
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                    <>
                     {/* Score breakdown */}
                     {factors.length > 0 && (
                       <div className={`p-3 rounded-xl ${scoreClass.bgColor}`}>
@@ -1431,262 +1682,9 @@ export const Tasaciones = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Formal Conversion Form */}
-                  {showFormalForm && (
-                    <div className="p-4 sm:p-6 border-t border-gray-200 bg-gradient-to-b from-purple-50 to-white">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-gray-900 text-lg">🔍 Convertir a Tasación Formal</h3>
-                        <button onClick={() => setShowFormalForm(false)} className="text-gray-400 hover:text-gray-600">
-                          <XCircle className="w-5 h-5" />
-                        </button>
-                      </div>
-
-                      {/* Pre-filled readonly fields */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1 block">Barrio</label>
-                          <input disabled value={selectedAppraisal.neighborhood || ''} className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1 block">Tipo</label>
-                          <input disabled value={selectedAppraisal.property_type || ''} className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1 block">m² totales</label>
-                          <input disabled value={selectedAppraisal.size_m2 || ''} className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1 block">Ambientes</label>
-                          <input disabled value={selectedAppraisal.rooms || (selectedAppraisal as any).ambientes || ''} className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600" />
-                        </div>
-                      </div>
-
-                      {/* New fields */}
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Dirección exacta</label>
-                          <input value={formalFormData.address} onChange={e => setFormalFormData(p => ({...p, address: e.target.value}))} placeholder="Ej: Av. Cabildo 1234, Piso 5° A" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300 focus:border-purple-400" />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">m² cubiertos</label>
-                            <input type="number" value={formalFormData.covered_area_m2} onChange={e => setFormalFormData(p => ({...p, covered_area_m2: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">m² semicub.</label>
-                            <input type="number" value={formalFormData.semi_covered_area_m2} onChange={e => setFormalFormData(p => ({...p, semi_covered_area_m2: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">m² descub.</label>
-                            <input type="number" value={formalFormData.uncovered_area_m2} onChange={e => setFormalFormData(p => ({...p, uncovered_area_m2: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Cocheras</label>
-                            <input type="number" min="0" value={formalFormData.garage_count} onChange={e => setFormalFormData(p => ({...p, garage_count: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Antigüedad (años)</label>
-                            <input type="number" min="0" value={formalFormData.building_age} onChange={e => setFormalFormData(p => ({...p, building_age: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Baños</label>
-                            <input type="number" min="1" value={formalFormData.bathrooms} onChange={e => setFormalFormData(p => ({...p, bathrooms: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300" />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Pisos</label>
-                            <select value={formalFormData.floors} onChange={e => setFormalFormData(p => ({...p, floors: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300">
-                              <option value="1">1 (Mono)</option>
-                              <option value="2">2 (Dúplex)</option>
-                              <option value="3">3 (Tríplex)</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Estado</label>
-                          <select value={formalFormData.condition} onChange={e => setFormalFormData(p => ({...p, condition: e.target.value}))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300">
-                            <option value="">Seleccionar...</option>
-                            <option value="Excelente">Excelente</option>
-                            <option value="Muy Bueno">Muy Bueno</option>
-                            <option value="Bueno">Bueno</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Malo">Malo</option>
-                          </select>
-                        </div>
-
-                        {/* Toggles */}
-                        <div className="flex flex-wrap gap-3">
-                          {[
-                            { key: 'has_gas' as const, label: '🔥 Gas natural' },
-                            { key: 'has_private_terrace' as const, label: '🏗️ Terraza propia' },
-                            { key: 'has_private_garden' as const, label: '🌿 Espacio verde' },
-                          ].map(({ key, label }) => (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() => setFormalFormData(p => ({...p, [key]: !p[key]}))}
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                                formalFormData[key] ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-500'
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Amenities */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-2 block">Amenities</label>
-                          <div className="flex flex-wrap gap-2">
-                            {['pileta', 'gimnasio', 'SUM', 'seguridad 24hs', 'laundry'].map(amenity => (
-                              <label key={amenity} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={formalFormData.amenities.includes(amenity)}
-                                  onChange={e => {
-                                    setFormalFormData(p => ({
-                                      ...p,
-                                      amenities: e.target.checked
-                                        ? [...p.amenities, amenity]
-                                        : p.amenities.filter(a => a !== amenity)
-                                    }))
-                                  }}
-                                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-300"
-                                />
-                                {amenity}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Photo upload */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-2 block">📸 Fotos de la propiedad</label>
-                          <div className="bg-gray-50 rounded-lg p-3">
-                            {(() => {
-                              const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
-                              return (
-                                <>
-                                  {targetPhotos.length > 0 && (
-                                    <div className="grid grid-cols-4 gap-2 mb-2">
-                                      {targetPhotos.map((url, idx) => (
-                                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-200">
-                                          <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={() => photoInputRef.current?.click()}
-                                    disabled={uploadingPhotos}
-                                    className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-colors disabled:opacity-50"
-                                  >
-                                    {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
-                                  </button>
-                                </>
-                              )
-                            })()}
-                          </div>
-                        </div>
-
-                        {/* Voice note upload */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-2 block">🎤 Notas de voz</label>
-                          <div className="bg-gray-50 rounded-lg p-3">
-                            {(() => {
-                              const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
-                              return (
-                                <>
-                                  {voiceNotes.length > 0 && (
-                                    <p className="text-sm text-gray-600 mb-2">{voiceNotes.length} nota(s) de voz cargada(s)</p>
-                                  )}
-                                  <button
-                                    onClick={() => audioInputRef.current?.click()}
-                                    disabled={uploadingAudio}
-                                    className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-colors disabled:opacity-50"
-                                  >
-                                    {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Mic className="w-4 h-4" /> Grabar / subir audio</>}
-                                  </button>
-                                </>
-                              )
-                            })()}
-                          </div>
-                        </div>
-
-                        {/* Submit button */}
-                        <button
-                          onClick={async () => {
-                            setConvertingToFormal(true)
-                            try {
-                              const { supabase } = await import('../lib/supabase')
-                              if (!supabase) throw new Error('Supabase not configured')
-                              // Update appraisal with formal form data
-                              await (supabase as any).from('appraisals').update({
-                                address: formalFormData.address || selectedAppraisal.address,
-                                condition: formalFormData.condition || selectedAppraisal.condition,
-                                building_age: formalFormData.building_age ? parseInt(formalFormData.building_age) : selectedAppraisal.building_age,
-                                has_garage: parseInt(formalFormData.garage_count || '0') > 0,
-                                amenities: formalFormData.amenities.length > 0 ? formalFormData.amenities : selectedAppraisal.amenities,
-                                property_data: {
-                                  ...((selectedAppraisal as any).property_data || {}),
-                                  covered_area_m2: formalFormData.covered_area_m2 ? parseFloat(formalFormData.covered_area_m2) : null,
-                                  semi_covered_area_m2: formalFormData.semi_covered_area_m2 ? parseFloat(formalFormData.semi_covered_area_m2) : null,
-                                  uncovered_area_m2: formalFormData.uncovered_area_m2 ? parseFloat(formalFormData.uncovered_area_m2) : null,
-                                  garage_count: formalFormData.garage_count ? parseInt(formalFormData.garage_count) : null,
-                                  bathrooms: formalFormData.bathrooms ? parseInt(formalFormData.bathrooms) : null,
-                                  floors: formalFormData.floors ? parseInt(formalFormData.floors) : 1,
-                                  has_gas: formalFormData.has_gas,
-                                  has_private_terrace: formalFormData.has_private_terrace,
-                                  has_private_garden: formalFormData.has_private_garden,
-                                },
-                              }).eq('id', selectedAppraisal.id)
-                              // Now run formal estimation with updated data
-                              const updatedAppraisal = {
-                                ...selectedAppraisal,
-                                address: formalFormData.address || selectedAppraisal.address,
-                                condition: formalFormData.condition || selectedAppraisal.condition,
-                                building_age: formalFormData.building_age ? parseInt(formalFormData.building_age) : selectedAppraisal.building_age,
-                                has_garage: parseInt(formalFormData.garage_count || '0') > 0,
-                                amenities: formalFormData.amenities.length > 0 ? formalFormData.amenities : selectedAppraisal.amenities,
-                                property_data: {
-                                  ...((selectedAppraisal as any).property_data || {}),
-                                  covered_area_m2: formalFormData.covered_area_m2 ? parseFloat(formalFormData.covered_area_m2) : null,
-                                  semi_covered_area_m2: formalFormData.semi_covered_area_m2 ? parseFloat(formalFormData.semi_covered_area_m2) : null,
-                                  uncovered_area_m2: formalFormData.uncovered_area_m2 ? parseFloat(formalFormData.uncovered_area_m2) : null,
-                                  garage_count: formalFormData.garage_count ? parseInt(formalFormData.garage_count) : null,
-                                  bathrooms: formalFormData.bathrooms ? parseInt(formalFormData.bathrooms) : null,
-                                  floors: formalFormData.floors ? parseInt(formalFormData.floors) : 1,
-                                  has_gas: formalFormData.has_gas,
-                                  has_private_terrace: formalFormData.has_private_terrace,
-                                  has_private_garden: formalFormData.has_private_garden,
-                                },
-                              } as Appraisal
-                              setShowFormalForm(false)
-                              handleConvertToFormal(updatedAppraisal)
-                            } catch (err) {
-                              console.error('Error updating appraisal:', err)
-                              alert('Error: ' + (err as Error).message)
-                              setConvertingToFormal(false)
-                            }
-                          }}
-                          disabled={convertingToFormal}
-                          className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2 text-base"
-                        >
-                          {convertingToFormal ? (
-                            <><Loader2 className="w-5 h-5 animate-spin" /> Ejecutando tasación formal...</>
-                          ) : (
-                            '🚀 Ejecutar Tasación Formal'
-                          )}
-                        </button>
-                      </div>
-                    </div>
+                  </>
                   )}
+                  </div>
 
                   {/* Actions - Sticky at bottom */}
                   <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row gap-2">
