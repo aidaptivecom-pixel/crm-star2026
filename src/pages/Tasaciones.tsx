@@ -474,6 +474,8 @@ export const Tasaciones = () => {
         body: JSON.stringify({
           audio_base64: base64,
           appraisal_id: selectedAppraisal.id,
+          filename: file.name,
+          mime_type: file.type,
         }),
       })
       const result = await resp.json()
