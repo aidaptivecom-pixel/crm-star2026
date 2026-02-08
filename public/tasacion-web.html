@@ -461,7 +461,7 @@ async function handleSubmit(e) {
   if (body.contacto && !body.contacto.nombre && !body.contacto.telefono && !body.contacto.email) delete body.contacto;
 
   try {
-    const res = await fetch('http://135.181.24.249:3050/estimate', {
+    const res = await fetch('/api/estimate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
