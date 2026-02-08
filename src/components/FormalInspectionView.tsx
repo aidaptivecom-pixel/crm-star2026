@@ -49,11 +49,17 @@ function itemStatus(value: any): ItemStatus {
   return 'ok'
 }
 
+function capitalize(s: string): string {
+  if (!s) return s
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 function formatValue(value: any): string {
   if (value === true) return 'Sí'
   if (value === false) return 'No'
   if (typeof value === 'number') return String(value)
-  return String(value)
+  const str = String(value).replace(/_/g, ' ')
+  return capitalize(str)
 }
 
 // ─── Section definitions ───
@@ -338,7 +344,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const audioDuration = voiceNotes.length > 0 ? voiceNotes.map((vn: any) => vn.duration || '').filter(Boolean).join(', ') || `${voiceNotes.length} nota(s)` : 'Sin audio'
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
       {/* Header */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
