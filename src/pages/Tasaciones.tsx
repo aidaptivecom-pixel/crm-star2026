@@ -287,6 +287,7 @@ export const Tasaciones = () => {
           building_age: appraisal.building_age,
           amenities: appraisal.amenities,
           appraisal_id: appraisal.id,
+          max_comparables_to_analyze: 10,
         }),
       })
       const result = await resp.json()
