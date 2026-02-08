@@ -479,14 +479,14 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
           <button
             onClick={() => goTo(currentSection - 1)}
             disabled={currentSection === 0}
-            className="absolute left-[-8px] top-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 disabled:opacity-30 hover:bg-[#F5E6B8] transition-colors"
+            className="absolute left-[-44px] top-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 disabled:opacity-30 hover:bg-[#F5E6B8] transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => goTo(currentSection + 1)}
             disabled={currentSection === SECTION_NAMES.length - 1}
-            className="absolute right-[-8px] top-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 disabled:opacity-30 hover:bg-[#F5E6B8] transition-colors"
+            className="absolute right-[-44px] top-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 disabled:opacity-30 hover:bg-[#F5E6B8] transition-colors"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
