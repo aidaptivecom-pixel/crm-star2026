@@ -152,6 +152,13 @@ export const Tasaciones = () => {
     condition: '',
     building_age: '',
     amenities: [] as string[],
+    // Unit features
+    bathrooms: '',
+    floors: '1',
+    has_gas: true,
+    has_private_terrace: false,
+    has_private_garden: false,
+    has_private_elevator: false,
     comparables_count: '',
     address: '',
     client_name: '',
@@ -185,6 +192,12 @@ export const Tasaciones = () => {
           semi_covered_area_m2: newForm.semi_covered_area_m2 ? parseFloat(newForm.semi_covered_area_m2) : null,
           uncovered_area_m2: newForm.uncovered_area_m2 ? parseFloat(newForm.uncovered_area_m2) : null,
           garage_count: newForm.garage_count ? parseInt(newForm.garage_count) : 0,
+          bathrooms: newForm.bathrooms ? parseInt(newForm.bathrooms) : null,
+          floors: newForm.floors ? parseInt(newForm.floors) : 1,
+          has_gas: newForm.has_gas,
+          has_private_terrace: newForm.has_private_terrace,
+          has_private_garden: newForm.has_private_garden,
+          has_private_elevator: newForm.has_private_elevator,
         },
         client_name: newForm.client_name || null,
         client_phone: newForm.client_phone || null,
@@ -221,6 +234,12 @@ export const Tasaciones = () => {
           condition: newForm.condition || undefined,
           building_age: newForm.building_age ? parseInt(newForm.building_age) : undefined,
           amenities: newForm.amenities.length > 0 ? newForm.amenities : undefined,
+          bathrooms: newForm.bathrooms ? parseInt(newForm.bathrooms) : undefined,
+          floors: newForm.floors ? parseInt(newForm.floors) : undefined,
+          has_gas: newForm.has_gas,
+          has_private_terrace: newForm.has_private_terrace,
+          has_private_garden: newForm.has_private_garden,
+          has_private_elevator: newForm.has_private_elevator,
           comparables_count: newForm.comparables_count ? parseInt(newForm.comparables_count) : undefined,
           max_comparables_to_analyze: newForm.comparables_count ? parseInt(newForm.comparables_count) : undefined,
           appraisal_id: appraisalId,
@@ -255,7 +274,9 @@ export const Tasaciones = () => {
         neighborhood: '', property_type: 'departamentos', total_area_m2: '',
         covered_area_m2: '', semi_covered_area_m2: '', uncovered_area_m2: '',
         rooms: '', has_garage: false, garage_count: '', condition: '',
-        building_age: '', amenities: [], comparables_count: '', address: '', client_name: '',
+        building_age: '', amenities: [], bathrooms: '', floors: '1', has_gas: true,
+        has_private_terrace: false, has_private_garden: false, has_private_elevator: false,
+        comparables_count: '', address: '', client_name: '',
         client_phone: '', client_email: '',
       })
     } catch (err) {
@@ -1719,10 +1740,65 @@ export const Tasaciones = () => {
                 )}
               </div>
 
+              {/* Unit Features */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Baños</label>
+                  <select
+                    value={newForm.bathrooms}
+                    onChange={(e) => setNewForm(f => ({ ...f, bathrooms: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  >
+                    <option value="">-</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pisos/Niveles</label>
+                  <select
+                    value={newForm.floors}
+                    onChange={(e) => setNewForm(f => ({ ...f, floors: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+                  >
+                    <option value="1">1 (Simple)</option>
+                    <option value="2">2 (Dúplex)</option>
+                    <option value="3">3 (Tríplex)</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Características de la unidad</label>
                 <div className="flex flex-wrap gap-2">
-                  {['Pileta', 'Gimnasio', 'SUM', 'Parrilla', 'Laundry', 'Seguridad 24hs', 'Balcón', 'Terraza'].map(amenity => (
+                  {[
+                    { key: 'has_gas', label: 'Gas natural' },
+                    { key: 'has_private_terrace', label: 'Terraza propia' },
+                    { key: 'has_private_garden', label: 'Espacio verde propio' },
+                    { key: 'has_private_elevator', label: 'Ascensor privado' },
+                  ].map(feat => (
+                    <button
+                      key={feat.key}
+                      type="button"
+                      onClick={() => setNewForm(f => ({ ...f, [feat.key]: !(f as any)[feat.key] }))}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        (newForm as any)[feat.key]
+                          ? 'bg-[#D4A745] text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {feat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities del edificio</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Pileta', 'Gimnasio', 'SUM', 'Parrilla', 'Laundry', 'Seguridad 24hs', 'Balcón'].map(amenity => (
                     <button
                       key={amenity}
                       type="button"
