@@ -726,6 +726,20 @@ export const Tasaciones = () => {
     )
   }
 
+  // Fullscreen formal inspection view (replaces entire page content)
+  if (showFormalForm && selectedAppraisal) {
+    return (
+      <main className="flex-1 flex flex-col overflow-hidden bg-white">
+        <FormalInspectionView
+          appraisal={selectedAppraisal}
+          onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+          onClose={() => { setShowFormalForm(false); }}
+          onRefetch={refetch}
+        />
+      </main>
+    )
+  }
+
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
       {/* Header */}

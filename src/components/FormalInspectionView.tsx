@@ -338,7 +338,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const audioDuration = voiceNotes.length > 0 ? voiceNotes.map((vn: any) => vn.duration || '').filter(Boolean).join(', ') || `${voiceNotes.length} nota(s)` : 'Sin audio'
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
+    <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
