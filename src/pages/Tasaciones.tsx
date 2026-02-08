@@ -352,9 +352,15 @@ export const Tasaciones = () => {
       for (const file of Array.from(files)) {
         const ext = file.name.split('.').pop() || 'jpg'
         const fileName = `${selectedAppraisal.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-        // Convert file to base64
+        // Convert file to base64 (chunked to avoid stack overflow)
         const arrayBuffer = await file.arrayBuffer()
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+        const bytes = new Uint8Array(arrayBuffer)
+        let binary = ''
+        const chunkSize = 8192
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          binary += String.fromCharCode(...bytes.slice(i, i + chunkSize))
+        }
+        const base64 = btoa(binary)
         // Upload via scraper proxy (bypasses RLS)
         const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence`, {
           method: 'POST',
