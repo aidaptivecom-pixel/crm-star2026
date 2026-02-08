@@ -474,9 +474,9 @@ async function handleSubmit(e) {
       const SUPABASE_URL = 'https://wuoptaejdobinsmmkmoq.supabase.co';
       const SUPABASE_KEY = 'sb_publishable_71JeldswzCokzfErELwMyw_yJLMz9gz';
       const est = data.estimation || {};
-      const contactoNombre = document.getElementById('contactoNombre')?.value || null;
-      const contactoTel = document.getElementById('contactoTel')?.value || null;
-      const contactoEmail = document.getElementById('contactoEmail')?.value || null;
+      const contactoNombre = document.getElementById('nombre')?.value || null;
+      const contactoTel = document.getElementById('telefono')?.value || null;
+      const contactoEmail = document.getElementById('email')?.value || null;
 
       const insertData = {
         neighborhood: body.neighborhood,
