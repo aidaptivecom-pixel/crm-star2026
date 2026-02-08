@@ -374,7 +374,8 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3 pb-24">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-24">
+        <div className="max-w-2xl mx-auto space-y-3">
         {/* Photo strip */}
         {photos.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -479,6 +480,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Lightbox */}
