@@ -998,7 +998,12 @@ export const Tasaciones = () => {
                               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Av. Callao 1410, Piso 4, Depto A" />
                           </div>
 
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-4 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">M² Totales</label>
+                              <input type="number" value={selectedAppraisal.size_m2 || ''} disabled
+                                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500" />
+                            </div>
                             <div>
                               <label className="text-xs font-medium text-gray-700 block mb-1">M² Cubiertos</label>
                               <input type="number" value={formalFormData.covered_area_m2} onChange={e => setFormalFormData({...formalFormData, covered_area_m2: e.target.value})}
@@ -1016,7 +1021,7 @@ export const Tasaciones = () => {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-4 gap-3">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                             <div>
                               <label className="text-xs font-medium text-gray-700 block mb-1">Cocheras</label>
                               <input type="number" value={formalFormData.garage_count} onChange={e => setFormalFormData({...formalFormData, garage_count: e.target.value})}
@@ -1025,7 +1030,7 @@ export const Tasaciones = () => {
                             <div>
                               <label className="text-xs font-medium text-gray-700 block mb-1">Antigüedad</label>
                               <input type="number" value={formalFormData.building_age} onChange={e => setFormalFormData({...formalFormData, building_age: e.target.value})}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="años" />
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Años" />
                             </div>
                             <div>
                               <label className="text-xs font-medium text-gray-700 block mb-1">Baños</label>
@@ -1040,6 +1045,16 @@ export const Tasaciones = () => {
                                 <option value="2">2 (Dúplex)</option>
                                 <option value="3">3 (Tríplex)</option>
                               </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Piso/Altura</label>
+                              <input type="number" min="0" value={(formalFormData as any).floor_number || ''} onChange={e => setFormalFormData({...formalFormData, floor_number: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Ej: 8" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Expensas</label>
+                              <input type="number" min="0" value={(formalFormData as any).expensas || ''} onChange={e => setFormalFormData({...formalFormData, expensas: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="$/mes" />
                             </div>
                           </div>
 
@@ -1064,6 +1079,9 @@ export const Tasaciones = () => {
                                 { key: 'has_gas', label: 'Gas natural' },
                                 { key: 'has_private_terrace', label: 'Terraza propia' },
                                 { key: 'has_private_garden', label: 'Espacio verde propio' },
+                                { key: 'has_balcony', label: 'Balcón' },
+                                { key: 'has_street_view', label: 'Vista a la calle' },
+                                { key: 'has_luminosity', label: 'Luminoso' },
                               ].map(({ key, label }) => (
                                 <label key={key} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
                                   <input type="checkbox" checked={(formalFormData as any)[key]}
@@ -1079,7 +1097,7 @@ export const Tasaciones = () => {
                           <div>
                             <label className="text-xs font-medium text-gray-700 block mb-2">Amenities del edificio</label>
                             <div className="flex flex-wrap gap-3">
-                              {['Pileta', 'Gimnasio', 'SUM', 'Seguridad 24hs', 'Laundry'].map(a => (
+                              {['Pileta', 'Gimnasio', 'SUM', 'Seguridad 24hs', 'Laundry', 'Parrilla', 'Solarium', 'Bicicletero', 'Área de juegos', 'Sauna', 'Microcine'].map(a => (
                                 <label key={a} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
                                   <input type="checkbox" checked={formalFormData.amenities.includes(a.toLowerCase())}
                                     onChange={e => {
