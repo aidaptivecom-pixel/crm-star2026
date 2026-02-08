@@ -494,9 +494,91 @@ export const Tasaciones = () => {
           tokens_used: result.tokens_used,
           cost_usd: result.cost_usd,
         }
-        await (supabase as any).from('appraisals').update({
-          property_data: { ...currentData, voice_notes: [...existingNotes, newNote] },
-        }).eq('id', selectedAppraisal.id)
+
+        // Auto-fill: merge extracted form_fields into property_data
+        const ff = result.extraction?.form_fields || {}
+        const autoFillData: Record<string, any> = {}
+        // Only set fields that have non-null values from extraction
+        const fieldMap: Record<string, string> = {
+          covered_area_m2: 'covered_area_m2',
+          semi_covered_area_m2: 'semi_covered_area_m2',
+          uncovered_area_m2: 'uncovered_area_m2',
+          garage_count: 'garage_count',
+          building_age: 'building_age',
+          bathrooms: 'bathrooms',
+          floors: 'floors',
+          floor_number: 'floor_number',
+          orientation: 'orientation',
+          has_gas: 'has_gas',
+          has_private_terrace: 'has_private_terrace',
+          has_private_garden: 'has_private_garden',
+          has_balcony: 'has_balcony',
+          has_street_view: 'has_street_view',
+          has_luminosity: 'has_luminosity',
+          has_storage: 'has_storage',
+          has_ac: 'has_ac',
+          heating_type: 'heating_type',
+          condition: 'condition',
+          expensas: 'expensas',
+          amenities: 'amenities',
+        }
+        for (const [extractKey, dataKey] of Object.entries(fieldMap)) {
+          if (ff[extractKey] != null) {
+            autoFillData[dataKey] = ff[extractKey]
+          }
+        }
+
+        // Merge: existing data < auto-fill < voice_notes (voice_notes always appended)
+        const updatedPropertyData = {
+          ...currentData,
+          ...autoFillData,
+          voice_notes: [...existingNotes, newNote],
+        }
+
+        // Also update top-level appraisal fields if extracted
+        const topLevelUpdate: Record<string, any> = {
+          property_data: updatedPropertyData,
+        }
+        if (ff.address && !selectedAppraisal.address) {
+          topLevelUpdate.address = ff.address
+        }
+        if (ff.condition) {
+          topLevelUpdate.condition = ff.condition
+        }
+        if (ff.building_age != null) {
+          topLevelUpdate.building_age = ff.building_age
+        }
+
+        await (supabase as any).from('appraisals').update(topLevelUpdate).eq('id', selectedAppraisal.id)
+
+        // Auto-fill the formal form if it's open
+        if (showFormalForm) {
+          setFormalFormData(prev => {
+            const updated = { ...prev }
+            if (ff.address && !prev.address) updated.address = ff.address
+            if (ff.covered_area_m2 != null && !prev.covered_area_m2) updated.covered_area_m2 = String(ff.covered_area_m2)
+            if (ff.semi_covered_area_m2 != null && !prev.semi_covered_area_m2) updated.semi_covered_area_m2 = String(ff.semi_covered_area_m2)
+            if (ff.uncovered_area_m2 != null && !prev.uncovered_area_m2) updated.uncovered_area_m2 = String(ff.uncovered_area_m2)
+            if (ff.garage_count != null && !prev.garage_count) updated.garage_count = String(ff.garage_count)
+            if (ff.building_age != null && !(prev as any).building_age) (updated as any).building_age = String(ff.building_age)
+            if (ff.bathrooms != null && !prev.bathrooms) updated.bathrooms = String(ff.bathrooms)
+            if (ff.floors != null) updated.floors = String(ff.floors)
+            if (ff.has_gas != null) updated.has_gas = ff.has_gas
+            if (ff.has_private_terrace != null) updated.has_private_terrace = ff.has_private_terrace
+            if (ff.has_private_garden != null) updated.has_private_garden = ff.has_private_garden
+            if (ff.condition) updated.condition = ff.condition
+            if (ff.amenities?.length) updated.amenities = [...new Set([...prev.amenities, ...ff.amenities.map((a: string) => a.toLowerCase())])]
+            // Extra fields
+            if (ff.floor_number != null) (updated as any).floor_number = String(ff.floor_number)
+            if (ff.expensas != null) (updated as any).expensas = String(ff.expensas)
+            if (ff.orientation) (updated as any).orientacion = ff.orientation
+            if (ff.has_storage != null) (updated as any).baulera = ff.has_storage ? 'si' : 'no'
+            if (ff.has_ac != null) (updated as any).aire_acondicionado = ff.has_ac ? 'si' : 'no'
+            if (ff.heating_type) (updated as any).calefaccion = ff.heating_type
+            return updated
+          })
+        }
+
         refetch()
       } else {
         throw new Error(result.error || 'Error en transcripción')
@@ -507,7 +589,7 @@ export const Tasaciones = () => {
     } finally {
       setUploadingAudio(false)
     }
-  }, [selectedAppraisal, refetch])
+  }, [selectedAppraisal, refetch, showFormalForm])
 
   // Filtrar tasaciones
   const filteredAppraisals = useMemo(() => {
