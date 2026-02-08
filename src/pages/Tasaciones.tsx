@@ -132,14 +132,14 @@ export const Tasaciones = () => {
   const [showNewModal, setShowNewModal] = useState(false)
   const [estimating, setEstimating] = useState(false)
   const [estimateType, setEstimateType] = useState<'express' | 'formal'>('express')
-  const [convertingToFormal, setConvertingToFormal] = useState(false)
+  const [_convertingToFormal, setConvertingToFormal] = useState(false)
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [analyzingTarget, setAnalyzingTarget] = useState(false)
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
   const [uploadingAudio, setUploadingAudio] = useState(false)
   const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const [showFormalForm, setShowFormalForm] = useState(false)
-  const [formalFormData, setFormalFormData] = useState({
+  const [_formalFormData, setFormalFormData] = useState({
     address: '',
     covered_area_m2: '',
     semi_covered_area_m2: '',
