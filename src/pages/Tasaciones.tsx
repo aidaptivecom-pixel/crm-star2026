@@ -1000,17 +1000,17 @@ export const Tasaciones = () => {
 
                           <div className="grid grid-cols-3 gap-3">
                             <div>
-                              <label className="text-xs font-medium text-gray-700 block mb-1">m² cubiertos</label>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">M² Cubiertos</label>
                               <input type="number" value={formalFormData.covered_area_m2} onChange={e => setFormalFormData({...formalFormData, covered_area_m2: e.target.value})}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                             </div>
                             <div>
-                              <label className="text-xs font-medium text-gray-700 block mb-1">m² semicub.</label>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">M² Semicub.</label>
                               <input type="number" value={formalFormData.semi_covered_area_m2} onChange={e => setFormalFormData({...formalFormData, semi_covered_area_m2: e.target.value})}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                             </div>
                             <div>
-                              <label className="text-xs font-medium text-gray-700 block mb-1">m² descub.</label>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">M² Descub.</label>
                               <input type="number" value={formalFormData.uncovered_area_m2} onChange={e => setFormalFormData({...formalFormData, uncovered_area_m2: e.target.value})}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                             </div>
@@ -1056,37 +1056,37 @@ export const Tasaciones = () => {
                             </select>
                           </div>
 
-                          {/* Toggles */}
-                          <div className="flex flex-wrap gap-2">
-                            {[
-                              { key: 'has_gas', label: '🔥 Gas natural', color: 'orange' },
-                              { key: 'has_private_terrace', label: '🏗️ Terraza propia', color: 'blue' },
-                              { key: 'has_private_garden', label: '🌿 Espacio verde', color: 'green' },
-                            ].map(({ key, label, color }) => (
-                              <button key={key}
-                                onClick={() => setFormalFormData({...formalFormData, [key]: !(formalFormData as any)[key]})}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                                  (formalFormData as any)[key] 
-                                    ? `bg-${color}-100 border-${color}-300 text-${color}-700` 
-                                    : 'bg-gray-50 border-gray-200 text-gray-400'
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
+                          {/* Características de la unidad */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-700 block mb-2">Características de la unidad</label>
+                            <div className="flex flex-wrap gap-3">
+                              {[
+                                { key: 'has_gas', label: 'Gas natural' },
+                                { key: 'has_private_terrace', label: 'Terraza propia' },
+                                { key: 'has_private_garden', label: 'Espacio verde propio' },
+                              ].map(({ key, label }) => (
+                                <label key={key} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+                                  <input type="checkbox" checked={(formalFormData as any)[key]}
+                                    onChange={() => setFormalFormData({...formalFormData, [key]: !(formalFormData as any)[key]})}
+                                    className="rounded border-gray-300" />
+                                  {label}
+                                </label>
+                              ))}
+                            </div>
                           </div>
 
-                          {/* Amenities */}
+                          {/* Amenities del edificio */}
                           <div>
-                            <label className="text-xs font-medium text-gray-700 block mb-2">Amenities</label>
+                            <label className="text-xs font-medium text-gray-700 block mb-2">Amenities del edificio</label>
                             <div className="flex flex-wrap gap-3">
-                              {['pileta', 'gimnasio', 'SUM', 'seguridad 24hs', 'laundry'].map(a => (
+                              {['Pileta', 'Gimnasio', 'SUM', 'Seguridad 24hs', 'Laundry'].map(a => (
                                 <label key={a} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                                  <input type="checkbox" checked={formalFormData.amenities.includes(a)}
+                                  <input type="checkbox" checked={formalFormData.amenities.includes(a.toLowerCase())}
                                     onChange={e => {
+                                      const val = a.toLowerCase()
                                       const newAmenities = e.target.checked 
-                                        ? [...formalFormData.amenities, a]
-                                        : formalFormData.amenities.filter((x: string) => x !== a)
+                                        ? [...formalFormData.amenities, val]
+                                        : formalFormData.amenities.filter((x: string) => x !== val)
                                       setFormalFormData({...formalFormData, amenities: newAmenities})
                                     }} className="rounded border-gray-300" />
                                   {a}
