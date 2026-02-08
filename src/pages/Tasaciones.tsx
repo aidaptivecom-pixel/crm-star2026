@@ -1056,6 +1056,52 @@ export const Tasaciones = () => {
                               <input type="number" min="0" value={(formalFormData as any).expensas || ''} onChange={e => setFormalFormData({...formalFormData, expensas: e.target.value} as any)}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="$/mes" />
                             </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Orientación</label>
+                              <select value={(formalFormData as any).orientacion || ''} onChange={e => setFormalFormData({...formalFormData, orientacion: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option value="">Seleccionar...</option>
+                                <option value="norte">Norte</option>
+                                <option value="sur">Sur</option>
+                                <option value="este">Este</option>
+                                <option value="oeste">Oeste</option>
+                                <option value="noreste">Noreste</option>
+                                <option value="noroeste">Noroeste</option>
+                                <option value="sudeste">Sudeste</option>
+                                <option value="sudoeste">Sudoeste</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Baulera</label>
+                              <select value={(formalFormData as any).baulera || ''} onChange={e => setFormalFormData({...formalFormData, baulera: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option value="">Seleccionar...</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Aire Acondicionado</label>
+                              <select value={(formalFormData as any).aire_acondicionado || ''} onChange={e => setFormalFormData({...formalFormData, aire_acondicionado: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option value="">Seleccionar...</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 block mb-1">Calefacción</label>
+                              <select value={(formalFormData as any).calefaccion || ''} onChange={e => setFormalFormData({...formalFormData, calefaccion: e.target.value} as any)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option value="">Seleccionar...</option>
+                                <option value="sin_calefaccion">Sin calefacción</option>
+                                <option value="losa_radiante">Losa radiante</option>
+                                <option value="radiadores">Radiadores</option>
+                                <option value="split_frio_calor">Split frío/calor</option>
+                                <option value="estufa">Estufa</option>
+                                <option value="central">Central</option>
+                              </select>
+                            </div>
                           </div>
 
                           <div>
@@ -1161,6 +1207,66 @@ export const Tasaciones = () => {
                                 </>
                               )
                             })()}
+                          </div>
+                        </div>
+
+                        {/* 📋 Guía de Visita */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="text-xs font-medium text-purple-600 block">📋 Guía de Visita — Checklist para Jony</label>
+                            <span className="text-xs text-gray-400">completados</span>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {/* Photos checklist */}
+                            <div>
+                              <p className="text-xs font-medium text-gray-700 mb-2">📸 Fotos a tomar</p>
+                              <div className="grid grid-cols-2 gap-1.5">
+                                {[
+                                  'Living/comedor general',
+                                  'Cocina (mesada, estado)',
+                                  'Cada baño (completo)',
+                                  'Cada dormitorio',
+                                  'Balcón/terraza',
+                                  'Vista desde ventana principal',
+                                  'Pisos (detalle estado)',
+                                  'Carpinterías (ventanas, puertas)',
+                                  'Fachada del edificio',
+                                  'Amenities (pileta, gym, etc.)',
+                                  'Cochera/baulera',
+                                  'Hall de entrada',
+                                ].map(item => (
+                                  <label key={item} className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer py-0.5">
+                                    <input type="checkbox" className="rounded border-gray-300 text-purple-600 w-3.5 h-3.5" />
+                                    {item}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Audio checklist */}
+                            <div>
+                              <p className="text-xs font-medium text-gray-700 mb-2">🎤 Mencionar en audio</p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {[
+                                  'Estado general y reformas',
+                                  'Instalaciones (eléctrica, gas, agua)',
+                                  'Calefacción y A/C (estado)',
+                                  'Luminosidad y ventilación',
+                                  'Distribución (funcional o no)',
+                                  'Ruidos (calle, vecinos)',
+                                  'Humedad visible',
+                                  'Detalles que afecten valor',
+                                ].map(item => (
+                                  <label key={item} className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer py-0.5">
+                                    <input type="checkbox" className="rounded border-gray-300 text-purple-600 w-3.5 h-3.5" />
+                                    {item}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <p className="text-xs text-gray-400 italic">La IA analizará las fotos y audios contra este checklist. Si falta información, te avisará.</p>
                           </div>
                         </div>
 
