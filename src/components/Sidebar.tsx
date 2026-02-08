@@ -75,6 +75,7 @@ export const Sidebar = ({ onNavigate }: SidebarProps) => {
             <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" onNavigate={onNavigate} />
             <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" onNavigate={onNavigate} />
             <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" onNavigate={onNavigate} />
+            <NavItem to="/tasacion-web" icon={Calculator} label="Tasación Web" onNavigate={onNavigate} />
           </nav>
         </div>
 

@@ -9,6 +9,7 @@ import { Agentes } from './pages/Agentes'
 import { Emprendimientos } from './pages/Emprendimientos'
 import { Propiedades } from './pages/Propiedades'
 import { Tasaciones } from './pages/Tasaciones'
+import { TasacionWeb } from './pages/TasacionWeb'
 import { Reportes } from './pages/Reportes'
 import { Configuracion } from './pages/Configuracion'
 import { Status } from './pages/Status'
@@ -71,6 +72,7 @@ function App() {
             <Route path="/emprendimientos" element={<Emprendimientos />} />
             <Route path="/propiedades" element={<Propiedades />} />
             <Route path="/tasaciones" element={<Tasaciones />} />
+            <Route path="/tasacion-web" element={<TasacionWeb />} />
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/configuracion" element={<Configuracion />} />
             <Route path="/status" element={<Status />} />
