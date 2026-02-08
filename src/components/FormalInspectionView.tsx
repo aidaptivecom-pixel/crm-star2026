@@ -345,46 +345,34 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
 
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="min-w-0">
-            <h1 className="text-lg font-bold truncate">
-              {appraisal.ref_id || `STR-${appraisal.id?.slice(0, 5)}`} · {appraisal.address || 'Sin dirección'}
-            </h1>
-            <p className="text-gray-400 text-xs mt-0.5 truncate">
-              {appraisal.property_type ? appraisal.property_type.charAt(0).toUpperCase() + appraisal.property_type.slice(1) : 'Propiedad'} · {appraisal.neighborhood || ''}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="bg-[#D4A745] text-gray-900 text-xs font-semibold px-3 py-1 rounded-full">
-              ⚡ {appraisal.status === 'completed' ? 'Completada' : appraisal.status === 'pending' ? 'Pendiente' : 'En revisión'}
-            </span>
-            <button onClick={onClose} className="text-gray-400 hover:text-white p-1"><X className="w-5 h-5" /></button>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-xs text-gray-300">
-            <Calendar className="w-3 h-3" /> {appraisal.created_at ? new Date(appraisal.created_at).toLocaleDateString('es-AR') : '-'}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-xs text-gray-300">
-            <User className="w-3 h-3" /> {appraisal.agent_name || 'Tasador'}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-xs text-gray-300">
-            <Mic className="w-3 h-3" /> {audioDuration}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-xs text-gray-300">
-            <Camera className="w-3 h-3" /> {photos.length} fotos
-          </span>
-        </div>
-      </div>
-
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-scroll bg-[#F8F9FA] pb-24" style={{ minHeight: 0 }}>
-        <div className="p-4 flex gap-4">
+        <div className="p-4 flex gap-4 items-start">
         
         {/* Left sidebar - context info */}
         <div className="hidden lg:block w-72 flex-shrink-0 space-y-3 sticky top-4 self-start">
+          {/* Tasación ID card */}
+          <div className="bg-gray-900 rounded-xl shadow-sm p-4 text-white">
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="min-w-0">
+                <h2 className="text-base font-bold truncate">{appraisal.ref_id || `STR-${appraisal.id?.slice(0, 5)}`}</h2>
+                <p className="text-gray-400 text-xs mt-0.5 truncate">{appraisal.address || 'Sin dirección'}</p>
+              </div>
+              <span className="bg-[#D4A745] text-gray-900 text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0">
+                {appraisal.status === 'completed' ? 'Completada' : appraisal.status === 'pending' ? 'Pendiente' : 'En revisión'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-1.5 text-xs text-gray-300"><Calendar className="w-3 h-3" />{appraisal.created_at ? new Date(appraisal.created_at).toLocaleDateString('es-AR') : '-'}</div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-300"><User className="w-3 h-3" />{appraisal.agent_name || 'Tasador'}</div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-300"><Mic className="w-3 h-3" />{audioDuration}</div>
+              <div className="flex items-center gap-1.5 text-xs text-gray-300"><Camera className="w-3 h-3" />{photos.length} fotos</div>
+            </div>
+            <button onClick={onClose} className="mt-3 w-full text-xs text-gray-400 hover:text-white flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-white/10 transition-colors">
+              <X className="w-3 h-3" /> Volver a tasaciones
+            </button>
+          </div>
+
           {/* Client info */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">👤 Cliente</h3>
@@ -433,7 +421,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
         </div>
 
         {/* Main content - cards */}
-        <div className="flex-1 min-w-0 flex flex-col items-center"><div className="w-full max-w-2xl space-y-3">
+        <div className="flex-1 min-w-0 flex flex-col items-center"><div className="w-full max-w-2xl space-y-3 flex flex-col">
         {/* Photo strip */}
         {photos.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
