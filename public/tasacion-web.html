@@ -435,26 +435,24 @@ async function handleSubmit(e) {
   const amenities = [];
   document.querySelectorAll('.chip.selected').forEach(c => amenities.push(c.textContent));
 
+  const tipoMap = { 'Departamento': 'departamentos', 'Casa': 'casas', 'PH': 'ph' };
+  const condMap = { 'A estrenar': 'a_estrenar', 'Muy bueno': 'muy_bueno', 'Bueno': 'bueno', 'Regular': 'regular', 'A reciclar': 'malo' };
+  
   const body = {
-    barrio: document.getElementById('barrio').value,
-    tipo: document.getElementById('tipo').value,
-    superficie: parseFloat(document.getElementById('superficie').value),
-    ambientes: parseInt(document.getElementById('ambientes').value) || undefined,
-    estado: document.getElementById('estado').value || undefined,
-    antiguedad: document.getElementById('antiguedad').value ? parseInt(document.getElementById('antiguedad').value) : undefined,
-    banos: document.getElementById('banos').value ? parseInt(document.getElementById('banos').value) : undefined,
-    pisos: document.getElementById('pisos').value ? parseInt(document.getElementById('pisos').value) : undefined,
-    cochera: document.getElementById('cocheraToggle').classList.contains('on'),
-    cochera_cant: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : undefined,
-    gas_natural: document.getElementById('gasToggle').classList.contains('on'),
-    terraza: document.getElementById('terrazaToggle').classList.contains('on'),
-    espacio_verde: document.getElementById('verdeToggle').classList.contains('on'),
+    neighborhood: document.getElementById('barrio').value,
+    property_type: tipoMap[document.getElementById('tipo').value] || 'departamentos',
+    total_area_m2: parseFloat(document.getElementById('superficie').value),
+    rooms: parseInt(document.getElementById('ambientes').value) || undefined,
+    condition: condMap[document.getElementById('estado').value] || undefined,
+    building_age: document.getElementById('antiguedad').value ? parseInt(document.getElementById('antiguedad').value) : undefined,
+    bathrooms: document.getElementById('banos').value ? parseInt(document.getElementById('banos').value) : undefined,
+    floors: document.getElementById('pisos').value ? parseInt(document.getElementById('pisos').value) : undefined,
+    has_garage: document.getElementById('cocheraToggle').classList.contains('on'),
+    garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
+    has_gas: document.getElementById('gasToggle').classList.contains('on'),
+    has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
+    has_private_garden: document.getElementById('verdeToggle').classList.contains('on'),
     amenities: amenities.length ? amenities : undefined,
-    contacto: {
-      nombre: document.getElementById('nombre').value || undefined,
-      telefono: document.getElementById('telefono').value || undefined,
-      email: document.getElementById('email').value || undefined
-    },
     ref_id: refId
   };
 
@@ -482,12 +480,14 @@ async function handleSubmit(e) {
 function showResults(data) {
   const results = document.getElementById('results');
   
-  const estimate = data.estimate || data.valor_estimado || data.price || 0;
-  const low = data.range_low || data.rango_min || estimate * 0.9;
-  const high = data.range_high || data.rango_max || estimate * 1.1;
-  const pm2 = data.price_per_m2 || data.precio_m2 || (estimate / parseFloat(document.getElementById('superficie').value));
-  const comps = data.comparables || data.comparables_count || '—';
-  const confidence = data.confidence || 50;
+  // Parse backend response format: { estimation: { value, min, max, price_per_m2 }, comparables_count }
+  const est = data.estimation || {};
+  const estimate = est.value || est.avg || data.estimate || data.valor_estimado || 0;
+  const low = est.min || data.range_low || estimate * 0.9;
+  const high = est.max || data.range_high || estimate * 1.1;
+  const pm2 = est.price_per_m2 || data.price_per_m2 || (estimate / parseFloat(document.getElementById('superficie').value || 1));
+  const comps = data.comparables_count || data.comparables || '—';
+  const confidence = data.confidence || Math.min(90, (parseInt(document.getElementById('precisionPct').textContent) || 30) + 20);
 
   document.getElementById('resultRef').textContent = 'REF: ' + refId;
   document.getElementById('resultValue').textContent = fmtUSD(estimate);
