@@ -343,7 +343,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
       {/* Fixed header */}
-      <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white min-h-[60px] flex flex-col justify-center">
         <h3 className="text-sm font-bold text-gray-900">📄 Borrador de tasación</h3>
         <p className="text-xs text-gray-500 mt-0.5">Completitud: {pct}% — {okCount} ✅ {warnCount} ⚠️ {missCount} ❌</p>
       </div>

@@ -793,8 +793,8 @@ export const Tasaciones = () => {
     const renderColumn2 = () => (
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
         {/* Header */}
-        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-          <p className="text-sm font-bold text-gray-900 mb-2">📋 Detalle de propiedad</p>
+        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white min-h-[60px] flex flex-col justify-center">
+          <p className="text-sm font-bold text-gray-900 mb-1">📋 Detalle de propiedad</p>
           <div className="flex items-center gap-2">
             <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
               {isWeb ? '🌐 Web' : '📋 Formal'}
@@ -1067,7 +1067,7 @@ export const Tasaciones = () => {
         return (
           <div className="flex flex-col h-full bg-white">
             {/* Fixed header */}
-            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white min-h-[60px] flex flex-col justify-center">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 {inspectionState?.status === 'in_progress' ? '📱 Recorrido en curso' : inspectionState?.status === 'completed' ? '✅ Recorrido completado' : '📋 Preparación de visita'}
               </h3>
