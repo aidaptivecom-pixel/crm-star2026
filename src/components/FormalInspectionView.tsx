@@ -166,6 +166,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const voiceNotes: any[] = appraisal?.property_data?.voice_notes || []
   const rooms: any[] = extraction.rooms || []
   const transcription = voiceNotes.map((vn: any) => vn.transcription).filter(Boolean).join('\n\n')
+  const aiAnalysis = appraisal?.ai_analysis
 
   // Build all sections
   const sections = [
@@ -344,7 +345,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
       {/* Fixed header */}
       <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
-        <h3 className="text-sm font-bold text-gray-900">📄 Borrador de tasación</h3>
+        <h3 className="text-sm font-bold text-gray-900">{aiAnalysis ? '✅ Tasación procesada' : '📄 Borrador de tasación'}</h3>
         <p className="text-xs text-gray-500 mt-0.5">Completitud: {pct}% — {okCount} ✅ {warnCount} ⚠️ {missCount} ❌</p>
       </div>
       {/* Scrollable content */}
@@ -355,6 +356,54 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
 
         {/* Main content - cards */}
         <div className="flex-1 min-w-0 flex flex-col items-center"><div className="w-full max-w-2xl space-y-3 flex flex-col">
+        {/* Valuation result */}
+        {aiAnalysis && (
+          <div className="bg-gradient-to-r from-[#D4A745]/10 to-[#D4A745]/5 rounded-xl p-4 border border-[#D4A745]/20">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">⚡ Resultado de tasación</h3>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Procesada</span>
+            </div>
+            {(aiAnalysis.recalculated || aiAnalysis.valuation) && (() => {
+              const v = aiAnalysis.recalculated || aiAnalysis.valuation || {}
+              return (
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">Mínimo</p>
+                    <p className="text-lg font-bold text-gray-900">USD {((v.min || 0) / 1000).toFixed(0)}k</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">Promedio</p>
+                    <p className="text-lg font-bold text-[#D4A745]">USD {((v.avg || (((v.min||0)+(v.max||0))/2)) / 1000).toFixed(0)}k</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">Máximo</p>
+                    <p className="text-lg font-bold text-gray-900">USD {((v.max || 0) / 1000).toFixed(0)}k</p>
+                  </div>
+                </div>
+              )
+            })()}
+            {aiAnalysis.price_per_m2 && (
+              <p className="text-xs text-gray-500 text-center">USD {aiAnalysis.price_per_m2?.toLocaleString()}/m²</p>
+            )}
+            {(aiAnalysis.details || []).length > 0 && (
+              <details className="mt-3">
+                <summary className="text-xs font-medium text-gray-600 cursor-pointer hover:text-gray-900">
+                  📊 {aiAnalysis.details.length} comparables analizados
+                </summary>
+                <div className="mt-2 space-y-1.5">
+                  {aiAnalysis.details.map((det: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2">
+                      <span className="text-gray-700 truncate flex-1">{det.address}</span>
+                      <span className="text-gray-500 ml-2">USD {det.price_usd?.toLocaleString()}</span>
+                      <span className="text-gray-400 ml-2">{det.total_area_m2}m²</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        )}
+
         {/* Photo strip */}
         {photos.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -481,7 +530,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
           onClick={onProcessFormal}
           className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2"
         >
-          <Zap className="w-4 h-4" /> Procesar tasación
+          <Zap className="w-4 h-4" /> {appraisal?.ai_analysis ? 'Re-procesar tasación' : 'Procesar tasación'}
         </button>
         <button
           onClick={onClose}
