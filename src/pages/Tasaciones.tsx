@@ -810,28 +810,46 @@ export const Tasaciones = () => {
           )}
 
           {/* Timeline */}
-          <CollapsibleSection title="Timeline" icon={<Clock className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <p className="text-sm"><span className="font-medium">Solicitud:</span> {formatDate(selectedAppraisal.created_at)}</p>
+          <CollapsibleSection title="Timeline" icon={<Clock className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Tasación web creada</p>
+                  <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.created_at)}</p>
+                </div>
               </div>
               {selectedAppraisal.visit_scheduled_at && (
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                  <p className="text-sm"><span className="font-medium">Visita agendada:</span> {formatDate(selectedAppraisal.visit_scheduled_at)}</p>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500 mt-1.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Visita agendada</p>
+                    <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.visit_scheduled_at)}</p>
+                    {(selectedAppraisal as any).assigned_agent_id && (
+                      <p className="text-xs text-gray-500 mt-0.5">👤 Asignado a: {(selectedAppraisal as any).assigned_agent_name || (selectedAppraisal as any).assigned_agent_id}</p>
+                    )}
+                    {(selectedAppraisal as any).visit_data?.scheduled_time && (
+                      <p className="text-xs text-gray-500 mt-0.5">🕐 {(selectedAppraisal as any).visit_data.scheduled_time}hs</p>
+                    )}
+                  </div>
                 </div>
               )}
               {selectedAppraisal.visited_at && (
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-orange-500" />
-                  <p className="text-sm"><span className="font-medium">Visitado:</span> {formatDate(selectedAppraisal.visited_at)}</p>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Visita completada</p>
+                    <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.visited_at)}</p>
+                  </div>
                 </div>
               )}
               {selectedAppraisal.completed_at && (
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <p className="text-sm"><span className="font-medium">Completado:</span> {formatDate(selectedAppraisal.completed_at)}</p>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Tasación completada</p>
+                    <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.completed_at)}</p>
+                  </div>
                 </div>
               )}
             </div>
