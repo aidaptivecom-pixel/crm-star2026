@@ -793,7 +793,7 @@ export const Tasaciones = () => {
     const renderColumn2 = () => (
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
         {/* Header */}
-        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white min-h-[60px] flex flex-col justify-center">
+        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
           <p className="text-sm font-bold text-gray-900 mb-1">📋 Detalle de propiedad</p>
           <div className="flex items-center gap-2">
             <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
@@ -1067,7 +1067,7 @@ export const Tasaciones = () => {
         return (
           <div className="flex flex-col h-full bg-white">
             {/* Fixed header */}
-            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white min-h-[60px] flex flex-col justify-center">
+            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 {inspectionState?.status === 'in_progress' ? '📱 Recorrido en curso' : inspectionState?.status === 'completed' ? '✅ Recorrido completado' : '📋 Preparación de visita'}
               </h3>
@@ -1459,11 +1459,11 @@ export const Tasaciones = () => {
         {/* Multi-column layout: detail + action + draft */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Col 1 - detail */}
-          <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full flex-1 flex-col overflow-hidden`}>
+          <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[380px] lg:min-w-[340px] flex-shrink-0 flex-col overflow-hidden`}>
             {renderColumn2()}
           </div>
           {/* Col 2 - action/preparation */}
-          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
+          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex lg:w-[380px] lg:min-w-[340px] flex-shrink-0 flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
             {renderColumn3()}
           </div>
           {/* Col 3 - draft/formal (only when available) */}
