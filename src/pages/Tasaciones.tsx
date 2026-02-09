@@ -1445,7 +1445,7 @@ export const Tasaciones = () => {
               </div>
             ) : (
               <>
-                {/* Valuation card */}
+                {/* Valuation card with positioning bar */}
                 <div className="bg-gradient-to-r from-[#D4A745]/10 to-[#D4A745]/5 rounded-xl p-5 border border-[#D4A745]/20">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-bold text-gray-900">⚡ Valuación</h3>
@@ -1453,29 +1453,69 @@ export const Tasaciones = () => {
                   </div>
                   {(() => {
                     const v = aiAnalysis.recalculated || aiAnalysis.valuation || aiAnalysis
+                    const estimation = aiAnalysis.estimation || {}
                     const min = v.min || (selectedAppraisal as any).estimated_value_min || 0
                     const max = v.max || (selectedAppraisal as any).estimated_value_max || 0
-                    const avg = v.avg || (selectedAppraisal as any).estimated_value_avg || ((min + max) / 2)
+                    const value = estimation.value || v.value || (selectedAppraisal as any).estimated_value || ((min + max) / 2)
+                    const position = max > min ? ((value - min) / (max - min)) * 100 : 50
+                    const reasoning = estimation.positioning_reasoning || aiAnalysis.positioning_reasoning || null
+                    
                     return (
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center bg-white rounded-xl p-3">
-                          <p className="text-xs text-gray-400 mb-1">Mínimo</p>
-                          <p className="text-xl font-bold text-gray-900">USD {(min / 1000).toFixed(0)}k</p>
+                      <div className="space-y-4">
+                        {/* Main value */}
+                        <div className="text-center bg-white rounded-xl p-4">
+                          <p className="text-xs text-gray-400 mb-1">Valor de tasación</p>
+                          <p className="text-3xl font-bold text-[#D4A745]">USD {(value / 1000).toFixed(0)}k</p>
+                          {(selectedAppraisal as any).price_per_m2 && (
+                            <p className="text-sm text-gray-400 mt-1">USD {(selectedAppraisal as any).price_per_m2?.toLocaleString()}/m²</p>
+                          )}
                         </div>
-                        <div className="text-center bg-white rounded-xl p-3 ring-2 ring-[#D4A745]/30">
-                          <p className="text-xs text-[#D4A745] mb-1 font-medium">Promedio</p>
-                          <p className="text-xl font-bold text-[#D4A745]">USD {(avg / 1000).toFixed(0)}k</p>
+
+                        {/* Positioning bar */}
+                        <div className="bg-white rounded-xl p-4">
+                          <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                            <span>USD {(min / 1000).toFixed(0)}k</span>
+                            <span className="font-medium text-gray-600">Rango de mercado</span>
+                            <span>USD {(max / 1000).toFixed(0)}k</span>
+                          </div>
+                          {/* Bar */}
+                          <div className="relative h-3 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full">
+                            {/* Comparable dots */}
+                            {(aiAnalysis.details || []).map((det: any, idx: number) => {
+                              const detValue = det.price_usd || 0
+                              const detPos = max > min ? ((detValue - min) / (max - min)) * 100 : 50
+                              return (
+                                <div key={idx} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-white"
+                                  style={{ left: `${Math.max(2, Math.min(98, detPos))}%` }}
+                                  title={`${det.address}: USD ${det.price_usd?.toLocaleString()}`} />
+                              )
+                            })}
+                            {/* Target value marker */}
+                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
+                              style={{ left: `${Math.max(5, Math.min(95, position))}%` }}>
+                              <div className="w-5 h-5 bg-[#D4A745] rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                                <div className="w-2 h-2 bg-white rounded-full" />
+                              </div>
+                            </div>
+                          </div>
+                          {/* Position label */}
+                          <div className="mt-2 text-center">
+                            <span className="text-xs font-medium text-[#D4A745]">
+                              {position < 30 ? '📉 Por debajo del mercado' : position < 45 ? '↙️ Debajo del promedio' : position < 55 ? '⚖️ En el promedio' : position < 70 ? '↗️ Por encima del promedio' : '📈 Segmento premium'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-center bg-white rounded-xl p-3">
-                          <p className="text-xs text-gray-400 mb-1">Máximo</p>
-                          <p className="text-xl font-bold text-gray-900">USD {(max / 1000).toFixed(0)}k</p>
-                        </div>
+
+                        {/* AI Reasoning */}
+                        {reasoning && (
+                          <div className="bg-white rounded-xl p-4">
+                            <p className="text-xs font-semibold text-gray-700 mb-1">🧠 Análisis</p>
+                            <p className="text-xs text-gray-600 leading-relaxed">{reasoning}</p>
+                          </div>
+                        )}
                       </div>
                     )
                   })()}
-                  {(selectedAppraisal as any).price_per_m2 && (
-                    <p className="text-sm text-gray-500 text-center mt-3">USD {(selectedAppraisal as any).price_per_m2?.toLocaleString()}/m²</p>
-                  )}
                 </div>
 
                 {/* Comparables */}
