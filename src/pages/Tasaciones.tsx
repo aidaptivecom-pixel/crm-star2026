@@ -682,7 +682,7 @@ export const Tasaciones = () => {
         <div className="text-center text-red-500">
           <AlertCircle className="w-8 h-8 mx-auto mb-2" />
           <p>Error: {error}</p>
-          <button onClick={refetch} className="mt-2 text-[#D4A745] underline">Reintentar</button>
+          <button onClick={() => refetch()} className="mt-2 text-[#D4A745] underline">Reintentar</button>
         </div>
       </main>
     )
