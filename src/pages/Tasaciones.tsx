@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import FormalInspectionView from '../components/FormalInspectionView'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
@@ -1226,19 +1226,107 @@ export const Tasaciones = () => {
         </div>
 
         {/* Schedule Visit Modal */}
-        {showScheduleModal && (
+        {showScheduleModal && (() => {
+          const today = new Date()
+          const [selYear, selMonth] = scheduleDate ? [new Date(scheduleDate).getFullYear(), new Date(scheduleDate).getMonth()] : [today.getFullYear(), today.getMonth()]
+          const selectedDay = scheduleDate ? new Date(scheduleDate).toISOString().split('T')[0] : ''
+          const selectedTime = scheduleDate && scheduleDate.includes('T') ? scheduleDate.split('T')[1]?.slice(0, 5) : ''
+          
+          const calMonth = new Date(selYear, selMonth, 1)
+          const daysInMonth = new Date(selYear, selMonth + 1, 0).getDate()
+          const startDay = (calMonth.getDay() + 6) % 7 // Monday-based
+          const monthName = calMonth.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+          
+          const timeSlots = Array.from({ length: 21 }, (_, i) => {
+            const h = Math.floor(i / 2) + 9
+            const m = (i % 2) * 30
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+          })
+          
+          const setDay = (day: number) => {
+            const d = `${selYear}-${(selMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+            setScheduleDate(selectedTime ? `${d}T${selectedTime}` : d)
+          }
+          const setTime = (time: string) => {
+            if (selectedDay) setScheduleDate(`${selectedDay}T${time}`)
+          }
+          const changeMonth = (_delta: number) => {
+            setScheduleDate('')
+          }
+          const todayStr = today.toISOString().split('T')[0]
+          
+          return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
-            <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
-              <p className="text-sm text-gray-500 mb-4">{selectedAppraisal.address || selectedAppraisal.neighborhood}</p>
-              <input type="datetime-local" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg mb-4" />
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">📅 Agendar Visita</h3>
+              <p className="text-sm text-gray-500 mb-5">{selectedAppraisal.address || selectedAppraisal.neighborhood}</p>
+              
+              {/* Calendar */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-gray-700 capitalize">{monthName}</span>
+                  <div className="flex gap-1">
+                    <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500">
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map(d => (
+                    <span key={d} className="text-xs font-medium text-gray-400 py-1">{d}</span>
+                  ))}
+                  {Array.from({ length: startDay }, (_, i) => <span key={`e${i}`} />)}
+                  {Array.from({ length: daysInMonth }, (_, i) => {
+                    const day = i + 1
+                    const dateStr = `${selYear}-${(selMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+                    const isToday = dateStr === todayStr
+                    const isSelected = dateStr === selectedDay
+                    const isPast = dateStr < todayStr
+                    return (
+                      <button key={day} onClick={() => !isPast && setDay(day)} disabled={isPast}
+                        className={`text-sm py-1.5 rounded-lg transition-all ${isSelected ? 'bg-[#D4A745] text-white font-bold' : isToday ? 'bg-[#D4A745]/15 text-[#D4A745] font-semibold' : isPast ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}>
+                        {day}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              
+              {/* Time slots */}
+              {selectedDay && (
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Horario</p>
+                  <div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto">
+                    {timeSlots.map(t => (
+                      <button key={t} onClick={() => setTime(t)}
+                        className={`text-sm py-2 rounded-lg transition-all ${selectedTime === t ? 'bg-[#D4A745] text-white font-bold' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Selected summary */}
+              {scheduleDate && scheduleDate.includes('T') && (
+                <div className="bg-[#D4A745]/10 rounded-lg p-3 mb-4 text-center">
+                  <p className="text-sm font-semibold text-[#D4A745]">
+                    {new Date(scheduleDate).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })} a las {selectedTime}hs
+                  </p>
+                </div>
+              )}
+              
               <div className="flex gap-3">
                 <button onClick={() => setShowScheduleModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium">Cancelar</button>
-                <button onClick={handleScheduleVisit} disabled={!scheduleDate} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
+                <button onClick={handleScheduleVisit} disabled={!scheduleDate || !scheduleDate.includes('T')} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
               </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {/* Photo Preview */}
         {previewPhoto && (
@@ -1610,19 +1698,47 @@ export const Tasaciones = () => {
       {/* Schedule modal (from grid view) */}
       {showScheduleModal && selectedId && (() => {
         const sa = appraisals.find(a => a.id === selectedId)
-        return sa ? (
+        if (!sa) return null
+        const today = new Date()
+        const [selYear, selMonth] = scheduleDate ? [new Date(scheduleDate).getFullYear(), new Date(scheduleDate).getMonth()] : [today.getFullYear(), today.getMonth()]
+        const selectedDay = scheduleDate ? new Date(scheduleDate).toISOString().split('T')[0] : ''
+        const selectedTime = scheduleDate && scheduleDate.includes('T') ? scheduleDate.split('T')[1]?.slice(0, 5) : ''
+        const calMonth = new Date(selYear, selMonth, 1)
+        const daysInMonth = new Date(selYear, selMonth + 1, 0).getDate()
+        const startDay = (calMonth.getDay() + 6) % 7
+        const monthName = calMonth.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+        const timeSlots = Array.from({ length: 21 }, (_, i) => { const h = Math.floor(i / 2) + 9; const m = (i % 2) * 30; return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` })
+        const setDay = (day: number) => { const d = `${selYear}-${(selMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`; setScheduleDate(selectedTime ? `${d}T${selectedTime}` : d) }
+        const setTime = (time: string) => { if (selectedDay) setScheduleDate(`${selectedDay}T${time}`) }
+        const todayStr = today.toISOString().split('T')[0]
+        return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
-            <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
-              <p className="text-sm text-gray-500 mb-4">{sa.address || sa.neighborhood}</p>
-              <input type="datetime-local" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg mb-4" />
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">📅 Agendar Visita</h3>
+              <p className="text-sm text-gray-500 mb-5">{sa.address || sa.neighborhood}</p>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-gray-700 capitalize">{monthName}</span>
+                  <div className="flex gap-1">
+                    <button onClick={() => setScheduleDate('')} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500"><ChevronLeft className="w-4 h-4" /></button>
+                    <button onClick={() => setScheduleDate('')} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500"><ChevronRight className="w-4 h-4" /></button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map(d => <span key={d} className="text-xs font-medium text-gray-400 py-1">{d}</span>)}
+                  {Array.from({ length: startDay }, (_, i) => <span key={`e${i}`} />)}
+                  {Array.from({ length: daysInMonth }, (_, i) => { const day = i + 1; const dateStr = `${selYear}-${(selMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`; const isToday = dateStr === todayStr; const isSelected = dateStr === selectedDay; const isPast = dateStr < todayStr; return (<button key={day} onClick={() => !isPast && setDay(day)} disabled={isPast} className={`text-sm py-1.5 rounded-lg transition-all ${isSelected ? 'bg-[#D4A745] text-white font-bold' : isToday ? 'bg-[#D4A745]/15 text-[#D4A745] font-semibold' : isPast ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}>{day}</button>) })}
+                </div>
+              </div>
+              {selectedDay && (<div className="mb-4"><p className="text-sm font-semibold text-gray-700 mb-2">Horario</p><div className="grid grid-cols-4 gap-1.5 max-h-36 overflow-y-auto">{timeSlots.map(t => <button key={t} onClick={() => setTime(t)} className={`text-sm py-2 rounded-lg transition-all ${selectedTime === t ? 'bg-[#D4A745] text-white font-bold' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>{t}</button>)}</div></div>)}
+              {scheduleDate && scheduleDate.includes('T') && (<div className="bg-[#D4A745]/10 rounded-lg p-3 mb-4 text-center"><p className="text-sm font-semibold text-[#D4A745]">{new Date(scheduleDate).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })} a las {selectedTime}hs</p></div>)}
               <div className="flex gap-3">
                 <button onClick={() => setShowScheduleModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium">Cancelar</button>
-                <button onClick={handleScheduleVisit} disabled={!scheduleDate} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
+                <button onClick={handleScheduleVisit} disabled={!scheduleDate || !scheduleDate.includes('T')} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
               </div>
             </div>
           </div>
-        ) : null
+        )
       })()}
 
       {renderNewModal()}
