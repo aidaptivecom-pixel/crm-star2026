@@ -1189,7 +1189,7 @@ export const Tasaciones = () => {
     }
 
     return (
-      <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA] h-[calc(100vh-56px)] lg:h-[calc(100vh-32px)]">
         {/* Header */}
         <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between">
