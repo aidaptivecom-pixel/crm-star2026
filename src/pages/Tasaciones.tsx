@@ -1456,11 +1456,11 @@ export const Tasaciones = () => {
         {/* Multi-column layout: detail + action + draft */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Col 1 - detail */}
-          <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[380px] lg:min-w-[340px] flex-shrink-0 flex-col overflow-hidden`}>
+          <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col overflow-hidden`}>
             {renderColumn2()}
           </div>
           {/* Col 2 - action/preparation */}
-          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex lg:w-[380px] lg:min-w-[340px] flex-shrink-0 flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
+          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
             {renderColumn3()}
           </div>
           {/* Col 3 - draft/formal (only when available) */}
