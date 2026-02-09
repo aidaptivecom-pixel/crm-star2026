@@ -95,7 +95,8 @@ export function useAppraisals(filters?: {
           { event: 'UPDATE', schema: 'public', table: 'appraisals' },
           (payload) => {
             console.log('Appraisal actualizado en tiempo real:', payload.new)
-            updateAppraisalInState(payload.new as Appraisal)
+            // Refetch full data — realtime payload may not include large JSONB columns
+            fetchAppraisals({ silent: true })
           }
         )
         .on(
