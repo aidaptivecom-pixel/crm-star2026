@@ -680,11 +680,11 @@ export const Tasaciones = () => {
     )
   }
 
-  // Auto-refresh while inspection is in progress
-  const inspActive = (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress'
+  // Auto-refresh while inspection is in progress (every 15s)
+  const inspActive = !!(selectedAppraisal && (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress')
   useEffect(() => {
     if (!inspActive) return
-    const interval = setInterval(() => { refetch() }, 5000)
+    const interval = setInterval(() => { try { refetch() } catch(_){} }, 15000)
     return () => clearInterval(interval)
   }, [inspActive, refetch])
 
