@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight, ArrowLeft } from 'lucide-react'
 import FormalInspectionView from '../components/FormalInspectionView'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
@@ -75,7 +75,7 @@ function BarrioSearchSelect({ value, onChange }: { value: string; onChange: (v: 
   )
 }
 
-// Collapsible Section Component for mobile-friendly detail modal
+// Collapsible Section Component
 function CollapsibleSection({ title, icon, defaultOpen = false, badge, children }: {
   title: string
   icon?: React.ReactNode
@@ -88,17 +88,17 @@ function CollapsibleSection({ title, icon, defaultOpen = false, badge, children 
     <div className="border border-gray-100 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-gray-50 transition-colors min-h-[48px]"
+        className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors min-h-[44px]"
       >
         <div className="flex items-center gap-2 min-w-0">
           {icon}
-          <span className="font-semibold text-gray-900 text-sm sm:text-base">{title}</span>
+          <span className="font-semibold text-gray-900 text-sm">{title}</span>
           {badge}
         </div>
         <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-90' : ''}`} />
       </button>
       <div className={`transition-all duration-200 ease-in-out ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-        <div className="p-3 sm:p-4 pt-0 bg-white">
+        <div className="p-3 pt-0 bg-white">
           {children}
         </div>
       </div>
@@ -109,70 +109,29 @@ function CollapsibleSection({ title, icon, defaultOpen = false, badge, children 
 // Ubicaciones premium para scoring
 const PREMIUM_LOCATIONS = ['Belgrano', 'Recoleta', 'Palermo', 'Puerto Madero', 'Núñez', 'Cañitas']
 
-// Calcular score de propiedad (0-100)
 function calculatePropertyScore(appraisal: Appraisal): { score: number; factors: string[] } {
   let score = 0
   const factors: string[] = []
-
-  // Valor estimado
   const maxValue = appraisal.estimated_value_max || appraisal.estimated_value_min || 0
-  if (maxValue > 500000) {
-    score += 30
-    factors.push('Valor > 500k')
-  } else if (maxValue > 200000) {
-    score += 20
-    factors.push('Valor > 200k')
-  } else if (maxValue > 100000) {
-    score += 10
-  }
-
-  // Ubicación premium
+  if (maxValue > 500000) { score += 30; factors.push('Valor > 500k') }
+  else if (maxValue > 200000) { score += 20; factors.push('Valor > 200k') }
+  else if (maxValue > 100000) { score += 10 }
   const neighborhood = appraisal.neighborhood || ''
-  const isPremium = PREMIUM_LOCATIONS.some(loc => 
-    neighborhood.toLowerCase().includes(loc.toLowerCase())
-  )
-  if (isPremium) {
-    score += 25
-    factors.push('Zona premium')
-  }
-
-  // Superficie
+  const isPremium = PREMIUM_LOCATIONS.some(loc => neighborhood.toLowerCase().includes(loc.toLowerCase()))
+  if (isPremium) { score += 25; factors.push('Zona premium') }
   const size = appraisal.size_m2 || 0
-  if (size > 150) {
-    score += 25
-    factors.push('> 150m²')
-  } else if (size > 100) {
-    score += 15
-    factors.push('> 100m²')
-  } else if (size > 80) {
-    score += 10
-  }
-
-  // Condición: A reciclar = oportunidad
+  if (size > 150) { score += 25; factors.push('> 150m²') }
+  else if (size > 100) { score += 15; factors.push('> 100m²') }
+  else if (size > 80) { score += 10 }
   const condition = (appraisal.condition || '').toLowerCase()
   if (condition.includes('reciclar') || condition.includes('refacc')) {
-    score += 10
-    factors.push('A reciclar')
-    // Combo: a reciclar + premium = oportunidad
-    if (isPremium) {
-      score += 30
-      factors.push('⭐ Oportunidad')
-      if (size > 80) {
-        score += 20
-        factors.push('⭐⭐ Oportunidad Premium')
-      }
-    }
+    score += 10; factors.push('A reciclar')
+    if (isPremium) { score += 30; factors.push('⭐ Oportunidad'); if (size > 80) { score += 20; factors.push('⭐⭐ Oportunidad Premium') } }
   }
-
-  // Cochera
-  if (appraisal.has_garage) {
-    score += 10
-  }
-
+  if (appraisal.has_garage) { score += 10 }
   return { score: Math.min(score, 100), factors }
 }
 
-// Clasificación por score
 function getScoreClassification(score: number): { emoji: string; label: string; color: string; bgColor: string } {
   if (score >= 80) return { emoji: '🔴', label: 'Muy Caliente', color: 'text-red-600', bgColor: 'bg-red-100' }
   if (score >= 60) return { emoji: '🟠', label: 'Caliente', color: 'text-orange-600', bgColor: 'bg-orange-100' }
@@ -180,7 +139,6 @@ function getScoreClassification(score: number): { emoji: string; label: string; 
   return { emoji: '🔵', label: 'Frío', color: 'text-blue-600', bgColor: 'bg-blue-100' }
 }
 
-// Kanban: 5 columnas agrupando los 10 estados
 type KanbanColumn = 'nuevas' | 'visitas' | 'proceso' | 'aprobadas' | 'cerradas'
 
 const KANBAN_COLUMNS: { id: KanbanColumn; label: string; icon: string; statuses: AppraisalStatus[] }[] = [
@@ -196,6 +154,7 @@ export const Tasaciones = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterColumn, setFilterColumn] = useState<KanbanColumn | 'todas'>('todas')
   const [filterType, setFilterType] = useState<'todas' | 'market_valuation' | 'formal_appraisal'>('todas')
+  const [filterDays, setFilterDays] = useState<number | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [scheduleDate, setScheduleDate] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -224,6 +183,8 @@ export const Tasaciones = () => {
     has_private_garden: false,
     amenities: [] as string[],
   })
+  // Mobile tab for 3-column view
+  const [mobileTab, setMobileTab] = useState<'list' | 'detail' | 'action'>('detail')
   const photoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const [newForm, setNewForm] = useState({
@@ -239,7 +200,6 @@ export const Tasaciones = () => {
     condition: '',
     building_age: '',
     amenities: [] as string[],
-    // Unit features
     bathrooms: '',
     floors: '1',
     has_gas: true,
@@ -255,15 +215,15 @@ export const Tasaciones = () => {
 
   const SCRAPER_URL = 'https://scraper-star.135.181.24.249.sslip.io'
 
+  // === All handlers (unchanged) ===
+
   const handleNewEstimate = async () => {
     const totalArea = newForm.total_area_m2 || newForm.covered_area_m2
     if (!newForm.neighborhood || !totalArea) return
     setEstimating(true)
     try {
-      // 1. Create appraisal in Supabase first
       const { supabase } = await import('../lib/supabase')
       if (!supabase) throw new Error('Supabase not configured')
-      
       const insertData = {
         neighborhood: newForm.neighborhood,
         property_type: newForm.property_type === 'departamentos' ? 'departamento' : newForm.property_type.replace(/s$/, ''),
@@ -293,17 +253,13 @@ export const Tasaciones = () => {
         type: estimateType === 'formal' ? 'formal_appraisal' as const : 'market_valuation' as const,
         city: 'CABA',
       }
-      
       const { data: appraisal, error: insertError } = await supabase
         .from('appraisals')
         .insert(insertData as any)
         .select()
         .single()
-
       if (insertError) throw insertError
       const appraisalId = (appraisal as any)?.id
-
-      // 2. Call estimate API (express or formal)
       const endpoint = estimateType === 'formal' ? '/estimate-formal' : '/estimate'
       const resp = await fetch(`${SCRAPER_URL}${endpoint}`, {
         method: 'POST',
@@ -333,9 +289,7 @@ export const Tasaciones = () => {
         }),
       })
       const result = await resp.json()
-
       if (result.success && appraisalId) {
-        // 3. Update appraisal with estimation
         const updateData: any = {
           estimated_value_min: result.estimation.min,
           estimated_value_max: result.estimation.max,
@@ -348,13 +302,8 @@ export const Tasaciones = () => {
           updateData.ai_analysis = result.ai_analysis
           updateData.status = 'processing'
         }
-        await (supabase as any)
-          .from('appraisals')
-          .update(updateData)
-          .eq('id', appraisalId)
+        await (supabase as any).from('appraisals').update(updateData).eq('id', appraisalId)
       }
-
-      // 4. Refresh list and close modal
       refetch()
       setShowNewModal(false)
       setNewForm({
@@ -401,7 +350,6 @@ export const Tasaciones = () => {
       const result = await resp.json()
       if (result.success) {
         const { supabase } = await import('../lib/supabase')
-        // @ts-ignore - dynamic update fields
         await (supabase as any).from('appraisals').update({
           type: 'formal_appraisal',
           estimated_value_min: result.valuation?.min || result.min,
@@ -432,32 +380,22 @@ export const Tasaciones = () => {
     try {
       const { supabase } = await import('../lib/supabase')
       if (!supabase) throw new Error('Supabase not configured')
-
       const existingPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
       const newUrls: string[] = []
-
       for (const file of Array.from(files)) {
         const ext = file.name.split('.').pop() || 'jpg'
         const fileName = `${selectedAppraisal.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-        // Upload via scraper proxy using FormData (bypasses RLS, handles large files)
         const formData = new FormData()
         formData.append('file', file)
         formData.append('fileName', fileName)
-        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, {
-          method: 'POST',
-          body: formData,
-        })
+        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, { method: 'POST', body: formData })
         const uploadResult = await uploadResp.json()
         if (!uploadResult.success) throw new Error(uploadResult.error || 'Upload failed')
         newUrls.push(uploadResult.url)
       }
-
       const allPhotos = [...existingPhotos, ...newUrls]
       const currentData = (selectedAppraisal as any).property_data || {}
-      await (supabase as any).from('appraisals').update({
-        property_data: { ...currentData, target_photos: allPhotos },
-      }).eq('id', selectedAppraisal.id)
-
+      await (supabase as any).from('appraisals').update({ property_data: { ...currentData, target_photos: allPhotos } }).eq('id', selectedAppraisal.id)
       refetch()
     } catch (err) {
       console.error('Error uploading photos:', err)
@@ -475,10 +413,7 @@ export const Tasaciones = () => {
       const currentPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
       const filtered = currentPhotos.filter(u => u !== photoUrl)
       const currentData = (selectedAppraisal as any).property_data || {}
-      await (supabase as any).from('appraisals').update({
-        property_data: { ...currentData, target_photos: filtered },
-      }).eq('id', selectedAppraisal.id)
-      // Try to delete from storage
+      await (supabase as any).from('appraisals').update({ property_data: { ...currentData, target_photos: filtered } }).eq('id', selectedAppraisal.id)
       const path = photoUrl.split('/appraisal-evidence/')[1]
       if (path) await supabase.storage.from('appraisal-evidence').remove([decodeURIComponent(path)])
       refetch()
@@ -508,12 +443,8 @@ export const Tasaciones = () => {
         }),
       })
       const result = await resp.json()
-      if (result.success) {
-        refetch()
-        alert('✅ Análisis completado')
-      } else {
-        throw new Error(result.error || 'Error en análisis')
-      }
+      if (result.success) { refetch(); alert('✅ Análisis completado') }
+      else { throw new Error(result.error || 'Error en análisis') }
     } catch (err) {
       console.error('Error analyzing target:', err)
       alert('Error: ' + (err as Error).message)
@@ -527,102 +458,49 @@ export const Tasaciones = () => {
     setUploadingAudio(true)
     try {
       const file = files[0]
-      // Convert to base64
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string
-          resolve(result.split(',')[1]) // strip data:...;base64,
-        }
+        reader.onload = () => { const result = reader.result as string; resolve(result.split(',')[1]) }
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-
-      // Send to transcribe endpoint
       const resp = await fetch(`${SCRAPER_URL}/transcribe-audio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audio_base64: base64,
-          appraisal_id: selectedAppraisal.id,
-          filename: file.name,
-          mime_type: file.type,
-        }),
+        body: JSON.stringify({ audio_base64: base64, appraisal_id: selectedAppraisal.id, filename: file.name, mime_type: file.type }),
       })
       const result = await resp.json()
-
       if (result.success) {
-        // Save voice note to property_data.voice_notes
         const { supabase } = await import('../lib/supabase')
         if (!supabase) throw new Error('Supabase not configured')
         const currentData = (selectedAppraisal as any).property_data || {}
         const existingNotes: any[] = currentData.voice_notes || []
         const newNote = {
-          filename: file.name,
-          timestamp: new Date().toISOString(),
-          transcription: result.transcription,
-          extraction: result.extraction,
-          tokens_used: result.tokens_used,
-          cost_usd: result.cost_usd,
+          filename: file.name, timestamp: new Date().toISOString(),
+          transcription: result.transcription, extraction: result.extraction,
+          tokens_used: result.tokens_used, cost_usd: result.cost_usd,
         }
-
-        // Auto-fill: merge extracted form_fields into property_data
         const ff = result.extraction?.form_fields || {}
         const autoFillData: Record<string, any> = {}
-        // Only set fields that have non-null values from extraction
         const fieldMap: Record<string, string> = {
-          covered_area_m2: 'covered_area_m2',
-          semi_covered_area_m2: 'semi_covered_area_m2',
-          uncovered_area_m2: 'uncovered_area_m2',
-          garage_count: 'garage_count',
-          building_age: 'building_age',
-          bathrooms: 'bathrooms',
-          floors: 'floors',
-          floor_number: 'floor_number',
-          orientation: 'orientation',
-          has_gas: 'has_gas',
-          has_private_terrace: 'has_private_terrace',
-          has_private_garden: 'has_private_garden',
-          has_balcony: 'has_balcony',
-          has_street_view: 'has_street_view',
-          has_luminosity: 'has_luminosity',
-          has_storage: 'has_storage',
-          has_ac: 'has_ac',
-          heating_type: 'heating_type',
-          condition: 'condition',
-          expensas: 'expensas',
-          amenities: 'amenities',
+          covered_area_m2: 'covered_area_m2', semi_covered_area_m2: 'semi_covered_area_m2',
+          uncovered_area_m2: 'uncovered_area_m2', garage_count: 'garage_count',
+          building_age: 'building_age', bathrooms: 'bathrooms', floors: 'floors',
+          floor_number: 'floor_number', orientation: 'orientation', has_gas: 'has_gas',
+          has_private_terrace: 'has_private_terrace', has_private_garden: 'has_private_garden',
+          has_balcony: 'has_balcony', has_street_view: 'has_street_view',
+          has_luminosity: 'has_luminosity', has_storage: 'has_storage', has_ac: 'has_ac',
+          heating_type: 'heating_type', condition: 'condition', expensas: 'expensas', amenities: 'amenities',
         }
         for (const [extractKey, dataKey] of Object.entries(fieldMap)) {
-          if (ff[extractKey] != null) {
-            autoFillData[dataKey] = ff[extractKey]
-          }
+          if (ff[extractKey] != null) autoFillData[dataKey] = ff[extractKey]
         }
-
-        // Merge: existing data < auto-fill < voice_notes (voice_notes always appended)
-        const updatedPropertyData = {
-          ...currentData,
-          ...autoFillData,
-          voice_notes: [...existingNotes, newNote],
-        }
-
-        // Also update top-level appraisal fields if extracted
-        const topLevelUpdate: Record<string, any> = {
-          property_data: updatedPropertyData,
-        }
-        if (ff.address && !selectedAppraisal.address) {
-          topLevelUpdate.address = ff.address
-        }
-        if (ff.condition) {
-          topLevelUpdate.condition = ff.condition
-        }
-        if (ff.building_age != null) {
-          topLevelUpdate.building_age = ff.building_age
-        }
-
+        const updatedPropertyData = { ...currentData, ...autoFillData, voice_notes: [...existingNotes, newNote] }
+        const topLevelUpdate: Record<string, any> = { property_data: updatedPropertyData }
+        if (ff.address && !selectedAppraisal.address) topLevelUpdate.address = ff.address
+        if (ff.condition) topLevelUpdate.condition = ff.condition
+        if (ff.building_age != null) topLevelUpdate.building_age = ff.building_age
         await (supabase as any).from('appraisals').update(topLevelUpdate).eq('id', selectedAppraisal.id)
-
-        // Auto-fill the formal form if it's open
         if (showFormalForm) {
           setFormalFormData(prev => {
             const updated = { ...prev }
@@ -639,7 +517,6 @@ export const Tasaciones = () => {
             if (ff.has_private_garden != null) updated.has_private_garden = ff.has_private_garden
             if (ff.condition) updated.condition = ff.condition
             if (ff.amenities?.length) updated.amenities = [...new Set([...prev.amenities, ...ff.amenities.map((a: string) => a.toLowerCase())])]
-            // Extra fields
             if (ff.floor_number != null) (updated as any).floor_number = String(ff.floor_number)
             if (ff.expensas != null) (updated as any).expensas = String(ff.expensas)
             if (ff.orientation) (updated as any).orientacion = ff.orientation
@@ -649,7 +526,6 @@ export const Tasaciones = () => {
             return updated
           })
         }
-
         refetch()
       } else {
         throw new Error(result.error || 'Error en transcripción')
@@ -665,43 +541,29 @@ export const Tasaciones = () => {
   // Filtrar tasaciones
   const filteredAppraisals = useMemo(() => {
     let result = appraisals
-
-    // Filtro por columna Kanban
     if (filterColumn !== 'todas') {
       const column = KANBAN_COLUMNS.find(c => c.id === filterColumn)
-      if (column) {
-        result = result.filter(a => column.statuses.includes(a.status as AppraisalStatus))
-      }
+      if (column) result = result.filter(a => column.statuses.includes(a.status as AppraisalStatus))
     }
-
-    // Filtro por tipo
-    if (filterType !== 'todas') {
-      result = result.filter(a => a.type === filterType)
+    if (filterType !== 'todas') result = result.filter(a => a.type === filterType)
+    if (filterDays) {
+      const cutoff = Date.now() - filterDays * 24 * 60 * 60 * 1000
+      result = result.filter(a => a.created_at && new Date(a.created_at).getTime() >= cutoff)
     }
-
-    // Búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      result = result.filter(a => 
+      result = result.filter(a =>
         (a.client_name || '').toLowerCase().includes(query) ||
         (a.address || '').toLowerCase().includes(query) ||
         (a.neighborhood || '').toLowerCase().includes(query) ||
         (a.client_phone || '').includes(query)
       )
     }
-
     return result
-  }, [appraisals, filterColumn, filterType, searchQuery])
+  }, [appraisals, filterColumn, filterType, filterDays, searchQuery])
 
-  // Calcular stats por columna
   const columnStats = useMemo(() => {
-    const stats: Record<KanbanColumn, number> = {
-      nuevas: 0,
-      visitas: 0,
-      proceso: 0,
-      aprobadas: 0,
-      cerradas: 0,
-    }
+    const stats: Record<KanbanColumn, number> = { nuevas: 0, visitas: 0, proceso: 0, aprobadas: 0, cerradas: 0 }
     appraisals.forEach(a => {
       const column = KANBAN_COLUMNS.find(c => c.statuses.includes(a.status as AppraisalStatus))
       if (column) stats[column.id]++
@@ -716,29 +578,17 @@ export const Tasaciones = () => {
       setShowScheduleModal(false)
       setScheduleDate('')
       refetch()
-    } catch (err) {
-      console.error('Error scheduling visit:', err)
-    }
+    } catch (err) { console.error('Error scheduling visit:', err) }
   }
 
   const handleStatusChange = async (id: string, newStatus: AppraisalStatus) => {
-    try {
-      await updateAppraisalStatus(id, newStatus)
-      refetch()
-    } catch (err) {
-      console.error('Error updating status:', err)
-    }
+    try { await updateAppraisalStatus(id, newStatus); refetch() }
+    catch (err) { console.error('Error updating status:', err) }
   }
 
-  // Capitalizar y limpiar texto (departamento → Departamento, muy-bueno → Muy Bueno)
   const formatText = (text?: string | null) => {
     if (!text) return null
-    return text
-      .replace(/-/g, ' ')  // guiones a espacios
-      .replace(/_/g, ' ')  // underscores a espacios
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ')
+    return text.replace(/-/g, ' ').replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
   }
 
   const formatPrice = (min?: number | null, max?: number | null) => {
@@ -750,12 +600,7 @@ export const Tasaciones = () => {
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return null
-    return new Date(dateStr).toLocaleDateString('es-AR', { 
-      day: 'numeric', 
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    return new Date(dateStr).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
   }
 
   const getTimeAgo = (dateStr?: string | null) => {
@@ -771,6 +616,44 @@ export const Tasaciones = () => {
   const openWhatsApp = (phone: string) => {
     const clean = phone.replace(/\D/g, '')
     window.open(`https://wa.me/${clean}`, '_blank')
+  }
+
+  // Helper to prepare formal form data from appraisal
+  const prepareFormalFormData = (appraisal: Appraisal) => {
+    const pd = (appraisal as any).property_data || {}
+    const voiceNotes: any[] = pd.voice_notes || []
+    const merged: Record<string, any> = {}
+    for (const note of voiceNotes) {
+      const ff = note.extraction?.form_fields
+      if (!ff) continue
+      for (const [k, v] of Object.entries(ff)) {
+        if (v != null && k !== 'amenities') merged[k] = v
+        if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
+          merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
+        }
+      }
+    }
+    setFormalFormData({
+      address: appraisal.address || merged.address || '',
+      covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
+      semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
+      uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
+      garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
+      condition: appraisal.condition || merged.condition || '',
+      building_age: appraisal.building_age?.toString() || merged.building_age?.toString() || '',
+      bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
+      floors: pd.floors?.toString() || merged.floors?.toString() || '1',
+      has_gas: pd.has_gas ?? merged.has_gas ?? true,
+      has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
+      has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
+      amenities: [...new Set([...(appraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
+      ...(merged.floor_number != null ? { floor_number: String(merged.floor_number) } : {}),
+      ...(merged.expensas != null ? { expensas: String(merged.expensas) } : {}),
+      ...(merged.orientation ? { orientacion: merged.orientation } : {}),
+      ...(merged.has_storage != null ? { baulera: merged.has_storage ? 'si' : 'no' } : {}),
+      ...(merged.has_ac != null ? { aire_acondicionado: merged.has_ac ? 'si' : 'no' } : {}),
+      ...(merged.heating_type ? { calefaccion: merged.heating_type } : {}),
+    } as any)
   }
 
   if (loading) {
@@ -796,119 +679,821 @@ export const Tasaciones = () => {
     )
   }
 
+  // ============================================================
+  // RENDER: 3-column detail view (when an appraisal is selected)
+  // ============================================================
+  if (selectedAppraisal) {
+    const status = selectedAppraisal.status as AppraisalStatus
+    const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
+    const priceRange = formatPrice(selectedAppraisal.estimated_value_min, selectedAppraisal.estimated_value_max)
+    const { score, factors } = calculatePropertyScore(selectedAppraisal)
+    const scoreClass = getScoreClassification(score)
+    const isWeb = selectedAppraisal.type === 'market_valuation'
+
+    // ----- Column 1: Compact list -----
+    const renderColumn1 = () => (
+      <div className="flex flex-col h-full bg-white border-r border-gray-200">
+        <div className="flex items-center gap-2 p-3 border-b border-gray-200">
+          <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </button>
+          <span className="text-sm font-semibold text-gray-700">Tasaciones</span>
+          <span className="text-xs text-gray-400 ml-auto">{filteredAppraisals.length}</span>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {filteredAppraisals.map((a) => {
+            const aStatus = a.status as AppraisalStatus
+            const aConfig = APPRAISAL_STATUS_CONFIG[aStatus] || APPRAISAL_STATUS_CONFIG.web_estimate
+            const aPrice = formatPrice(a.estimated_value_min, a.estimated_value_max)
+            const aIsWeb = a.type === 'market_valuation'
+            const isSelected = a.id === selectedId
+            return (
+              <button
+                key={a.id}
+                onClick={() => { setSelectedId(a.id); setShowFormalForm(false); setMobileTab('detail') }}
+                className={`w-full text-left p-3 border-b border-gray-100 transition-colors ${
+                  isSelected ? 'bg-[#D4A745]/10 border-l-2 border-l-[#D4A745]' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-1 mb-1">
+                  <p className={`text-sm font-medium truncate ${isSelected ? 'text-[#D4A745]' : 'text-gray-900'}`}>
+                    {a.address || a.neighborhood || 'Sin dirección'}
+                  </p>
+                  <span className={`flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded ${aIsWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                    {aIsWeb ? 'Web' : 'Formal'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{a.neighborhood || 'CABA'}</span>
+                  <span className={`ml-auto flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium ${aConfig.bgColor} ${aConfig.color}`}>
+                    {aConfig.label}
+                  </span>
+                </div>
+                {aPrice && <p className="text-xs font-semibold text-[#D4A745] mt-1">{aPrice}</p>}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+
+    // ----- Column 2: Detail -----
+    const renderColumn2 = () => (
+      <div className="flex flex-col h-full bg-white border-r border-gray-200">
+        {/* Header */}
+        <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+              {isWeb ? '🌐 Web' : '📋 Formal'}
+            </span>
+            {config.label !== 'Web' && (
+              <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>{config.label}</span>
+            )}
+            {score > 0 && (
+              <span className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color}`}>
+                {scoreClass.emoji} {score}
+              </span>
+            )}
+          </div>
+          <h2 className="text-base font-bold text-gray-900">{selectedAppraisal.address || selectedAppraisal.neighborhood || 'Tasación'}</h2>
+          <p className="text-xs text-gray-500 mt-0.5">{selectedAppraisal.neighborhood}, {selectedAppraisal.city || 'CABA'}</p>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Score breakdown */}
+          {factors.length > 0 && (
+            <div className={`p-3 rounded-xl ${scoreClass.bgColor}`}>
+              <p className={`text-sm font-medium ${scoreClass.color} mb-1`}>{scoreClass.emoji} {scoreClass.label} — {score} puntos</p>
+              <div className="flex flex-wrap gap-1">
+                {factors.map((f, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded-full bg-white/50 ${scoreClass.color}`}>{f}</span>)}
+              </div>
+            </div>
+          )}
+
+          {/* Cliente */}
+          {(selectedAppraisal.client_name || selectedAppraisal.client_phone) && (
+            <CollapsibleSection title="Cliente" icon={<User className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="font-medium text-gray-900 text-sm">{selectedAppraisal.client_name || 'Sin nombre'}</p>
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  {selectedAppraisal.client_phone && (
+                    <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)} className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700">
+                      <Phone className="w-3.5 h-3.5" />{selectedAppraisal.client_phone}
+                    </button>
+                  )}
+                  {selectedAppraisal.client_email && (
+                    <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-xs text-[#D4A745]">
+                      <Mail className="w-3.5 h-3.5" />{selectedAppraisal.client_email}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </CollapsibleSection>
+          )}
+
+          {/* Propiedad */}
+          <CollapsibleSection title="Propiedad" icon={<Home className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-base font-bold text-gray-900">{formatText(selectedAppraisal.property_type) || '-'}</p>
+                  <p className="text-xs text-gray-500">Tipo</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-gray-900">{selectedAppraisal.size_m2 || '-'}m²</p>
+                  <p className="text-xs text-gray-500">Superficie</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-gray-900">{selectedAppraisal.rooms || selectedAppraisal.ambientes || '-'}</p>
+                  <p className="text-xs text-gray-500">Ambientes</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-gray-900">{selectedAppraisal.building_age ? `${selectedAppraisal.building_age} años` : '-'}</p>
+                  <p className="text-xs text-gray-500">Antigüedad</p>
+                </div>
+              </div>
+              {(selectedAppraisal.condition || selectedAppraisal.has_garage) && (
+                <div className="mt-2 pt-2 border-t border-gray-200 flex flex-wrap gap-1">
+                  {selectedAppraisal.condition && (
+                    <span className={`text-xs px-2 py-1 rounded ${selectedAppraisal.condition.toLowerCase().includes('reciclar') ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-700'}`}>
+                      {formatText(selectedAppraisal.condition)}
+                    </span>
+                  )}
+                  {selectedAppraisal.has_garage && <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">🚗 Cochera</span>}
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+
+          {/* Valuación */}
+          {priceRange && (
+            <CollapsibleSection title="Valuación" icon={<Calculator className="w-4 h-4 text-[#D4A745]" />} defaultOpen={true}
+              badge={<span className="text-sm font-bold text-[#D4A745] ml-2">{priceRange}</span>}>
+              <div className="bg-[#D4A745]/10 rounded-xl p-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-lg font-bold text-[#D4A745]">{priceRange}</p>
+                    <p className="text-xs text-gray-600">Valor estimado</p>
+                  </div>
+                  {selectedAppraisal.price_per_m2 && (
+                    <div>
+                      <p className="text-lg font-bold text-gray-900">USD {selectedAppraisal.price_per_m2.toLocaleString()}/m²</p>
+                      <p className="text-xs text-gray-600">Precio por m²</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CollapsibleSection>
+          )}
+
+          {/* Timeline */}
+          <CollapsibleSection title="Timeline" icon={<Clock className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <p className="text-sm"><span className="font-medium">Solicitud:</span> {formatDate(selectedAppraisal.created_at)}</p>
+              </div>
+              {selectedAppraisal.visit_scheduled_at && (
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                  <p className="text-sm"><span className="font-medium">Visita agendada:</span> {formatDate(selectedAppraisal.visit_scheduled_at)}</p>
+                </div>
+              )}
+              {selectedAppraisal.visited_at && (
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-orange-500" />
+                  <p className="text-sm"><span className="font-medium">Visitado:</span> {formatDate(selectedAppraisal.visited_at)}</p>
+                </div>
+              )}
+              {selectedAppraisal.completed_at && (
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <p className="text-sm"><span className="font-medium">Completado:</span> {formatDate(selectedAppraisal.completed_at)}</p>
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+        </div>
+
+        {/* Action buttons - sticky bottom */}
+        <div className="flex-shrink-0 p-3 border-t border-gray-200 bg-white flex flex-wrap gap-2">
+          {status === 'web_estimate' && (
+            <button onClick={() => setShowScheduleModal(true)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              📅 Agendar visita
+            </button>
+          )}
+          {status === 'visit_scheduled' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              ✅ Marcar visitada
+            </button>
+          )}
+          {(status === 'visit_completed' || status === 'processing') && (
+            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              📝 Generar borrador
+            </button>
+          )}
+          {isWeb && !(selectedAppraisal as any).ai_analysis && !showFormalForm && (
+            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
+              🔍 Convertir a Formal
+            </button>
+          )}
+          {status === 'draft' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              📤 Enviar a revisión
+            </button>
+          )}
+          {status === 'pending_review' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+              ✅ Aprobar
+            </button>
+          )}
+          {status === 'approved_by_admin' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+              ✍️ Firmada
+            </button>
+          )}
+          {status === 'signed' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+              📨 Entregada
+            </button>
+          )}
+          {selectedAppraisal.pdf_url && (
+            <a href={selectedAppraisal.pdf_url} target="_blank" rel="noopener noreferrer" className="py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 text-center">
+              📄 PDF
+            </a>
+          )}
+          {status !== 'cancelled' && status !== 'delivered' && (
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'cancelled')} className="py-2 px-3 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50">
+              ❌
+            </button>
+          )}
+        </div>
+      </div>
+    )
+
+    // ----- Column 3: Active step -----
+    const renderColumn3 = () => {
+      // FormalInspectionView (processing/draft or convert-to-formal)
+      if (showFormalForm) {
+        return (
+          <div className="flex flex-col h-full bg-white overflow-hidden">
+            <FormalInspectionView
+              appraisal={selectedAppraisal}
+              onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+              onClose={() => setShowFormalForm(false)}
+              onRefetch={refetch}
+            />
+          </div>
+        )
+      }
+
+      // Visit evidence (visit_scheduled, visit_completed)
+      if (status === 'visit_scheduled' || status === 'visit_completed' || (status === 'processing' && !isWeb)) {
+        const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+        const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
+        return (
+          <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Camera className="w-5 h-5 text-[#D4A745]" /> Evidencia de visita
+            </h3>
+
+            {/* Photos */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-3">📸 Fotos ({targetPhotos.length})</p>
+              {targetPhotos.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {targetPhotos.map((url, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-200">
+                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewPhoto(url)} />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                        <button onClick={() => setPreviewPhoto(url)} className="p-1 bg-white/90 rounded-full"><Eye className="w-3.5 h-3.5 text-gray-700" /></button>
+                        <button onClick={() => handleDeletePhoto(url)} className="p-1 bg-white/90 rounded-full"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={photoInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e.target.files)} />
+                <button onClick={() => photoInputRef.current?.click()} disabled={uploadingPhotos}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
+                  {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
+                </button>
+                {targetPhotos.length > 0 && !(selectedAppraisal as any).property_data?.target_analysis && (
+                  <button onClick={handleAnalyzeTarget} disabled={analyzingTarget}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+                    {analyzingTarget ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</> : '🔍 Analizar con IA'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Target Analysis Results */}
+            {(selectedAppraisal as any).property_data?.target_analysis && (() => {
+              const ta = (selectedAppraisal as any).property_data.target_analysis
+              const disc = ta.discrepancy
+              const hasDiscrepancy = disc && disc.difference_pct && Math.abs(disc.difference_pct) > 10
+              return (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">🏠 Análisis IA</p>
+                  {hasDiscrepancy && (
+                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 mb-2">
+                      <p className="text-xs font-medium text-amber-800">
+                        ⚠️ Cliente declaró <span className="font-bold">{disc.declared?.replace(/_/g, ' ') || '—'}</span>, IA detectó <span className="font-bold">{disc.detected?.replace(/_/g, ' ')}</span> ({disc.difference_pct > 0 ? '+' : ''}{disc.difference_pct}%)
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${(ta.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' : (ta.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                      {(ta.condition_detected || ta.condition || '').replace(/_/g, ' ')} — {ta.condition_score}/10
+                    </span>
+                    {ta.estimated_renovation_cost_usd && <span className="text-xs text-gray-500">Renov.: USD {ta.estimated_renovation_cost_usd.toLocaleString()}</span>}
+                  </div>
+                  {ta.details && (
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      {Object.entries(ta.details).map(([key, val]) => (
+                        <div key={key} className="bg-white rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-500 capitalize">{key}</p>
+                          <p className={`text-sm font-medium ${String(val).match(/malo|baja/) ? 'text-red-600' : String(val).match(/regular|media/) ? 'text-yellow-600' : 'text-green-600'}`}>{String(val).replace(/_/g, ' ')}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {ta.highlights?.length > 0 && <p className="text-xs text-green-600 mb-1">✅ {ta.highlights.join(' · ')}</p>}
+                  {ta.issues?.length > 0 && <p className="text-xs text-orange-600 mb-1">⚠️ {ta.issues.join(' · ')}</p>}
+                  {ta.recalculated && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <p className="text-xs font-medium text-gray-700 mb-1">📊 Valor recalculado:</p>
+                      <p className="text-base font-bold text-[#D4A745]">USD {(ta.recalculated.min / 1000).toFixed(0)}k - {(ta.recalculated.max / 1000).toFixed(0)}k</p>
+                      <p className="text-xs text-gray-500">USD {ta.recalculated.price_per_m2?.toLocaleString()}/m²</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+
+            {/* Voice notes */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-3">🎤 Notas de voz ({voiceNotes.length})</p>
+              {voiceNotes.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {voiceNotes.map((note: any, idx: number) => {
+                    const isExpanded = expandedVoiceNote === idx
+                    const ext = note.extraction || {}
+                    return (
+                      <div key={idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <button onClick={() => setExpandedVoiceNote(isExpanded ? null : idx)}
+                          className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Mic className="w-3.5 h-3.5 text-[#D4A745] flex-shrink-0" />
+                              <span className="text-xs text-gray-500">
+                                {note.timestamp ? new Date(note.timestamp).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : `Nota ${idx + 1}`}
+                              </span>
+                              {ext.condition_detected && (
+                                <span className={`text-xs font-medium px-2 py-0.5 rounded ${(ext.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' : (ext.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                  {ext.condition_detected.replace(/_/g, ' ')} {ext.condition_score}/10
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700 truncate">{note.transcription ? note.transcription.slice(0, 80) + (note.transcription.length > 80 ? '...' : '') : 'Sin transcripción'}</p>
+                          </div>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                        </button>
+                        {isExpanded && (
+                          <div className="px-3 pb-3 space-y-2 border-t border-gray-100 pt-2">
+                            <div className="bg-gray-50 rounded-lg p-2 text-sm text-gray-700 whitespace-pre-wrap">{note.transcription || 'Sin transcripción'}</div>
+                            {ext.condition_detected && (
+                              <div>
+                                {(() => {
+                                  const declared = selectedAppraisal.condition
+                                  const detected = ext.condition_detected
+                                  const hasDisc = declared && detected && declared.toLowerCase().replace(/_/g, ' ') !== detected.toLowerCase().replace(/_/g, ' ')
+                                  return hasDisc ? (
+                                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-2 mb-2">
+                                      <p className="text-xs font-medium text-amber-800">⚠️ Declarado: {declared?.replace(/_/g, ' ')}, Audio: {detected.replace(/_/g, ' ')}</p>
+                                    </div>
+                                  ) : null
+                                })()}
+                                <div className="flex flex-wrap gap-1.5 mb-1">
+                                  {ext.noise_level && <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">🔊 {ext.noise_level}</span>}
+                                  {ext.natural_light && <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">☀️ {ext.natural_light}</span>}
+                                  {ext.view && <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">👁️ {ext.view}</span>}
+                                </div>
+                                {ext.rooms && ext.rooms.length > 0 && (
+                                  <div className="grid grid-cols-2 gap-1 mb-1">
+                                    {ext.rooms.map((room: any, ri: number) => (
+                                      <div key={ri} className="bg-white border border-gray-200 rounded-lg p-2">
+                                        <span className="text-xs font-medium text-gray-900">{room.name || `Amb ${ri + 1}`}</span>
+                                        {room.condition && <span className={`ml-1 text-xs px-1 py-0.5 rounded ${String(room.condition).match(/buen|excelent/i) ? 'bg-green-100 text-green-700' : String(room.condition).match(/regular|medio/i) ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{room.condition}</span>}
+                                        {room.notes && <p className="text-xs text-gray-500 mt-0.5">{room.notes}</p>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {ext.highlights?.length > 0 && <p className="text-xs text-green-600">✅ {ext.highlights.join(' · ')}</p>}
+                                {ext.issues?.length > 0 && <p className="text-xs text-orange-600">⚠️ {ext.issues.join(' · ')}</p>}
+                                {ext.neighborhood_notes && <p className="text-xs text-gray-500 mt-1">🏘️ {ext.neighborhood_notes}</p>}
+                              </div>
+                            )}
+                            {note.cost_usd && <p className="text-xs text-gray-400 text-right">USD {note.cost_usd.toFixed(4)}</p>}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+              <input ref={audioInputRef} type="file" accept=".mp3,.m4a,.wav,.ogg,.webm,audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+              <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
+                {uploadingAudio ? <><Loader2 className="w-5 h-5 animate-spin" /> Transcribiendo...</> : <><Mic className="w-5 h-5" /> Subir nota de voz</>}
+              </button>
+            </div>
+
+            {/* Generate draft button */}
+            {(status === 'visit_completed' || status === 'processing') && (
+              <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }}
+                className="w-full py-3 bg-[#D4A745] text-white rounded-xl text-sm font-bold hover:bg-[#c49a3d] flex items-center justify-center gap-2">
+                📝 Generar borrador formal
+              </button>
+            )}
+          </div>
+        )
+      }
+
+      // AI Analysis / Comparables (processing/draft with ai_analysis)
+      if ((status === 'processing' || status === 'draft' || status === 'pending_review') && (selectedAppraisal as any).ai_analysis) {
+        return (
+          <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">🔍 Análisis de Comparables</h3>
+            <div className="space-y-2">
+              {((selectedAppraisal as any).ai_analysis?.details || []).map((det: any, idx: number) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-900">{det.address}</span>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                      {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span>USD {det.price_usd?.toLocaleString()}</span>
+                    <span>{det.total_area_m2}m²</span>
+                    <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
+                  </div>
+                  {det.highlights?.length > 0 && <p className="text-xs text-green-600 mt-1">✅ {det.highlights.join(', ')}</p>}
+                  {det.issues?.length > 0 && <p className="text-xs text-orange-600 mt-0.5">⚠️ {det.issues.join(', ')}</p>}
+                  {det.source_url && (
+                    <a href={det.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-xs text-[#D4A745] hover:text-[#c49a3d] font-medium">
+                      <ArrowUpRight className="w-3 h-3" /> Ver en ZonaProp
+                    </a>
+                  )}
+                </div>
+              ))}
+              <p className="text-xs text-gray-400 text-right">{(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} comparables analizados</p>
+            </div>
+          </div>
+        )
+      }
+
+      // Default: web_estimate with no action yet
+      return (
+        <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center">
+          <div className="bg-[#D4A745]/10 rounded-full p-4 mb-4">
+            <Calculator className="w-8 h-8 text-[#D4A745]" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">Siguiente paso</h3>
+          {status === 'web_estimate' && (
+            <>
+              <p className="text-sm text-gray-500 mb-4">Esta tasación es una estimación web. Podés agendar una visita o convertirla a formal.</p>
+              <div className="flex flex-col gap-2 w-full max-w-xs">
+                <button onClick={() => setShowScheduleModal(true)} className="py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+                  📅 Agendar visita
+                </button>
+                <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
+                  🔍 Convertir a Formal
+                </button>
+              </div>
+            </>
+          )}
+          {(status === 'approved_by_admin' || status === 'signed' || status === 'delivered') && (
+            <p className="text-sm text-gray-500">Tasación {status === 'delivered' ? 'entregada' : status === 'signed' ? 'firmada' : 'aprobada'}. {selectedAppraisal.pdf_url ? '📄 PDF disponible.' : ''}</p>
+          )}
+          {status === 'cancelled' && (
+            <p className="text-sm text-gray-400">Esta tasación fue cancelada.</p>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
+        {/* Header */}
+        <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-[#D4A745]" />
+              <h1 className="text-lg font-bold text-gray-900">Tasaciones</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="text" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50" />
+              <button onClick={() => setShowNewModal(true)} className="flex items-center gap-1 px-3 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+                <Plus className="w-4 h-4" /><span className="hidden sm:inline">Nueva</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile tabs */}
+        <div className="flex-shrink-0 lg:hidden flex border-b border-gray-200 bg-white">
+          {(['list', 'detail', 'action'] as const).map(tab => (
+            <button key={tab} onClick={() => setMobileTab(tab)}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${mobileTab === tab ? 'text-[#D4A745] border-b-2 border-[#D4A745]' : 'text-gray-500'}`}>
+              {tab === 'list' ? 'Lista' : tab === 'detail' ? 'Detalle' : 'Acción'}
+            </button>
+          ))}
+        </div>
+
+        {/* 3-column layout */}
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {/* Col 1 - list */}
+          <div className={`${mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[280px] lg:min-w-[280px] flex-shrink-0 flex-col overflow-hidden`}>
+            {renderColumn1()}
+          </div>
+          {/* Col 2 - detail */}
+          <div className={`${mobileTab === 'detail' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col overflow-hidden`}>
+            {renderColumn2()}
+          </div>
+          {/* Col 3 - action */}
+          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col min-w-0 overflow-hidden`}>
+            {renderColumn3()}
+          </div>
+        </div>
+
+        {/* Schedule Visit Modal */}
+        {showScheduleModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
+            <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
+              <p className="text-sm text-gray-500 mb-4">{selectedAppraisal.address || selectedAppraisal.neighborhood}</p>
+              <input type="datetime-local" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg mb-4" />
+              <div className="flex gap-3">
+                <button onClick={() => setShowScheduleModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium">Cancelar</button>
+                <button onClick={handleScheduleVisit} disabled={!scheduleDate} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Preview */}
+        {previewPhoto && (
+          <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4" onClick={() => setPreviewPhoto(null)}>
+            <img src={previewPhoto} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" />
+            <button onClick={() => setPreviewPhoto(null)} className="absolute top-4 right-4 text-white/80 hover:text-white"><XCircle className="w-8 h-8" /></button>
+          </div>
+        )}
+
+        {/* New Modal - rendered below */}
+        {renderNewModal()}
+      </main>
+    )
+  }
+
+  // ============================================================
+  // RENDER: Main grid view (no selection)
+  // ============================================================
+
+  // Extracted new modal to a function so it can be used in both views
+  function renderNewModal() {
+    if (!showNewModal) return null
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <h3 className="text-lg font-bold text-gray-900 mb-3">📋 Nueva Tasación</h3>
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
+            <button type="button" onClick={() => setEstimateType('express')}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${estimateType === 'express' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
+              ⚡ Express
+            </button>
+            <button type="button" onClick={() => setEstimateType('formal')}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${estimateType === 'formal' ? 'bg-[#D4A745] text-white shadow' : 'text-gray-600 hover:text-gray-900'}`}>
+              🔍 Formal (IA)
+            </button>
+          </div>
+          {estimateType === 'formal' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800">
+              <p className="font-medium">🔍 Tasación Formal</p>
+              <p className="mt-1">Analiza fotos de comparables para detectar estado real. ~15 seg.</p>
+            </div>
+          )}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Barrio *</label>
+              <BarrioSearchSelect value={newForm.neighborhood} onChange={(v) => setNewForm(f => ({ ...f, neighborhood: v }))} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de propiedad</label>
+              <select value={newForm.property_type} onChange={(e) => setNewForm(f => ({ ...f, property_type: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                <option value="departamentos">Departamento</option>
+                <option value="casas">Casa</option>
+                <option value="ph">PH</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+              <input type="text" value={newForm.address} onChange={(e) => setNewForm(f => ({ ...f, address: e.target.value }))} placeholder="Av. Libertador 1234, 5°B" className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ambientes *</label>
+                <input type="number" value={newForm.rooms} onChange={(e) => setNewForm(f => ({ ...f, rooms: e.target.value }))} placeholder="3" className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (años)</label>
+                <input type="number" value={newForm.building_age} onChange={(e) => setNewForm(f => ({ ...f, building_age: e.target.value }))} placeholder="15" className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 font-medium mt-1">Superficies</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Cubierta m² *</label>
+                <input type="number" value={newForm.covered_area_m2 || newForm.total_area_m2}
+                  onChange={(e) => { const val = e.target.value; setNewForm(f => ({ ...f, covered_area_m2: val, total_area_m2: val || f.total_area_m2 })) }}
+                  placeholder="65" className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Semi-cub. m²</label>
+                <input type="number" value={newForm.semi_covered_area_m2} onChange={(e) => setNewForm(f => ({ ...f, semi_covered_area_m2: e.target.value }))} placeholder="10" className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Descub. m²</label>
+                <input type="number" value={newForm.uncovered_area_m2} onChange={(e) => setNewForm(f => ({ ...f, uncovered_area_m2: e.target.value }))} placeholder="5" className="w-full p-2 border border-gray-200 rounded-lg text-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select value={newForm.condition} onChange={(e) => setNewForm(f => ({ ...f, condition: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                <option value="">Sin especificar</option>
+                <option value="malo">Malo</option>
+                <option value="regular">Regular</option>
+                <option value="bueno">Bueno</option>
+                <option value="muy_bueno">Muy bueno</option>
+                <option value="a_estrenar">A estrenar</option>
+                <option value="reciclado">Reciclado</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={newForm.has_garage} onChange={(e) => setNewForm(f => ({ ...f, has_garage: e.target.checked, garage_count: e.target.checked ? (f.garage_count || '1') : '' }))} className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
+                <span className="text-sm font-medium text-gray-700">Cochera</span>
+              </label>
+              {newForm.has_garage && (
+                <input type="number" value={newForm.garage_count} onChange={(e) => setNewForm(f => ({ ...f, garage_count: e.target.value }))} placeholder="1" min="1" max="5" className="w-16 p-2 border border-gray-200 rounded-lg text-sm" />
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Baños</label>
+                <select value={newForm.bathrooms} onChange={(e) => setNewForm(f => ({ ...f, bathrooms: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                  <option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4+</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pisos/Niveles</label>
+                <select value={newForm.floors} onChange={(e) => setNewForm(f => ({ ...f, floors: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                  <option value="1">1 (Simple)</option><option value="2">2 (Dúplex)</option><option value="3">3 (Tríplex)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Características de la unidad</label>
+              <div className="flex flex-wrap gap-2">
+                {[{ key: 'has_gas', label: 'Gas natural' }, { key: 'has_private_terrace', label: 'Terraza propia' }, { key: 'has_private_garden', label: 'Espacio verde propio' }, { key: 'has_private_elevator', label: 'Ascensor privado' }].map(feat => (
+                  <button key={feat.key} type="button" onClick={() => setNewForm(f => ({ ...f, [feat.key]: !(f as any)[feat.key] }))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${(newForm as any)[feat.key] ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    {feat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amenities del edificio</label>
+              <div className="flex flex-wrap gap-2">
+                {['Pileta', 'Gimnasio', 'SUM', 'Parrilla', 'Laundry', 'Seguridad 24hs', 'Balcón'].map(amenity => (
+                  <button key={amenity} type="button" onClick={() => setNewForm(f => ({ ...f, amenities: f.amenities.includes(amenity) ? f.amenities.filter(a => a !== amenity) : [...f.amenities, amenity] }))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${newForm.amenities.includes(amenity) ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    {amenity}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Comparables a analizar</label>
+              <select value={newForm.comparables_count} onChange={(e) => setNewForm(f => ({ ...f, comparables_count: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                <option value="">Auto ({estimateType === 'formal' ? '8' : '15'})</option>
+                <option value="5">5</option><option value="8">8</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+              </select>
+            </div>
+            <hr className="my-2" />
+            <p className="text-xs text-gray-500 font-medium">Datos del cliente (opcional)</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <input type="text" value={newForm.client_name} onChange={(e) => setNewForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Juan Pérez" className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <input type="tel" value={newForm.client_phone} onChange={(e) => setNewForm(f => ({ ...f, client_phone: e.target.value }))} placeholder="+54 11..." className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value={newForm.client_email} onChange={(e) => setNewForm(f => ({ ...f, client_email: e.target.value }))} placeholder="juan@email.com" className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button onClick={() => setShowNewModal(false)} disabled={estimating} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium">Cancelar</button>
+            <button onClick={handleNewEstimate} disabled={estimating || !newForm.neighborhood || !(newForm.total_area_m2 || newForm.covered_area_m2)}
+              className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50 flex items-center justify-center gap-2">
+              {estimating ? <><Loader2 className="w-4 h-4 animate-spin" /> Estimando...</> : <><Calculator className="w-4 h-4" /> Tasar</>}
+            </button>
+          </div>
+          {estimating && <p className="text-xs text-center text-gray-500 mt-3">{estimateType === 'formal' ? '🔍 Analizando fotos... ~15 seg.' : 'Buscando comparables... hasta 30 seg.'}</p>}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA]">
-      {/* Header - always visible */}
+      {/* Header */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <Calculator className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A745]" />
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">Tasaciones</h1>
-            <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
-              {appraisals.length} total
-            </span>
+            <span className="hidden sm:inline bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">{appraisals.length} total</span>
           </div>
-
           <div className="flex items-center gap-2">
-            {/* Búsqueda */}
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50"
-            />
-            <button 
-              onClick={() => setShowNewModal(true)}
-              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nueva</span>
+            <input type="text" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50" />
+            <button onClick={() => setShowNewModal(true)} className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              <Plus className="w-4 h-4" /><span className="hidden sm:inline">Nueva</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Formal Inspection View - replaces body content */}
-      {showFormalForm && selectedAppraisal ? (
-        <FormalInspectionView
-          appraisal={selectedAppraisal}
-          onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
-          onClose={() => { setShowFormalForm(false); }}
-          onRefetch={refetch}
-        />
-      ) : (<>
-      {/* Stats por columna Kanban */}
+      {/* Stats */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200">
         <div className="grid grid-cols-5 gap-2 sm:gap-4">
           {KANBAN_COLUMNS.map((col) => (
-            <button
-              key={col.id}
-              onClick={() => setFilterColumn(filterColumn === col.id ? 'todas' : col.id)}
-              className={`rounded-xl p-2 sm:p-4 text-center transition-all ${
-                filterColumn === col.id 
-                  ? 'bg-[#D4A745] text-white ring-2 ring-[#D4A745] ring-offset-2' 
-                  : 'bg-gray-50 hover:bg-gray-100'
-              }`}
-            >
+            <button key={col.id} onClick={() => setFilterColumn(filterColumn === col.id ? 'todas' : col.id)}
+              className={`rounded-xl p-2 sm:p-4 text-center transition-all ${filterColumn === col.id ? 'bg-[#D4A745] text-white ring-2 ring-[#D4A745] ring-offset-2' : 'bg-gray-50 hover:bg-gray-100'}`}>
               <p className="text-lg sm:text-2xl font-bold">{columnStats[col.id]}</p>
-              <p className={`text-xs sm:text-sm ${filterColumn === col.id ? 'text-white/80' : 'text-gray-500'}`}>
-                {col.icon} {col.label}
-              </p>
+              <p className={`text-xs sm:text-sm ${filterColumn === col.id ? 'text-white/80' : 'text-gray-500'}`}>{col.icon} {col.label}</p>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Filtros secundarios */}
+      {/* Filters */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3 bg-white border-b border-gray-200">
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Filtro por tipo */}
+          {/* Type filter */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setFilterType('todas')}
-              className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                filterType === 'todas' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => setFilterType('market_valuation')}
-              className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                filterType === 'market_valuation' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              🌐 Web
-            </button>
-            <button
-              onClick={() => setFilterType('formal_appraisal')}
-              className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                filterType === 'formal_appraisal' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📋 Formal
-            </button>
+            {[{ v: 'todas' as const, l: 'Todas' }, { v: 'market_valuation' as const, l: '🌐 Web' }, { v: 'formal_appraisal' as const, l: '📋 Formal' }].map(f => (
+              <button key={f.v} onClick={() => setFilterType(f.v)}
+                className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${filterType === f.v ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
+                {f.l}
+              </button>
+            ))}
           </div>
 
-          {/* Mostrar filtro activo */}
+          {/* Time filter */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            {[{ v: null, l: 'Todas' }, { v: 7, l: '7d' }, { v: 30, l: '30d' }, { v: 90, l: '90d' }].map(f => (
+              <button key={f.v ?? 'all'} onClick={() => setFilterDays(f.v)}
+                className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${filterDays === f.v ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
+                {f.l}
+              </button>
+            ))}
+          </div>
+
           {filterColumn !== 'todas' && (
-            <button
-              onClick={() => setFilterColumn('todas')}
-              className="flex items-center gap-1 px-2 py-1 bg-[#D4A745]/10 text-[#D4A745] rounded-lg text-xs font-medium"
-            >
+            <button onClick={() => setFilterColumn('todas')} className="flex items-center gap-1 px-2 py-1 bg-[#D4A745]/10 text-[#D4A745] rounded-lg text-xs font-medium">
               {KANBAN_COLUMNS.find(c => c.id === filterColumn)?.icon} {KANBAN_COLUMNS.find(c => c.id === filterColumn)?.label}
               <XCircle className="w-3 h-3" />
             </button>
           )}
-
-          <span className="text-xs text-gray-400 ml-auto">
-            {filteredAppraisals.length} resultados
-          </span>
+          <span className="text-xs text-gray-400 ml-auto">{filteredAppraisals.length} resultados</span>
         </div>
       </div>
 
-      {/* Content - Cards */}
+      {/* Cards grid */}
       <div className="flex-1 overflow-auto p-4 sm:p-6">
         {filteredAppraisals.length === 0 ? (
           <div className="text-center py-12">
@@ -918,47 +1503,37 @@ export const Tasaciones = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredAppraisals.map((appraisal) => {
-              const status = appraisal.status as AppraisalStatus
-              const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
-              const priceRange = formatPrice(appraisal.estimated_value_min, appraisal.estimated_value_max)
-              const { score } = calculatePropertyScore(appraisal)
-              const scoreClass = getScoreClassification(score)
-              const isWeb = appraisal.type === 'market_valuation'
+              const cardStatus = appraisal.status as AppraisalStatus
+              const cardConfig = APPRAISAL_STATUS_CONFIG[cardStatus] || APPRAISAL_STATUS_CONFIG.web_estimate
+              const cardPrice = formatPrice(appraisal.estimated_value_min, appraisal.estimated_value_max)
+              const { score: cardScore } = calculatePropertyScore(appraisal)
+              const cardScoreClass = getScoreClassification(cardScore)
+              const cardIsWeb = appraisal.type === 'market_valuation'
               const photoCount = ((appraisal as any).property_data?.target_photos || []).length
               const audioCount = ((appraisal as any).property_data?.voice_notes || []).length
               const hasEvidence = photoCount > 0 || audioCount > 0
-              
+
               return (
-                <div
-                  key={appraisal.id}
-                  className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
-                  onClick={() => setSelectedId(appraisal.id)}
-                >
-                  {/* Header con dirección y badges */}
+                <div key={appraisal.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+                  onClick={() => { setSelectedId(appraisal.id); setShowFormalForm(false); setMobileTab('detail') }}>
                   <div className="p-4 border-b border-gray-100">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-[#D4A745] transition-colors">
-                          {appraisal.address || appraisal.neighborhood || 'Sin dirección'}
-                        </h3>
+                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-[#D4A745] transition-colors">{appraisal.address || appraisal.neighborhood || 'Sin dirección'}</h3>
                         <div className="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
                           <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                           <span className="truncate">{appraisal.neighborhood || appraisal.city || 'CABA'}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                          {isWeb ? '🌐 Web' : '📋 Formal'}
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${cardIsWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                          {cardIsWeb ? '🌐 Web' : '📋 Formal'}
                         </span>
-                        {config.label !== 'Web' && (
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
-                            {config.label}
-                          </span>
+                        {cardConfig.label !== 'Web' && (
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${cardConfig.bgColor} ${cardConfig.color}`}>{cardConfig.label}</span>
                         )}
                       </div>
                     </div>
-
-                    {/* Tipo + características */}
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Building className="w-4 h-4 text-gray-400" />
                       <span>{formatText(appraisal.property_type) || 'Propiedad'}</span>
@@ -966,54 +1541,34 @@ export const Tasaciones = () => {
                       <span>{appraisal.rooms || appraisal.ambientes || '?'} amb</span>
                       <span>·</span>
                       <span>{appraisal.size_m2 || '?'}m²</span>
-                      {appraisal.condition && (
-                        <>
-                          <span>·</span>
-                          <span className={appraisal.condition.toLowerCase().includes('reciclar') ? 'text-orange-600 font-medium' : ''}>
-                            {formatText(appraisal.condition)}
-                          </span>
-                        </>
-                      )}
+                      {appraisal.condition && (<><span>·</span><span className={appraisal.condition.toLowerCase().includes('reciclar') ? 'text-orange-600 font-medium' : ''}>{formatText(appraisal.condition)}</span></>)}
                     </div>
                   </div>
-
-                  {/* Precio y Score */}
                   <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
                     <div>
-                      {priceRange ? (
+                      {cardPrice ? (
                         <>
-                          <p className="text-lg font-bold text-[#D4A745]">{priceRange}</p>
-                          {appraisal.price_per_m2 && (
-                            <p className="text-xs text-gray-500">USD {appraisal.price_per_m2.toLocaleString()}/m²</p>
-                          )}
+                          <p className="text-lg font-bold text-[#D4A745]">{cardPrice}</p>
+                          {appraisal.price_per_m2 && <p className="text-xs text-gray-500">USD {appraisal.price_per_m2.toLocaleString()}/m²</p>}
                         </>
                       ) : (
-                        <p className="text-sm text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          Pendiente de valuación
-                        </p>
+                        <p className="text-sm text-gray-400 flex items-center gap-1"><Clock className="w-3.5 h-3.5" />Pendiente</p>
                       )}
                     </div>
-                    {score > 0 && (
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${scoreClass.bgColor}`}>
-                        <TrendingUp className={`w-4 h-4 ${scoreClass.color}`} />
-                        <span className={`text-sm font-bold ${scoreClass.color}`}>{score}</span>
-                        <span className="text-base">{scoreClass.emoji}</span>
+                    {cardScore > 0 && (
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${cardScoreClass.bgColor}`}>
+                        <TrendingUp className={`w-4 h-4 ${cardScoreClass.color}`} />
+                        <span className={`text-sm font-bold ${cardScoreClass.color}`}>{cardScore}</span>
+                        <span className="text-base">{cardScoreClass.emoji}</span>
                       </div>
                     )}
                   </div>
-
-                  {/* Cliente */}
                   <div className="px-4 py-3 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-500" />
-                        </div>
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-500" /></div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {appraisal.client_name || (appraisal.client_phone ? appraisal.client_phone : 'Lead anónimo')}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">{appraisal.client_name || (appraisal.client_phone ? appraisal.client_phone : 'Lead anónimo')}</p>
                           <p className="text-xs text-gray-500">{getTimeAgo(appraisal.created_at)}</p>
                         </div>
                       </div>
@@ -1025,110 +1580,32 @@ export const Tasaciones = () => {
                       )}
                     </div>
                   </div>
-
-                  {/* Evidencia de visita */}
-                  {!isWeb && hasEvidence && (
+                  {!cardIsWeb && hasEvidence && (
                     <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2">
-                      {photoCount > 0 && (
-                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600">
-                          📸 {photoCount} foto{photoCount !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {audioCount > 0 && (
-                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-purple-50 text-purple-600">
-                          🎤 {audioCount} audio{audioCount !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {(status === 'visit_scheduled' || status === 'visit_completed' || status === 'processing') && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedId(appraisal.id)
-                            // Pre-fill and open formal view
-                            const pd = (appraisal as any).property_data || {}
-                            const voiceNotes: any[] = pd.voice_notes || []
-                            const merged: Record<string, any> = {}
-                            for (const note of voiceNotes) {
-                              const ff = note.extraction?.form_fields
-                              if (!ff) continue
-                              for (const [k, v] of Object.entries(ff)) {
-                                if (v != null && k !== 'amenities') merged[k] = v
-                                if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
-                                  merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
-                                }
-                              }
-                            }
-                            setFormalFormData({
-                              address: appraisal.address || merged.address || '',
-                              covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
-                              semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
-                              uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
-                              garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
-                              condition: appraisal.condition || merged.condition || '',
-                              building_age: appraisal.building_age?.toString() || merged.building_age?.toString() || '',
-                              bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
-                              floors: pd.floors?.toString() || merged.floors?.toString() || '1',
-                              has_gas: pd.has_gas ?? merged.has_gas ?? true,
-                              has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
-                              has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
-                              amenities: [...new Set([...(appraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
-                            } as any)
-                            setShowFormalForm(true)
-                          }}
-                          className="ml-auto flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-[#D4A745] text-white hover:bg-[#c49a3d] transition-colors"
-                        >
-                          📝 Generar borrador
-                        </button>
-                      )}
+                      {photoCount > 0 && <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600">📸 {photoCount}</span>}
+                      {audioCount > 0 && <span className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-purple-50 text-purple-600">🎤 {audioCount}</span>}
                     </div>
                   )}
-
-                  {/* Acciones */}
                   <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2">
-                    {status === 'web_estimate' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedId(appraisal.id)
-                          setShowScheduleModal(true)
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-white bg-[#D4A745] hover:bg-[#c49a3d] rounded-lg transition-colors font-medium"
-                      >
+                    {cardStatus === 'web_estimate' && (
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedId(appraisal.id); setShowScheduleModal(true) }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-white bg-[#D4A745] hover:bg-[#c49a3d] rounded-lg transition-colors font-medium">
                         📅 Agendar
                       </button>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // TODO: Abrir historial de conversación
-                        alert('Historial de conversación - próximamente')
-                      }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-[#D4A745] hover:bg-[#D4A745]/5 rounded-lg transition-colors"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      <span>Historial</span>
+                    <button onClick={(e) => { e.stopPropagation(); alert('Historial - próximamente') }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-[#D4A745] hover:bg-[#D4A745]/5 rounded-lg transition-colors">
+                      <MessageSquare className="w-4 h-4" /><span>Historial</span>
                     </button>
                     {appraisal.client_phone && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openWhatsApp(appraisal.client_phone!)
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                      >
-                        <Phone className="w-4 h-4" />
-                        <span>WhatsApp</span>
+                      <button onClick={(e) => { e.stopPropagation(); openWhatsApp(appraisal.client_phone!) }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                        <Phone className="w-4 h-4" /><span>WhatsApp</span>
                       </button>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedId(appraisal.id)
-                      }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-[#D4A745] hover:bg-[#D4A745]/5 rounded-lg transition-colors"
-                    >
-                      <ArrowUpRight className="w-4 h-4" />
-                      <span>Ver más</span>
+                    <button onClick={(e) => { e.stopPropagation(); setSelectedId(appraisal.id); setMobileTab('detail') }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-[#D4A745] hover:bg-[#D4A745]/5 rounded-lg transition-colors">
+                      <ArrowUpRight className="w-4 h-4" /><span>Ver más</span>
                     </button>
                   </div>
                 </div>
@@ -1138,1087 +1615,25 @@ export const Tasaciones = () => {
         )}
       </div>
 
-      {/* Detail Modal */}
-      {selectedAppraisal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={() => { setSelectedId(null); setShowFormalForm(false) }}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-            {(() => {
-              const status = selectedAppraisal.status as AppraisalStatus
-              const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
-              const priceRange = formatPrice(selectedAppraisal.estimated_value_min, selectedAppraisal.estimated_value_max)
-              const { score, factors } = calculatePropertyScore(selectedAppraisal)
-              const scoreClass = getScoreClassification(score)
-              const isWeb = selectedAppraisal.type === 'market_valuation'
-
-              return (
-                <>
-                  {/* Modal Header */}
-                  <div className="p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                            {isWeb ? '🌐 Web' : '📋 Formal'}
-                          </span>
-                          {config.label !== 'Web' && (
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>
-                              {config.label}
-                            </span>
-                          )}
-                          {score > 0 && (
-                            <span className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color}`}>
-                              {scoreClass.emoji} Score: {score}
-                            </span>
-                          )}
-                        </div>
-                        <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                          {selectedAppraisal.address || selectedAppraisal.neighborhood || 'Tasación'}
-                        </h2>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {selectedAppraisal.neighborhood}, {selectedAppraisal.city || 'CABA'}
-                        </p>
-                      </div>
-                      <button onClick={() => setSelectedId(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                        <XCircle className="w-6 h-6" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {showFormalForm ? (
-                    <FormalInspectionView
-                      appraisal={selectedAppraisal}
-                      onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
-                      onClose={() => setShowFormalForm(false)}
-                      onRefetch={refetch}
-                    />
-                  ) : (
-                  <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth p-4 sm:p-6 space-y-4">
-                    <>
-                    {/* Score breakdown */}
-                    {factors.length > 0 && (
-                      <div className={`p-3 rounded-xl ${scoreClass.bgColor}`}>
-                        <p className={`text-sm font-medium ${scoreClass.color} mb-1`}>
-                          {scoreClass.emoji} {scoreClass.label} — {score} puntos
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {factors.map((f, i) => (
-                            <span key={i} className={`text-xs px-2 py-0.5 rounded-full bg-white/50 ${scoreClass.color}`}>
-                              {f}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Cliente */}
-                    {(selectedAppraisal.client_name || selectedAppraisal.client_phone) && (
-                      <CollapsibleSection title="Cliente" icon={<User className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
-                        <div className="bg-gray-50 rounded-xl p-4">
-                          <p className="font-medium text-gray-900">{selectedAppraisal.client_name || 'Sin nombre'}</p>
-                          <div className="flex flex-wrap items-center gap-3 mt-2">
-                            {selectedAppraisal.client_phone && (
-                              <button
-                                onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
-                                className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 min-h-[44px]"
-                              >
-                                <Phone className="w-4 h-4" />
-                                {selectedAppraisal.client_phone}
-                              </button>
-                            )}
-                            {selectedAppraisal.client_email && (
-                              <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-sm text-[#D4A745] min-h-[44px]">
-                                <Mail className="w-4 h-4" />
-                                {selectedAppraisal.client_email}
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </CollapsibleSection>
-                    )}
-
-                    {/* Propiedad */}
-                    <CollapsibleSection title="Propiedad" icon={<Home className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          <div>
-                            <p className="text-lg font-bold text-gray-900">{formatText(selectedAppraisal.property_type) || '-'}</p>
-                            <p className="text-xs text-gray-500">Tipo</p>
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.size_m2 || '-'}m²</p>
-                            <p className="text-xs text-gray-500">Superficie</p>
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.rooms || selectedAppraisal.ambientes || '-'}</p>
-                            <p className="text-xs text-gray-500">Ambientes</p>
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold text-gray-900">{selectedAppraisal.building_age ? `${selectedAppraisal.building_age} años` : '-'}</p>
-                            <p className="text-xs text-gray-500">Antigüedad</p>
-                          </div>
-                        </div>
-                        {selectedAppraisal.condition && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <span className={`text-sm px-2 py-1 rounded ${
-                              selectedAppraisal.condition.toLowerCase().includes('reciclar') 
-                                ? 'bg-orange-100 text-orange-700' 
-                                : 'bg-gray-200 text-gray-700'
-                            }`}>
-                              Estado: {formatText(selectedAppraisal.condition)}
-                            </span>
-                            {selectedAppraisal.has_garage && (
-                              <span className="ml-2 text-sm px-2 py-1 rounded bg-blue-100 text-blue-700">
-                                🚗 Cochera
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </CollapsibleSection>
-
-                    {/* Valuación */}
-                    {priceRange && (
-                      <CollapsibleSection title="Valuación" icon={<Calculator className="w-4 h-4 text-[#D4A745]" />} defaultOpen={true}
-                        badge={<span className="text-sm font-bold text-[#D4A745] ml-2">{priceRange}</span>}>
-                        <div className="bg-[#D4A745]/10 rounded-xl p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-xl sm:text-2xl font-bold text-[#D4A745]">{priceRange}</p>
-                              <p className="text-sm text-gray-600">Valor estimado</p>
-                            </div>
-                            {selectedAppraisal.price_per_m2 && (
-                              <div>
-                                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                                  USD {selectedAppraisal.price_per_m2.toLocaleString()}/m²
-                                </p>
-                                <p className="text-sm text-gray-600">Precio por m²</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CollapsibleSection>
-                    )}
-
-                    {/* 📸 Evidencia de visita - Photo Upload */}
-                    {!isWeb && (
-                    <CollapsibleSection title="📸 Evidencia de visita" icon={<Camera className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        {/* Thumbnail Grid */}
-                        {(() => {
-                          const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
-                          return (
-                            <>
-                              {targetPhotos.length > 0 && (
-                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-                                  {targetPhotos.map((url, idx) => (
-                                    <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-200">
-                                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewPhoto(url)} />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                                        <button onClick={() => setPreviewPhoto(url)} className="p-1 bg-white/90 rounded-full"><Eye className="w-3.5 h-3.5 text-gray-700" /></button>
-                                        <button onClick={() => handleDeletePhoto(url)} className="p-1 bg-white/90 rounded-full"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                <input ref={photoInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e.target.files)} />
-                                <button
-                                  onClick={() => photoInputRef.current?.click()}
-                                  disabled={uploadingPhotos}
-                                  className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50"
-                                >
-                                  {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
-                                </button>
-                                {targetPhotos.length > 0 && !(selectedAppraisal as any).property_data?.target_analysis && (
-                                  <button
-                                    onClick={handleAnalyzeTarget}
-                                    disabled={analyzingTarget}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
-                                  >
-                                    {analyzingTarget ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</> : '🔍 Analizar con IA'}
-                                  </button>
-                                )}
-                              </div>
-                              {targetPhotos.length === 0 && (
-                                <p className="text-xs text-gray-400 mt-2 text-center">Subí fotos de la propiedad para análisis con IA</p>
-                              )}
-                            </>
-                          )
-                        })()}
-                      </div>
-                    </CollapsibleSection>
-                    )}
-
-                    {/* 🎤 Notas de voz */}
-                    {!isWeb && (
-                    <CollapsibleSection title="🎤 Notas de voz" icon={<Mic className="w-4 h-4 text-gray-500" />} defaultOpen={false}>
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        {/* Existing voice notes */}
-                        {(() => {
-                          const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
-                          return (
-                            <>
-                              {voiceNotes.length > 0 && (
-                                <div className="space-y-3 mb-4">
-                                  {voiceNotes.map((note: any, idx: number) => {
-                                    const isExpanded = expandedVoiceNote === idx
-                                    const ext = note.extraction || {}
-                                    return (
-                                      <div key={idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                        {/* Note header - always visible */}
-                                        <button
-                                          onClick={() => setExpandedVoiceNote(isExpanded ? null : idx)}
-                                          className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-                                        >
-                                          <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                              <Mic className="w-3.5 h-3.5 text-[#D4A745] flex-shrink-0" />
-                                              <span className="text-xs text-gray-500">
-                                                {note.timestamp ? new Date(note.timestamp).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : `Nota ${idx + 1}`}
-                                              </span>
-                                              {note.filename && <span className="text-xs text-gray-400 truncate max-w-[120px]">{note.filename}</span>}
-                                              {ext.condition_detected && (
-                                                <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                                                  (ext.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' :
-                                                  (ext.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' :
-                                                  'bg-red-100 text-red-700'
-                                                }`}>
-                                                  {ext.condition_detected.replace(/_/g, ' ')} {ext.condition_score}/10
-                                                </span>
-                                              )}
-                                            </div>
-                                            <p className="text-sm text-gray-700 truncate">
-                                              {note.transcription ? note.transcription.slice(0, 100) + (note.transcription.length > 100 ? '...' : '') : 'Sin transcripción'}
-                                            </p>
-                                          </div>
-                                          {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />}
-                                        </button>
-
-                                        {/* Expanded content */}
-                                        {isExpanded && (
-                                          <div className="px-3 pb-3 space-y-3 border-t border-gray-100 pt-3">
-                                            {/* Full transcription */}
-                                            <div>
-                                              <p className="text-xs font-medium text-gray-500 mb-1">Transcripción completa</p>
-                                              <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap">
-                                                {note.transcription || 'Sin transcripción'}
-                                              </div>
-                                            </div>
-
-                                            {/* Extraction data */}
-                                            {ext.condition_detected && (
-                                              <div>
-                                                <p className="text-xs font-medium text-gray-500 mb-2">Datos extraídos</p>
-
-                                                {/* Condition + discrepancy alert */}
-                                                {(() => {
-                                                  const declared = selectedAppraisal.condition
-                                                  const detected = ext.condition_detected
-                                                  const hasDisc = declared && detected && declared.toLowerCase().replace(/_/g, ' ') !== detected.toLowerCase().replace(/_/g, ' ')
-                                                  return hasDisc ? (
-                                                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 mb-2">
-                                                      <p className="text-xs font-medium text-amber-800">
-                                                        ⚠️ Cliente declaró <span className="font-bold">{declared?.replace(/_/g, ' ')}</span>, audio indica <span className="font-bold">{detected.replace(/_/g, ' ')}</span>
-                                                      </p>
-                                                    </div>
-                                                  ) : null
-                                                })()}
-
-                                                {/* Info pills */}
-                                                <div className="flex flex-wrap gap-1.5 mb-2">
-                                                  {ext.noise_level && (
-                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">🔊 Ruido: {ext.noise_level}</span>
-                                                  )}
-                                                  {ext.natural_light && (
-                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">☀️ Luz: {ext.natural_light}</span>
-                                                  )}
-                                                  {ext.view && (
-                                                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">👁️ Vista: {ext.view}</span>
-                                                  )}
-                                                </div>
-
-                                                {/* Rooms */}
-                                                {ext.rooms && ext.rooms.length > 0 && (
-                                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-                                                    {ext.rooms.map((room: any, ri: number) => (
-                                                      <div key={ri} className="bg-white border border-gray-200 rounded-lg p-2">
-                                                        <div className="flex items-center justify-between mb-1">
-                                                          <span className="text-xs font-medium text-gray-900">{room.name || `Ambiente ${ri + 1}`}</span>
-                                                          {room.condition && (
-                                                            <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                                              String(room.condition).match(/buen|excelent/i) ? 'bg-green-100 text-green-700' :
-                                                              String(room.condition).match(/regular|medio/i) ? 'bg-yellow-100 text-yellow-700' :
-                                                              'bg-red-100 text-red-700'
-                                                            }`}>{room.condition}</span>
-                                                          )}
-                                                        </div>
-                                                        {room.notes && <p className="text-xs text-gray-500">{room.notes}</p>}
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                )}
-
-                                                {/* Highlights & Issues */}
-                                                {ext.highlights && ext.highlights.length > 0 && (
-                                                  <p className="text-xs text-green-600 mb-1">✅ {ext.highlights.join(' · ')}</p>
-                                                )}
-                                                {ext.issues && ext.issues.length > 0 && (
-                                                  <p className="text-xs text-orange-600 mb-1">⚠️ {ext.issues.join(' · ')}</p>
-                                                )}
-
-                                                {/* Neighborhood notes */}
-                                                {ext.neighborhood_notes && (
-                                                  <p className="text-xs text-gray-500 mt-1">🏘️ {ext.neighborhood_notes}</p>
-                                                )}
-                                              </div>
-                                            )}
-
-                                            {note.cost_usd && (
-                                              <p className="text-xs text-gray-400 text-right">Costo: USD {note.cost_usd.toFixed(4)}</p>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              )}
-
-                              {/* Upload button */}
-                              <input ref={audioInputRef} type="file" accept=".mp3,.m4a,.wav,.ogg,.webm,audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
-                              <button
-                                onClick={() => audioInputRef.current?.click()}
-                                disabled={uploadingAudio}
-                                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50 min-h-[48px]"
-                              >
-                                {uploadingAudio ? (
-                                  <><Loader2 className="w-5 h-5 animate-spin" /> Transcribiendo...</>
-                                ) : (
-                                  <><Mic className="w-5 h-5" /> Subir nota de voz</>
-                                )}
-                              </button>
-                              {voiceNotes.length === 0 && (
-                                <p className="text-xs text-gray-400 mt-2 text-center">Subí audios grabados durante la visita para transcripción con IA</p>
-                              )}
-                            </>
-                          )
-                        })()}
-                      </div>
-                    </CollapsibleSection>
-                    )}
-
-                    {/* Target Analysis Results */}
-                    {(selectedAppraisal as any).property_data?.target_analysis && (() => {
-                      const ta = (selectedAppraisal as any).property_data.target_analysis
-                      const disc = ta.discrepancy
-                      const hasDiscrepancy = disc && disc.difference_pct && Math.abs(disc.difference_pct) > 10
-                      return (
-                        <div>
-                          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            🏠 Análisis de Propiedad Target
-                          </h3>
-                          {/* Discrepancy Alert */}
-                          {hasDiscrepancy && (
-                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-3">
-                              <p className="text-sm font-medium text-amber-800">
-                                ⚠️ Cliente declaró <span className="font-bold">{disc.declared?.replace(/_/g, ' ') || '—'}</span>, IA detectó <span className="font-bold">{disc.detected?.replace(/_/g, ' ')}</span> ({disc.difference_pct > 0 ? '+' : ''}{disc.difference_pct}% diferencia)
-                              </p>
-                            </div>
-                          )}
-                          {/* Condition Badge */}
-                          <div className="flex items-center gap-3 mb-3">
-                            <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${
-                              (ta.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' :
-                              (ta.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {(ta.condition_detected || ta.condition || '').replace(/_/g, ' ')} — {ta.condition_score}/10
-                            </span>
-                            {ta.estimated_renovation_cost_usd && (
-                              <span className="text-xs text-gray-500">Renovación est.: USD {ta.estimated_renovation_cost_usd.toLocaleString()}</span>
-                            )}
-                          </div>
-                          {/* Details Breakdown */}
-                          {ta.details && (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                              {Object.entries(ta.details).map(([key, val]) => (
-                                <div key={key} className="bg-gray-50 rounded-lg p-2 text-center">
-                                  <p className="text-xs text-gray-500 capitalize">{key}</p>
-                                  <p className={`text-sm font-medium ${
-                                    String(val).match(/malo|baja/) ? 'text-red-600' :
-                                    String(val).match(/regular|media/) ? 'text-yellow-600' :
-                                    'text-green-600'
-                                  }`}>{String(val).replace(/_/g, ' ')}</p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {/* Highlights & Issues */}
-                          {ta.highlights?.length > 0 && (
-                            <p className="text-xs text-green-600 mb-1">✅ {ta.highlights.join(' · ')}</p>
-                          )}
-                          {ta.issues?.length > 0 && (
-                            <p className="text-xs text-orange-600 mb-1">⚠️ {ta.issues.join(' · ')}</p>
-                          )}
-                          {/* Recalculated Values */}
-                          {ta.recalculated && (
-                            <div className="mt-3 pt-3 border-t border-gray-200">
-                              <p className="text-sm font-medium text-gray-700 mb-1">📊 Valor recalculado con estado detectado:</p>
-                              <p className="text-lg font-bold text-[#D4A745]">
-                                USD {(ta.recalculated.min / 1000).toFixed(0)}k - {(ta.recalculated.max / 1000).toFixed(0)}k
-                              </p>
-                              <p className="text-xs text-gray-500">USD {ta.recalculated.price_per_m2?.toLocaleString()}/m²</p>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                    {/* AI Analysis (Formal) */}
-                    {(selectedAppraisal as any).ai_analysis && (
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          🔍 Análisis de Comparables
-                        </h3>
-                        <div className="space-y-2">
-                          {((selectedAppraisal as any).ai_analysis?.details || []).map((det: any, idx: number) => (
-                            <div key={idx} className="bg-gray-50 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-gray-900">{det.address}</span>
-                                <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                                  det.ai_score >= 8 ? 'bg-green-100 text-green-700' :
-                                  det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' :
-                                  det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-red-100 text-red-700'
-                                }`}>
-                                  {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 text-xs text-gray-500">
-                                <span>USD {det.price_usd?.toLocaleString()}</span>
-                                <span>{det.total_area_m2}m²</span>
-                                <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
-                              </div>
-                              {det.highlights && det.highlights.length > 0 && (
-                                <p className="text-xs text-green-600 mt-1">✅ {det.highlights.join(', ')}</p>
-                              )}
-                              {det.issues && det.issues.length > 0 && (
-                                <p className="text-xs text-orange-600 mt-0.5">⚠️ {det.issues.join(', ')}</p>
-                              )}
-                              {det.source_url && (
-                                <a
-                                  href={det.source_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 mt-1.5 text-xs text-[#D4A745] hover:text-[#c49a3d] font-medium"
-                                >
-                                  <ArrowUpRight className="w-3 h-3" />
-                                  Ver en ZonaProp
-                                </a>
-                              )}
-                            </div>
-                          ))}
-                          <p className="text-xs text-gray-400 text-right">
-                            {(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} comparables analizados
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Timeline */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Clock className="w-4 h-4" /> Timeline
-                      </h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <p className="text-sm">
-                            <span className="font-medium">Solicitud:</span> {formatDate(selectedAppraisal.created_at)}
-                          </p>
-                        </div>
-                        {selectedAppraisal.visit_scheduled_at && (
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                            <p className="text-sm">
-                              <span className="font-medium">Visita agendada:</span> {formatDate(selectedAppraisal.visit_scheduled_at)}
-                            </p>
-                          </div>
-                        )}
-                        {selectedAppraisal.visited_at && (
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-orange-500" />
-                            <p className="text-sm">
-                              <span className="font-medium">Visitado:</span> {formatDate(selectedAppraisal.visited_at)}
-                            </p>
-                          </div>
-                        )}
-                        {selectedAppraisal.completed_at && (
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-green-500" />
-                            <p className="text-sm">
-                              <span className="font-medium">Completado:</span> {formatDate(selectedAppraisal.completed_at)}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                  </div>
-                  )}
-                  {/* Actions - Sticky at bottom (hidden when FormalInspectionView is shown) */}
-                  {!showFormalForm && (
-                  <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row gap-2">
-                    {/* Botón historial */}
-                    <button
-                      onClick={() => { console.log('Navigate to inbox for', selectedAppraisal.client_phone); alert('Próximamente: Ver conversación en Inbox') }}
-                      className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      💬 Historial
-                    </button>
-
-                    {/* Acciones según estado */}
-                    {/* Convert Express → Formal */}
-                    {isWeb && !(selectedAppraisal as any).ai_analysis && !showFormalForm && (
-                      <button 
-                        onClick={() => {
-                          const pd = (selectedAppraisal as any).property_data || {}
-                          // Merge all voice_note extractions (oldest first, newest wins)
-                          const voiceNotes: any[] = pd.voice_notes || []
-                          const merged: Record<string, any> = {}
-                          for (const note of voiceNotes) {
-                            const ff = note.extraction?.form_fields
-                            if (!ff) continue
-                            for (const [k, v] of Object.entries(ff)) {
-                              if (v != null && k !== 'amenities') merged[k] = v
-                              if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
-                                merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
-                              }
-                            }
-                          }
-                          setFormalFormData({
-                            address: selectedAppraisal.address || merged.address || '',
-                            covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
-                            semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
-                            uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
-                            garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
-                            condition: selectedAppraisal.condition || merged.condition || '',
-                            building_age: selectedAppraisal.building_age?.toString() || merged.building_age?.toString() || '',
-                            bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
-                            floors: pd.floors?.toString() || merged.floors?.toString() || '1',
-                            has_gas: pd.has_gas ?? merged.has_gas ?? true,
-                            has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
-                            has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
-                            amenities: [...new Set([...(selectedAppraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
-                            // Extra fields from extraction
-                            ...(merged.floor_number != null ? { floor_number: String(merged.floor_number) } : {}),
-                            ...(merged.expensas != null ? { expensas: String(merged.expensas) } : {}),
-                            ...(merged.orientation ? { orientacion: merged.orientation } : {}),
-                            ...(merged.has_storage != null ? { baulera: merged.has_storage ? 'si' : 'no' } : {}),
-                            ...(merged.has_ac != null ? { aire_acondicionado: merged.has_ac ? 'si' : 'no' } : {}),
-                            ...(merged.heating_type ? { calefaccion: merged.heating_type } : {}),
-                          } as any)
-                          setShowFormalForm(true)
-                        }}
-                        className="flex-1 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center justify-center gap-2"
-                      >
-                        🔍 Convertir a Formal
-                      </button>
-                    )}
-                    {status === 'web_estimate' && (
-                      <button 
-                        onClick={() => setShowScheduleModal(true)}
-                        className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
-                      >
-                        📅 Agendar visita
-                      </button>
-                    )}
-                    {status === 'visit_scheduled' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')}
-                        className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
-                      >
-                        ✅ Marcar visitada
-                      </button>
-                    )}
-                    {(status === 'visit_completed' || status === 'processing') && (
-                      <button 
-                        onClick={() => {
-                          // Merge voice note extractions for form pre-fill
-                          const pd = (selectedAppraisal as any).property_data || {}
-                          const voiceNotes: any[] = pd.voice_notes || []
-                          const merged: Record<string, any> = {}
-                          for (const note of voiceNotes) {
-                            const ff = note.extraction?.form_fields
-                            if (!ff) continue
-                            for (const [k, v] of Object.entries(ff)) {
-                              if (v != null && k !== 'amenities') merged[k] = v
-                              if (k === 'amenities' && Array.isArray(v) && (v as any[]).length > 0) {
-                                merged.amenities = [...new Set([...(merged.amenities || []), ...(v as string[])])]
-                              }
-                            }
-                          }
-                          setFormalFormData({
-                            address: selectedAppraisal.address || merged.address || '',
-                            covered_area_m2: pd.covered_area_m2?.toString() || merged.covered_area_m2?.toString() || '',
-                            semi_covered_area_m2: pd.semi_covered_area_m2?.toString() || merged.semi_covered_area_m2?.toString() || '',
-                            uncovered_area_m2: pd.uncovered_area_m2?.toString() || merged.uncovered_area_m2?.toString() || '',
-                            garage_count: pd.garage_count?.toString() || merged.garage_count?.toString() || '',
-                            condition: selectedAppraisal.condition || merged.condition || '',
-                            building_age: selectedAppraisal.building_age?.toString() || merged.building_age?.toString() || '',
-                            bathrooms: pd.bathrooms?.toString() || merged.bathrooms?.toString() || '',
-                            floors: pd.floors?.toString() || merged.floors?.toString() || '1',
-                            has_gas: pd.has_gas ?? merged.has_gas ?? true,
-                            has_private_terrace: pd.has_private_terrace ?? merged.has_private_terrace ?? false,
-                            has_private_garden: pd.has_private_garden ?? merged.has_private_garden ?? false,
-                            amenities: [...new Set([...(selectedAppraisal.amenities as string[] || []), ...(merged.amenities || []).map((a: string) => a.toLowerCase())])],
-                          } as any)
-                          setShowFormalForm(true)
-                        }}
-                        className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
-                      >
-                        📝 Generar borrador
-                      </button>
-                    )}
-                    {status === 'draft' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')}
-                        className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d]"
-                      >
-                        📤 Enviar a revisión
-                      </button>
-                    )}
-                    {status === 'pending_review' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')}
-                        className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"
-                      >
-                        ✅ Aprobar
-                      </button>
-                    )}
-                    {status === 'approved_by_admin' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')}
-                        className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"
-                      >
-                        ✍️ Marcar firmada
-                      </button>
-                    )}
-                    {status === 'signed' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')}
-                        className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"
-                      >
-                        📨 Marcar entregada
-                      </button>
-                    )}
-                    {selectedAppraisal.pdf_url && (
-                      <a 
-                        href={selectedAppraisal.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 text-center"
-                      >
-                        📄 Ver PDF
-                      </a>
-                    )}
-                    {status !== 'cancelled' && status !== 'delivered' && (
-                      <button 
-                        onClick={() => handleStatusChange(selectedAppraisal.id, 'cancelled')}
-                        className="py-2.5 px-4 bg-white border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50"
-                      >
-                        ❌
-                      </button>
-                    )}
-                  </div>
-                  )}
-                </>
-              )
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Schedule Visit Modal */}
-      {showScheduleModal && selectedAppraisal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
-          <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
-            <p className="text-sm text-gray-500 mb-4">{selectedAppraisal.address || selectedAppraisal.neighborhood}</p>
-            <input
-              type="datetime-local"
-              value={scheduleDate}
-              onChange={(e) => setScheduleDate(e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-lg mb-4"
-            />
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowScheduleModal(false)}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={handleScheduleVisit}
-                disabled={!scheduleDate}
-                className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50"
-              >
-                Confirmar
-              </button>
+      {/* Schedule modal (from grid view) */}
+      {showScheduleModal && selectedId && (() => {
+        const sa = appraisals.find(a => a.id === selectedId)
+        return sa ? (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowScheduleModal(false)}>
+            <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Agendar Visita</h3>
+              <p className="text-sm text-gray-500 mb-4">{sa.address || sa.neighborhood}</p>
+              <input type="datetime-local" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg mb-4" />
+              <div className="flex gap-3">
+                <button onClick={() => setShowScheduleModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium">Cancelar</button>
+                <button onClick={handleScheduleVisit} disabled={!scheduleDate} className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50">Confirmar</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      {/* Modal Nueva Tasación */}
-      {showNewModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-3">📋 Nueva Tasación</h3>
-            
-            {/* Express / Formal Toggle */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4">
-              <button
-                type="button"
-                onClick={() => setEstimateType('express')}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  estimateType === 'express' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                ⚡ Express
-              </button>
-              <button
-                type="button"
-                onClick={() => setEstimateType('formal')}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  estimateType === 'formal' ? 'bg-[#D4A745] text-white shadow' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                🔍 Formal (IA)
-              </button>
-            </div>
-            {estimateType === 'formal' && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800">
-                <p className="font-medium">🔍 Tasación Formal</p>
-                <p className="mt-1">Analiza fotos de comparables para detectar estado real. Mayor precisión. ~15 seg.</p>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Barrio *</label>
-                <BarrioSearchSelect
-                  value={newForm.neighborhood}
-                  onChange={(v) => setNewForm(f => ({ ...f, neighborhood: v }))}
-                />
-              </div>
+        ) : null
+      })()}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de propiedad</label>
-                <select
-                  value={newForm.property_type}
-                  onChange={(e) => setNewForm(f => ({ ...f, property_type: e.target.value }))}
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="departamentos">Departamento</option>
-                  <option value="casas">Casa</option>
-                  <option value="ph">PH</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                <input
-                  type="text"
-                  value={newForm.address}
-                  onChange={(e) => setNewForm(f => ({ ...f, address: e.target.value }))}
-                  placeholder="Av. Libertador 1234, 5°B"
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ambientes *</label>
-                  <input
-                    type="number"
-                    value={newForm.rooms}
-                    onChange={(e) => setNewForm(f => ({ ...f, rooms: e.target.value }))}
-                    placeholder="3"
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (años)</label>
-                  <input
-                    type="number"
-                    value={newForm.building_age}
-                    onChange={(e) => setNewForm(f => ({ ...f, building_age: e.target.value }))}
-                    placeholder="15"
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500 font-medium mt-1">Superficies</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Cubierta m² *</label>
-                  <input
-                    type="number"
-                    value={newForm.covered_area_m2 || newForm.total_area_m2}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setNewForm(f => ({ ...f, covered_area_m2: val, total_area_m2: val || f.total_area_m2 }))
-                    }}
-                    placeholder="65"
-                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Semi-cub. m²</label>
-                  <input
-                    type="number"
-                    value={newForm.semi_covered_area_m2}
-                    onChange={(e) => setNewForm(f => ({ ...f, semi_covered_area_m2: e.target.value }))}
-                    placeholder="10"
-                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Descub. m²</label>
-                  <input
-                    type="number"
-                    value={newForm.uncovered_area_m2}
-                    onChange={(e) => setNewForm(f => ({ ...f, uncovered_area_m2: e.target.value }))}
-                    placeholder="5"
-                    className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                <select
-                  value={newForm.condition}
-                  onChange={(e) => setNewForm(f => ({ ...f, condition: e.target.value }))}
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="">Sin especificar</option>
-                  <option value="malo">Malo</option>
-                  <option value="regular">Regular</option>
-                  <option value="bueno">Bueno</option>
-                  <option value="muy_bueno">Muy bueno</option>
-                  <option value="a_estrenar">A estrenar</option>
-                  <option value="reciclado">Reciclado</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newForm.has_garage}
-                    onChange={(e) => setNewForm(f => ({ ...f, has_garage: e.target.checked, garage_count: e.target.checked ? (f.garage_count || '1') : '' }))}
-                    className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Cochera</span>
-                </label>
-                {newForm.has_garage && (
-                  <input
-                    type="number"
-                    value={newForm.garage_count}
-                    onChange={(e) => setNewForm(f => ({ ...f, garage_count: e.target.value }))}
-                    placeholder="1"
-                    min="1"
-                    max="5"
-                    className="w-16 p-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                )}
-              </div>
-
-              {/* Unit Features */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Baños</label>
-                  <select
-                    value={newForm.bathrooms}
-                    onChange={(e) => setNewForm(f => ({ ...f, bathrooms: e.target.value }))}
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  >
-                    <option value="">-</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4+</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pisos/Niveles</label>
-                  <select
-                    value={newForm.floors}
-                    onChange={(e) => setNewForm(f => ({ ...f, floors: e.target.value }))}
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  >
-                    <option value="1">1 (Simple)</option>
-                    <option value="2">2 (Dúplex)</option>
-                    <option value="3">3 (Tríplex)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Características de la unidad</label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { key: 'has_gas', label: 'Gas natural' },
-                    { key: 'has_private_terrace', label: 'Terraza propia' },
-                    { key: 'has_private_garden', label: 'Espacio verde propio' },
-                    { key: 'has_private_elevator', label: 'Ascensor privado' },
-                  ].map(feat => (
-                    <button
-                      key={feat.key}
-                      type="button"
-                      onClick={() => setNewForm(f => ({ ...f, [feat.key]: !(f as any)[feat.key] }))}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                        (newForm as any)[feat.key]
-                          ? 'bg-[#D4A745] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {feat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities del edificio</label>
-                <div className="flex flex-wrap gap-2">
-                  {['Pileta', 'Gimnasio', 'SUM', 'Parrilla', 'Laundry', 'Seguridad 24hs', 'Balcón'].map(amenity => (
-                    <button
-                      key={amenity}
-                      type="button"
-                      onClick={() => setNewForm(f => ({
-                        ...f,
-                        amenities: f.amenities.includes(amenity)
-                          ? f.amenities.filter(a => a !== amenity)
-                          : [...f.amenities, amenity]
-                      }))}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                        newForm.amenities.includes(amenity)
-                          ? 'bg-[#D4A745] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {amenity}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Comparables a analizar</label>
-                <select
-                  value={newForm.comparables_count}
-                  onChange={(e) => setNewForm(f => ({ ...f, comparables_count: e.target.value }))}
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="">Auto ({estimateType === 'formal' ? '8' : '15'})</option>
-                  <option value="5">5 comparables</option>
-                  <option value="8">8 comparables</option>
-                  <option value="10">10 comparables</option>
-                  <option value="15">15 comparables</option>
-                  <option value="20">20 comparables</option>
-                </select>
-              </div>
-
-              <hr className="my-2" />
-              <p className="text-xs text-gray-500 font-medium">Datos del cliente (opcional)</p>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input
-                  type="text"
-                  value={newForm.client_name}
-                  onChange={(e) => setNewForm(f => ({ ...f, client_name: e.target.value }))}
-                  placeholder="Juan Pérez"
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                  <input
-                    type="tel"
-                    value={newForm.client_phone}
-                    onChange={(e) => setNewForm(f => ({ ...f, client_phone: e.target.value }))}
-                    placeholder="+54 11..."
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={newForm.client_email}
-                    onChange={(e) => setNewForm(f => ({ ...f, client_email: e.target.value }))}
-                    placeholder="juan@email.com"
-                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowNewModal(false)}
-                disabled={estimating}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleNewEstimate}
-                disabled={estimating || !newForm.neighborhood || !(newForm.total_area_m2 || newForm.covered_area_m2)}
-                className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-lg font-medium hover:bg-[#c49a3d] disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {estimating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Estimando...
-                  </>
-                ) : (
-                  <>
-                    <Calculator className="w-4 h-4" />
-                    Tasar
-                  </>
-                )}
-              </button>
-            </div>
-
-            {estimating && (
-              <p className="text-xs text-center text-gray-500 mt-3">
-                {estimateType === 'formal' 
-                  ? '🔍 Analizando fotos de comparables... ~15 segundos.'
-                  : 'Buscando comparables en ZonaProp... puede tardar hasta 30 segundos.'}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-      {/* Photo Preview Modal */}
-      {previewPhoto && (
-        <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4" onClick={() => setPreviewPhoto(null)}>
-          <img src={previewPhoto} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" />
-          <button onClick={() => setPreviewPhoto(null)} className="absolute top-4 right-4 text-white/80 hover:text-white">
-            <XCircle className="w-8 h-8" />
-          </button>
-        </div>
-      )}
-      </>)}
+      {renderNewModal()}
     </main>
   )
 }
