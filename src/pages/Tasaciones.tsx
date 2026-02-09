@@ -1487,17 +1487,39 @@ export const Tasaciones = () => {
                     {(aiAnalysis.details || []).map((det: any, idx: number) => (
                       <div key={idx} className="p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-900">{det.address || `Comparable ${idx + 1}`}</span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-sm font-medium text-gray-900 truncate">{det.address || `Comparable ${idx + 1}`}</span>
+                            {det.source_url && (
+                              <a href={det.source_url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 hover:underline">
+                                🔗 ZonaProp
+                              </a>
+                            )}
+                          </div>
+                          <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
                             {det.ai_score ? `${det.ai_score}/10` : '—'}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
                           <span className="font-medium text-gray-700">USD {det.price_usd?.toLocaleString()}</span>
                           <span>{det.total_area_m2}m²</span>
                           <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
-                          {det.ai_condition && <span className="capitalize">{det.ai_condition.replace(/_/g, ' ')}</span>}
+                          {det.ai_condition && <span className={`capitalize font-medium ${det.ai_condition === 'bueno' || det.ai_condition === 'muy_bueno' || det.ai_condition === 'excelente' ? 'text-green-600' : det.ai_condition === 'regular' ? 'text-yellow-600' : 'text-red-600'}`}>{det.ai_condition.replace(/_/g, ' ')}</span>}
                         </div>
+                        {/* Highlights & Issues */}
+                        {((det.highlights && det.highlights.length > 0) || (det.issues && det.issues.length > 0)) && (
+                          <div className="mt-1.5 space-y-1">
+                            {(det.highlights || []).map((h: string, i: number) => (
+                              <p key={`h${i}`} className="text-xs text-green-600 flex items-start gap-1.5">
+                                <span className="flex-shrink-0">✅</span> {h}
+                              </p>
+                            ))}
+                            {(det.issues || []).map((issue: string, i: number) => (
+                              <p key={`i${i}`} className="text-xs text-orange-500 flex items-start gap-1.5">
+                                <span className="flex-shrink-0">⚠️</span> {issue}
+                              </p>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
