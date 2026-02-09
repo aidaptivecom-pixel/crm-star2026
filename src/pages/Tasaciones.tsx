@@ -661,7 +661,7 @@ export const Tasaciones = () => {
   const inspActive = !!(selectedAppraisal && (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress')
   useEffect(() => {
     if (!inspActive) return
-    const interval = setInterval(() => { try { refetch() } catch(_){} }, 15000)
+    const interval = setInterval(() => { try { refetch({ silent: true }) } catch(_){} }, 15000)
     return () => clearInterval(interval)
   }, [inspActive, refetch])
 

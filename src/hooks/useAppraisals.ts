@@ -45,7 +45,7 @@ export function useAppraisals(filters?: {
     )
   }, [])
 
-  const fetchAppraisals = useCallback(async () => {
+  const fetchAppraisals = useCallback(async (options?: { silent?: boolean }) => {
     if (!isSupabaseConfigured() || !supabase) {
       console.warn('Supabase not configured, using fallback data')
       setAppraisals([])
@@ -54,7 +54,7 @@ export function useAppraisals(filters?: {
     }
 
     try {
-      setLoading(true)
+      if (!options?.silent) setLoading(true)
       setError(null)
 
       let query = supabase
@@ -74,10 +74,12 @@ export function useAppraisals(filters?: {
       setAppraisals(data || [])
     } catch (err) {
       console.error('Error fetching appraisals:', err)
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-      setAppraisals([])
+      if (!options?.silent) {
+        setError(err instanceof Error ? err.message : 'Error desconocido')
+        setAppraisals([])
+      }
     } finally {
-      setLoading(false)
+      if (!options?.silent) setLoading(false)
     }
   }, [filters?.status, filters?.type, filters?.agentId, filters?.limit])
 
