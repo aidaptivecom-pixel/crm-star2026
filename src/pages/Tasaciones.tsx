@@ -743,7 +743,13 @@ export const Tasaciones = () => {
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
+            <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-gray-500">Volver a tasaciones</span>
+          </div>
+          <div className="flex items-center gap-2">
             <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
               {isWeb ? '🌐 Web' : '📋 Formal'}
             </span>
@@ -1209,25 +1215,21 @@ export const Tasaciones = () => {
 
         {/* Mobile tabs */}
         <div className="flex-shrink-0 lg:hidden flex border-b border-gray-200 bg-white">
-          {(['list', 'detail', 'action'] as const).map(tab => (
+          {(['detail', 'action'] as const).map(tab => (
             <button key={tab} onClick={() => setMobileTab(tab)}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors ${mobileTab === tab ? 'text-[#D4A745] border-b-2 border-[#D4A745]' : 'text-gray-500'}`}>
-              {tab === 'list' ? 'Lista' : tab === 'detail' ? 'Detalle' : 'Acción'}
+              {tab === 'detail' ? 'Detalle' : 'Acción'}
             </button>
           ))}
         </div>
 
-        {/* 3-column layout */}
+        {/* 2-column layout: detail + action */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {/* Col 1 - list */}
-          <div className={`${mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[280px] lg:min-w-[280px] flex-shrink-0 flex-col overflow-hidden`}>
-            {renderColumn1()}
-          </div>
-          {/* Col 2 - detail */}
-          <div className={`${mobileTab === 'detail' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col overflow-hidden`}>
+          {/* Col 1 - detail */}
+          <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[440px] lg:min-w-[400px] flex-shrink-0 flex-col overflow-hidden`}>
             {renderColumn2()}
           </div>
-          {/* Col 3 - action */}
+          {/* Col 2 - action */}
           <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col min-w-0 overflow-hidden`}>
             {renderColumn3()}
           </div>
