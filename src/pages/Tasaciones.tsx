@@ -694,6 +694,71 @@ export const Tasaciones = () => {
     // ----- Column 1: Compact list -----
     // Column 1 (compact list) removed — detail is now Col 1
 
+    // Show Col 3 when there's a draft/formal analysis or formal form
+    const hasDraft = showFormalForm || ((['draft', 'pending_review', 'completed', 'delivered', 'approved_by_admin'].includes(status)) && selectedAppraisal)
+    const hasAiAnalysis = selectedAppraisal && (selectedAppraisal as any).ai_analysis
+    const showCol3 = !!(hasDraft || hasAiAnalysis)
+
+    // ----- Column 4: Draft/Formal -----
+    const renderColumn4 = () => {
+      if (!selectedAppraisal) return <div />
+      
+      if (showFormalForm) {
+        return (
+          <div className="flex flex-col h-full bg-white overflow-hidden">
+            <FormalInspectionView
+              appraisal={selectedAppraisal}
+              onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+              onClose={() => setShowFormalForm(false)}
+              onRefetch={refetch}
+            />
+          </div>
+        )
+      }
+
+      if ((selectedAppraisal as any).ai_analysis) {
+        const analysis = (selectedAppraisal as any).ai_analysis
+        return (
+          <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">📄 Borrador de tasación</h3>
+            <div className="bg-[#D4A745]/10 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Valor estimado</p>
+              {analysis.recalculated ? (
+                <p className="text-xl font-bold text-[#D4A745]">USD {(analysis.recalculated.min / 1000).toFixed(0)}k - {(analysis.recalculated.max / 1000).toFixed(0)}k</p>
+              ) : (
+                <p className="text-sm text-gray-500">Procesando...</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-gray-700">Comparables analizados</p>
+              {(analysis.details || []).map((det: any, idx: number) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-900">{det.address}</span>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                      {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span>USD {det.price_usd?.toLocaleString()}</span>
+                    <span>{det.total_area_m2}m²</span>
+                    <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {status === 'draft' && (
+              <button className="w-full py-3 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 flex items-center justify-center gap-2">
+                ✅ Aprobar tasación
+              </button>
+            )}
+          </div>
+        )
+      }
+
+      return <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center text-gray-400 text-sm">Borrador no disponible aún</div>
+    }
+
     // ----- Column 2: Detail -----
     const renderColumn2 = () => (
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
@@ -926,20 +991,6 @@ export const Tasaciones = () => {
 
     // ----- Column 3: Active step -----
     const renderColumn3 = () => {
-      // FormalInspectionView (processing/draft or convert-to-formal)
-      if (showFormalForm) {
-        return (
-          <div className="flex flex-col h-full bg-white overflow-hidden">
-            <FormalInspectionView
-              appraisal={selectedAppraisal}
-              onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
-              onClose={() => setShowFormalForm(false)}
-              onRefetch={refetch}
-            />
-          </div>
-        )
-      }
-
       // Visit preparation (visit_scheduled)
       if (status === 'visit_scheduled') {
         const visitData = (selectedAppraisal as any).visit_data || {}
@@ -1048,11 +1099,19 @@ export const Tasaciones = () => {
             </div>
 
             {/* Quick actions */}
-            <div className="flex gap-2">
+            <div className="space-y-2">
+              <button onClick={() => {
+                const starPhone = '5491135772057'
+                const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
+                window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
+              }}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-[#D4A745] text-white rounded-lg text-sm font-bold hover:bg-[#c49a3d] transition-colors">
+                📋 Iniciar recorrido guiado
+              </button>
               {selectedAppraisal.client_phone && (
                 <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
-                  <Phone className="w-4 h-4" /> Confirmar visita
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
+                  <Phone className="w-4 h-4" /> Confirmar visita con cliente
                 </button>
               )}
             </div>
@@ -1235,40 +1294,6 @@ export const Tasaciones = () => {
         )
       }
 
-      // AI Analysis / Comparables (processing/draft with ai_analysis)
-      if ((status === 'processing' || status === 'draft' || status === 'pending_review') && (selectedAppraisal as any).ai_analysis) {
-        return (
-          <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">🔍 Análisis de Comparables</h3>
-            <div className="space-y-2">
-              {((selectedAppraisal as any).ai_analysis?.details || []).map((det: any, idx: number) => (
-                <div key={idx} className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-900">{det.address}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                      {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span>USD {det.price_usd?.toLocaleString()}</span>
-                    <span>{det.total_area_m2}m²</span>
-                    <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
-                  </div>
-                  {det.highlights?.length > 0 && <p className="text-xs text-green-600 mt-1">✅ {det.highlights.join(', ')}</p>}
-                  {det.issues?.length > 0 && <p className="text-xs text-orange-600 mt-0.5">⚠️ {det.issues.join(', ')}</p>}
-                  {det.source_url && (
-                    <a href={det.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-xs text-[#D4A745] hover:text-[#c49a3d] font-medium">
-                      <ArrowUpRight className="w-3 h-3" /> Ver en ZonaProp
-                    </a>
-                  )}
-                </div>
-              ))}
-              <p className="text-xs text-gray-400 text-right">{(selectedAppraisal as any).ai_analysis?.comparables_with_photos || 0} comparables analizados</p>
-            </div>
-          </div>
-        )
-      }
-
       // Default: web_estimate with no action yet
       return (
         <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center">
@@ -1333,16 +1358,22 @@ export const Tasaciones = () => {
           ))}
         </div>
 
-        {/* 2-column layout: detail + action */}
+        {/* Multi-column layout: detail + action + draft */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Col 1 - detail */}
           <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[440px] lg:min-w-[400px] flex-shrink-0 flex-col overflow-hidden`}>
             {renderColumn2()}
           </div>
-          {/* Col 2 - action */}
-          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col min-w-0 overflow-hidden`}>
+          {/* Col 2 - action/preparation */}
+          <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex ${showCol3 ? 'lg:w-[400px] lg:min-w-[360px] flex-shrink-0' : 'flex-1'} flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
             {renderColumn3()}
           </div>
+          {/* Col 3 - draft/formal (only when available) */}
+          {showCol3 && (
+            <div className={`hidden lg:flex flex-1 flex-col min-w-0 overflow-hidden`}>
+              {renderColumn4()}
+            </div>
+          )}
         </div>
 
         {/* Schedule Visit Modal */}
