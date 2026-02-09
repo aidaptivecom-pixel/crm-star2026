@@ -7,7 +7,7 @@ import {
 
 interface FormalInspectionViewProps {
   appraisal: any
-  onProcessFormal: () => void
+  onProcessFormal: (config?: any) => void
   onClose: () => void
   onRefetch: () => void
 }
@@ -158,6 +158,15 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [showTranscript, setShowTranscript] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [showProcessModal, setShowProcessModal] = useState(false)
+  const [processConfig, setProcessConfig] = useState({
+    maxComparables: 10,
+    searchRadius: 1000, // meters
+    areaRange: 30, // ±%
+    ageRange: 10, // ±years
+    sameTypeOnly: true,
+    includeSold: false,
+  })
   const touchStartX = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -478,7 +487,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       {/* Sticky actions */}
       <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
         <button
-          onClick={onProcessFormal}
+          onClick={() => setShowProcessModal(true)}
           className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2"
         >
           <Zap className="w-4 h-4" /> Procesar tasación
@@ -490,6 +499,127 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
           <ClipboardList className="w-4 h-4" /> Incompleta
         </button>
       </div>
+
+      {/* Process config modal */}
+      {showProcessModal && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setShowProcessModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+            {/* Modal header */}
+            <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-[#D4A745]/10 to-white">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-[#D4A745]" /> Procesar tasación
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">Configurá los parámetros de búsqueda de comparables</p>
+            </div>
+
+            {/* Modal body */}
+            <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Cantidad de comparables */}
+              <div>
+                <label className="text-xs font-semibold text-gray-700 mb-2 block">🏘️ Cantidad de comparables</label>
+                <div className="flex gap-2">
+                  {[5, 10, 15, 20].map(n => (
+                    <button key={n} onClick={() => setProcessConfig(c => ({ ...c, maxComparables: n }))}
+                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${processConfig.maxComparables === n ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Radio de búsqueda */}
+              <div>
+                <label className="text-xs font-semibold text-gray-700 mb-2 block">📍 Radio de búsqueda</label>
+                <div className="flex gap-2">
+                  {[
+                    { label: '500m', value: 500 },
+                    { label: '1km', value: 1000 },
+                    { label: '2km', value: 2000 },
+                    { label: 'Toda la zona', value: 0 },
+                  ].map(opt => (
+                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, searchRadius: opt.value }))}
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.searchRadius === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rango de superficie */}
+              <div>
+                <label className="text-xs font-semibold text-gray-700 mb-2 block">📏 Rango de superficie</label>
+                <div className="flex gap-2">
+                  {[
+                    { label: '±10%', value: 10 },
+                    { label: '±20%', value: 20 },
+                    { label: '±30%', value: 30 },
+                    { label: 'Cualquiera', value: 0 },
+                  ].map(opt => (
+                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, areaRange: opt.value }))}
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.areaRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Antigüedad similar */}
+              <div>
+                <label className="text-xs font-semibold text-gray-700 mb-2 block">🏗️ Antigüedad similar</label>
+                <div className="flex gap-2">
+                  {[
+                    { label: '±5 años', value: 5 },
+                    { label: '±10 años', value: 10 },
+                    { label: '±20 años', value: 20 },
+                    { label: 'Cualquiera', value: 0 },
+                  ].map(opt => (
+                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, ageRange: opt.value }))}
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.ageRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-3 pt-1">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">🏠 Solo mismo tipo de propiedad</span>
+                    <p className="text-xs text-gray-400">Filtrar por depto, casa, PH, etc.</p>
+                  </div>
+                  <button onClick={() => setProcessConfig(c => ({ ...c, sameTypeOnly: !c.sameTypeOnly }))}
+                    className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.sameTypeOnly ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.sameTypeOnly ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                  </button>
+                </label>
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">📊 Incluir vendidos</span>
+                    <p className="text-xs text-gray-400">Agregar propiedades vendidas como referencia</p>
+                  </div>
+                  <button onClick={() => setProcessConfig(c => ({ ...c, includeSold: !c.includeSold }))}
+                    className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.includeSold ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.includeSold ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                  </button>
+                </label>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setShowProcessModal(false)}
+                className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => { setShowProcessModal(false); onProcessFormal(processConfig) }}
+                className="flex-1 py-2.5 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                <Zap className="w-4 h-4" /> Procesar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
