@@ -940,8 +940,100 @@ export const Tasaciones = () => {
         )
       }
 
-      // Visit evidence (visit_scheduled, visit_completed)
-      if (status === 'visit_scheduled' || status === 'visit_completed' || (status === 'processing' && !isWeb)) {
+      // Visit preparation (visit_scheduled)
+      if (status === 'visit_scheduled') {
+        const visitData = (selectedAppraisal as any).visit_data || {}
+        const visitNotes = (selectedAppraisal as any).property_data?.visit_notes || ''
+        const address = selectedAppraisal.address || selectedAppraisal.neighborhood || ''
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address + ', ' + (selectedAppraisal.neighborhood || '') + ', Buenos Aires')}`
+        
+        const checklist = [
+          { id: 'fotos_frente', label: 'Fotos del frente del edificio', icon: '📸' },
+          { id: 'fotos_interior', label: 'Fotos de todos los ambientes', icon: '📸' },
+          { id: 'fotos_bano', label: 'Fotos de baño y cocina', icon: '📸' },
+          { id: 'mediciones', label: 'Verificar medidas declaradas', icon: '📏' },
+          { id: 'estado_general', label: 'Evaluar estado general', icon: '🔍' },
+          { id: 'amenities', label: 'Registrar amenities del edificio', icon: '🏢' },
+          { id: 'nota_voz', label: 'Grabar nota de voz con observaciones', icon: '🎤' },
+        ]
+        
+        return (
+          <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              📋 Preparación de visita
+            </h3>
+
+            {/* Visit info */}
+            <div className="bg-[#D4A745]/10 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">📅 Datos de la visita</p>
+              <div className="space-y-2">
+                {selectedAppraisal.visit_scheduled_at && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#D4A745]" />
+                    <p className="text-sm text-gray-900 font-medium">
+                      {new Date(selectedAppraisal.visit_scheduled_at).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })} a las {(visitData.scheduled_time || new Date(selectedAppraisal.visit_scheduled_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }))}hs
+                    </p>
+                  </div>
+                )}
+                {visitData.agent_name && (
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-[#D4A745]" />
+                    <p className="text-sm text-gray-900">{visitData.agent_name}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Address with Maps link */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">📍 Dirección</p>
+              <p className="text-sm text-gray-900 mb-2">{address}{selectedAppraisal.neighborhood ? `, ${selectedAppraisal.neighborhood}` : ''}</p>
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <MapPin className="w-4 h-4" /> Abrir en Google Maps
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Checklist */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-3">✅ Checklist pre-visita</p>
+              <div className="space-y-2">
+                {checklist.map(item => (
+                  <label key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
+                    <span className="text-sm text-gray-700">{item.icon} {item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas previas</p>
+              <textarea
+                placeholder="Notas para la visita (ej: llamar al portero, piso 4 sin ascensor...)"
+                className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A745]/30 focus:border-[#D4A745]"
+                rows={3}
+                defaultValue={visitNotes}
+              />
+            </div>
+
+            {/* Quick actions */}
+            <div className="flex gap-2">
+              {selectedAppraisal.client_phone && (
+                <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
+                  <Phone className="w-4 h-4" /> Confirmar visita
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      // Visit evidence (visit_completed)
+      if (status === 'visit_completed' || (status === 'processing' && !isWeb)) {
         const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
         const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
         return (
