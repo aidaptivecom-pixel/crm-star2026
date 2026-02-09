@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  X, ChevronLeft, ChevronRight, Camera, Mic, Calendar, User,
+  ChevronLeft, ChevronRight,
   CheckCircle2, AlertTriangle, XCircle, ChevronDown, ChevronUp,
   Zap, ClipboardList
 } from 'lucide-react'
@@ -339,9 +339,6 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     const items = sections[idx]
     return <div>{items.map(renderCheckItem)}</div>
   }
-
-  // Audio duration
-  const audioDuration = voiceNotes.length > 0 ? voiceNotes.map((vn: any) => vn.duration || '').filter(Boolean).join(', ') || `${voiceNotes.length} nota(s)` : 'Sin audio'
 
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
