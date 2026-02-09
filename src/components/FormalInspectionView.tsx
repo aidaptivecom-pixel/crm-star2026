@@ -342,6 +342,11 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
 
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] min-h-0">
+      {/* Fixed header */}
+      <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+        <h3 className="text-sm font-bold text-gray-900">📄 Borrador de tasación</h3>
+        <p className="text-xs text-gray-500 mt-0.5">Completitud: {pct}% — {okCount} ✅ {warnCount} ⚠️ {missCount} ❌</p>
+      </div>
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-scroll bg-[#F8F9FA] pb-24" style={{ minHeight: 0 }}>
         <div className="p-4 flex gap-4 items-start">
