@@ -705,18 +705,24 @@ export const Tasaciones = () => {
     // Col 3 always visible for formal appraisals
     const showCol3 = selectedAppraisal.type === 'formal_appraisal'
 
+    // Auto-show formal inspection when inspection completed or has voice notes with extractions
+    const hasInspectionData = !!(
+      (selectedAppraisal as any).property_data?.inspection_state?.status === 'completed' ||
+      ((selectedAppraisal as any).property_data?.voice_notes || []).some((vn: any) => vn.extraction?.form_fields)
+    )
+
     // ----- Column 4: Draft/Formal -----
     const renderColumn4 = () => {
       if (!selectedAppraisal) return <div />
       
-      if (showFormalForm) {
+      if (showFormalForm || hasInspectionData) {
         return (
           <div className="flex flex-col h-full bg-white overflow-hidden">
             <FormalInspectionView
               appraisal={selectedAppraisal}
               onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
               onClose={() => setShowFormalForm(false)}
-              onRefetch={refetch}
+              onRefetch={() => refetch({ silent: true })}
             />
           </div>
         )
