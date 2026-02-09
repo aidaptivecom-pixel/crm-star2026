@@ -680,6 +680,14 @@ export const Tasaciones = () => {
     )
   }
 
+  // Auto-refresh while inspection is in progress
+  const inspActive = (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress'
+  useEffect(() => {
+    if (!inspActive) return
+    const interval = setInterval(() => { refetch() }, 5000)
+    return () => clearInterval(interval)
+  }, [inspActive, refetch])
+
   // ============================================================
   // RENDER: 3-column detail view (when an appraisal is selected)
   // ============================================================
@@ -690,15 +698,6 @@ export const Tasaciones = () => {
     const { score, factors } = calculatePropertyScore(selectedAppraisal)
     const scoreClass = getScoreClassification(score)
     const isWeb = selectedAppraisal.type === 'market_valuation'
-
-    // ----- Column 1: Compact list -----
-    // Auto-refresh while inspection is in progress
-    const inspActive = (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress'
-    useEffect(() => {
-      if (!inspActive) return
-      const interval = setInterval(() => { refetch() }, 5000)
-      return () => clearInterval(interval)
-    }, [inspActive, refetch])
 
     // Column 1 (compact list) removed — detail is now Col 1
 
