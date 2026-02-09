@@ -657,6 +657,14 @@ export const Tasaciones = () => {
     } as any)
   }
 
+  // Auto-refresh while inspection is in progress (every 15s)
+  const inspActive = !!(selectedAppraisal && (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress')
+  useEffect(() => {
+    if (!inspActive) return
+    const interval = setInterval(() => { try { refetch() } catch(_){} }, 15000)
+    return () => clearInterval(interval)
+  }, [inspActive, refetch])
+
   if (loading) {
     return (
       <main className="flex-1 flex items-center justify-center bg-[#F8F9FA]">
@@ -679,14 +687,6 @@ export const Tasaciones = () => {
       </main>
     )
   }
-
-  // Auto-refresh while inspection is in progress (every 15s)
-  const inspActive = !!(selectedAppraisal && (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress')
-  useEffect(() => {
-    if (!inspActive) return
-    const interval = setInterval(() => { try { refetch() } catch(_){} }, 15000)
-    return () => clearInterval(interval)
-  }, [inspActive, refetch])
 
   // ============================================================
   // RENDER: 3-column detail view (when an appraisal is selected)
