@@ -692,6 +692,14 @@ export const Tasaciones = () => {
     const isWeb = selectedAppraisal.type === 'market_valuation'
 
     // ----- Column 1: Compact list -----
+    // Auto-refresh while inspection is in progress
+    const inspActive = (selectedAppraisal as any)?.property_data?.inspection_state?.status === 'in_progress'
+    useEffect(() => {
+      if (!inspActive) return
+      const interval = setInterval(() => { refetch() }, 5000)
+      return () => clearInterval(interval)
+    }, [inspActive, refetch])
+
     // Column 1 (compact list) removed — detail is now Col 1
 
     // Show Col 3 when there's a draft/formal analysis or formal form
