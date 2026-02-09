@@ -166,6 +166,7 @@ export const Tasaciones = () => {
   const [analyzingTarget, setAnalyzingTarget] = useState(false)
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
   const [uploadingAudio, setUploadingAudio] = useState(false)
+  const [reprocessingAudio, setReprocessingAudio] = useState(false)
   const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const [showFormalForm, setShowFormalForm] = useState(false)
   const [showScorePopover, setShowScorePopover] = useState(false)
@@ -1142,17 +1143,57 @@ export const Tasaciones = () => {
               />
             </div>
 
+            {/* Audio upload & reprocess */}
+            {(inspectionState?.status === 'completed' || status !== 'visit_scheduled') && (
+              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <p className="text-sm font-semibold text-gray-700">🎙️ Notas de voz ({((selectedAppraisal as any).property_data?.voice_notes || []).length})</p>
+                <div className="flex gap-2">
+                  <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+                  <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
+                    {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : '🎙️ Subir audio'}
+                  </button>
+                  <button onClick={async () => {
+                    setReprocessingAudio(true)
+                    try {
+                      const resp = await fetch(`${SCRAPER_URL}/reprocess-audio`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ appraisal_id: selectedAppraisal.id }),
+                      })
+                      const result = await resp.json()
+                      if (result.success) {
+                        refetch()
+                        alert(`✅ ${result.processed} audios re-procesados`)
+                      } else {
+                        throw new Error(result.error || 'Error')
+                      }
+                    } catch (err) {
+                      alert('Error: ' + (err as Error).message)
+                    } finally {
+                      setReprocessingAudio(false)
+                    }
+                  }} disabled={reprocessingAudio}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+                    {reprocessingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : '🔄 Re-procesar audios'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Quick actions */}
             <div className="space-y-2">
-              <button onClick={() => {
-                const starPhone = '5491135565132'
-                const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
-                window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
-              }}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#D4A745] text-white rounded-lg text-sm font-bold hover:bg-[#c49a3d] transition-colors">
-                📋 Iniciar recorrido guiado
-              </button>
-              {selectedAppraisal.client_phone && (
+              {status === 'visit_scheduled' && (
+                <button onClick={() => {
+                  const starPhone = '5491135565132'
+                  const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
+                  window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
+                }}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#D4A745] text-white rounded-lg text-sm font-bold hover:bg-[#c49a3d] transition-colors">
+                  📋 Iniciar recorrido guiado
+                </button>
+              )}
+              {selectedAppraisal.client_phone && status === 'visit_scheduled' && (
                 <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
                   <Phone className="w-4 h-4" /> Confirmar visita con cliente
