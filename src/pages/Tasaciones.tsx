@@ -701,10 +701,8 @@ export const Tasaciones = () => {
 
     // Column 1 (compact list) removed — detail is now Col 1
 
-    // Show Col 3 when there's a draft/formal analysis or formal form
-    const hasDraft = showFormalForm || ((['draft', 'pending_review', 'completed', 'delivered', 'approved_by_admin'].includes(status)) && selectedAppraisal)
-    const hasAiAnalysis = selectedAppraisal && (selectedAppraisal as any).ai_analysis
-    const showCol3 = !!(hasDraft || hasAiAnalysis)
+    // Col 3 always visible for formal appraisals
+    const showCol3 = selectedAppraisal.type === 'formal_appraisal'
 
     // ----- Column 4: Draft/Formal -----
     const renderColumn4 = () => {
@@ -763,7 +761,25 @@ export const Tasaciones = () => {
         )
       }
 
-      return <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center text-gray-400 text-sm">Borrador no disponible aún</div>
+      return (
+        <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center">
+          <div className="bg-gray-100 rounded-full p-4 mb-4">
+            <Calculator className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-700 mb-2">Borrador de tasación</h3>
+          <p className="text-sm text-gray-400 mb-4">
+            {status === 'visit_scheduled' ? 'Se generará después de completar la visita' :
+             status === 'visit_completed' ? 'Listo para generar borrador formal' :
+             'Pendiente de procesamiento'}
+          </p>
+          {(status === 'visit_completed' || status === 'processing') && (
+            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }}
+              className="py-2.5 px-6 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+              📝 Generar borrador
+            </button>
+          )}
+        </div>
+      )
     }
 
     // ----- Column 2: Detail -----
