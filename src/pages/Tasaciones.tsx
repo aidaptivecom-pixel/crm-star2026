@@ -995,6 +995,9 @@ export const Tasaciones = () => {
       if (status === 'visit_scheduled') {
         const visitData = (selectedAppraisal as any).visit_data || {}
         const visitNotes = (selectedAppraisal as any).property_data?.visit_notes || ''
+        const inspectionState = (selectedAppraisal as any).property_data?.inspection_state
+        const completedItems: string[] = inspectionState?.completed_items || []
+        const inspectionResponses = inspectionState?.responses || {}
         const address = selectedAppraisal.address || selectedAppraisal.neighborhood || ''
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address + ', ' + (selectedAppraisal.neighborhood || '') + ', Buenos Aires')}`
         
@@ -1032,8 +1035,22 @@ export const Tasaciones = () => {
         return (
           <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
             <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              📋 Preparación de visita
+              📋 {inspectionState?.status === 'in_progress' ? 'Recorrido en curso' : inspectionState?.status === 'completed' ? 'Recorrido completado ✅' : 'Preparación de visita'}
             </h3>
+            {inspectionState?.status === 'in_progress' && (
+              <div className="bg-blue-50 rounded-lg p-3 flex items-center gap-3">
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs text-blue-700 mb-1">
+                    <span>Progreso del recorrido</span>
+                    <span>{completedItems.length + Object.keys(inspectionResponses).length}/{checklistGroups.reduce((s, g) => s + g.items.length, 0)}</span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${Math.min(100, ((completedItems.length + Object.keys(inspectionResponses).length) / checklistGroups.reduce((s, g) => s + g.items.length, 0)) * 100)}%` }} />
+                  </div>
+                </div>
+                <span className="text-lg">📱</span>
+              </div>
+            )}
 
             {/* Visit info */}
             <div className="bg-[#D4A745]/10 rounded-xl p-4">
@@ -1076,9 +1093,12 @@ export const Tasaciones = () => {
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{group.title}</p>
                     <div className="space-y-1">
                       {group.items.map(item => (
-                        <label key={item.id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
-                          <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
-                          <span className="text-sm text-gray-700">{item.label}</span>
+                        <label key={item.id} className={`flex items-center gap-3 py-1.5 px-2 rounded-lg transition-colors ${completedItems.includes(item.id) || inspectionResponses[item.id] ? 'bg-green-50' : 'hover:bg-white cursor-pointer'}`}>
+                          <input type="checkbox" checked={completedItems.includes(item.id) || !!inspectionResponses[item.id]} readOnly className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
+                          <span className={`text-sm ${completedItems.includes(item.id) || inspectionResponses[item.id] ? 'text-green-700 line-through' : 'text-gray-700'}`}>{item.label}</span>
+                          {inspectionResponses[item.id] && (
+                            <span className="text-xs text-green-600 ml-auto">{inspectionResponses[item.id].filter((r: any) => r.type === 'photo').length > 0 ? `📸 ${inspectionResponses[item.id].filter((r: any) => r.type === 'photo').length}` : '✅'}</span>
+                          )}
                         </label>
                       ))}
                     </div>
