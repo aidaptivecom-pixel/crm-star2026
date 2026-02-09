@@ -1,9 +1,79 @@
-import { useState, useMemo, useRef, useCallback } from 'react'
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import FormalInspectionView from '../components/FormalInspectionView'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
 import type { Appraisal } from '../types/database'
+
+const BARRIOS_CABA = [
+  'Agronomía','Almagro','Balvanera','Barracas','Barrio Norte','Belgrano','Boedo',
+  'Caballito','Chacarita','Coghlan','Colegiales','Constitución','Devoto','Flores',
+  'La Boca','Liniers','Mataderos','Monte Castro','Monserrat','Núñez','Palermo',
+  'Parque Avellaneda','Parque Chacabuco','Parque Chas','Parque Patricios','Paternal',
+  'Pompeya','Puerto Madero','Recoleta','Retiro','Saavedra','San Cristóbal','San Telmo',
+  'Vélez Sársfield','Versalles','Villa Crespo','Villa del Parque','Villa General Mitre',
+  'Villa Lugano','Villa Luro','Villa Ortúzar','Villa Pueyrredón','Villa Riachuelo',
+  'Villa Santa Rita','Villa Soldati','Villa Urquiza'
+]
+
+function BarrioSearchSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const filtered = BARRIOS_CABA.filter(b => b.toLowerCase().includes(search.toLowerCase()))
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => { setOpen(!open); setTimeout(() => inputRef.current?.focus(), 50) }}
+        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm text-left flex items-center justify-between hover:border-gray-300 transition-colors"
+      >
+        <span className={value ? 'text-gray-900' : 'text-gray-400'}>{value || 'Seleccionar barrio'}</span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar barrio..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {filtered.length === 0 && (
+              <div className="px-3 py-2 text-sm text-gray-400">Sin resultados</div>
+            )}
+            {filtered.map(b => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => { onChange(b); setOpen(false); setSearch('') }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${value === b ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Collapsible Section Component for mobile-friendly detail modal
 function CollapsibleSection({ title, icon, defaultOpen = false, badge, children }: {
@@ -1838,26 +1908,10 @@ export const Tasaciones = () => {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Barrio *</label>
-                <select
+                <BarrioSearchSelect
                   value={newForm.neighborhood}
-                  onChange={(e) => setNewForm(f => ({ ...f, neighborhood: e.target.value }))}
-                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="">Seleccionar barrio</option>
-                  <option value="Recoleta">Recoleta</option>
-                  <option value="Belgrano">Belgrano</option>
-                  <option value="Palermo">Palermo</option>
-                  <option value="Núñez">Núñez</option>
-                  <option value="Caballito">Caballito</option>
-                  <option value="Villa Urquiza">Villa Urquiza</option>
-                  <option value="Almagro">Almagro</option>
-                  <option value="Villa Crespo">Villa Crespo</option>
-                  <option value="San Telmo">San Telmo</option>
-                  <option value="Puerto Madero">Puerto Madero</option>
-                  <option value="Flores">Flores</option>
-                  <option value="Barracas">Barracas</option>
-                  <option value="Colegiales">Colegiales</option>
-                </select>
+                  onChange={(v) => setNewForm(f => ({ ...f, neighborhood: v }))}
+                />
               </div>
 
               <div>

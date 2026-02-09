@@ -44,6 +44,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 select:focus,input:focus{outline:none;border-color:var(--gold)}
 select option{background:var(--dark2)}
 
+/* Custom dropdown for barrio */
+.custom-select{position:relative}
+.custom-select-trigger{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.08);color:var(--white);padding:14px 40px 14px 16px;border-radius:8px;font-size:15px;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.custom-select-trigger:hover,.custom-select.open .custom-select-trigger{border-color:var(--gold)}
+.custom-select-trigger.placeholder{color:var(--gray)}
+.custom-select-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--dark2);border:1px solid rgba(212,167,69,.2);border-radius:8px;max-height:280px;overflow-y:auto;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.custom-select.open .custom-select-dropdown{display:block}
+.custom-select-search{width:100%;background:var(--dark3);border:none;border-bottom:1px solid rgba(255,255,255,.06);color:var(--white);padding:12px 16px;font-size:14px;font-family:'Inter',sans-serif;outline:none;position:sticky;top:0}
+.custom-select-search::placeholder{color:var(--gray)}
+.custom-select-option{padding:10px 16px;font-size:14px;cursor:pointer;transition:background .15s,color .15s;color:var(--light-gray)}
+.custom-select-option:hover{background:rgba(212,167,69,.15);color:var(--white)}
+.custom-select-option.selected{color:var(--gold);font-weight:500}
+.custom-select-option.hidden{display:none}
+.custom-select-dropdown::-webkit-scrollbar{width:6px}
+.custom-select-dropdown::-webkit-scrollbar-track{background:transparent}
+.custom-select-dropdown::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
 /* Optional toggle */
 .optional-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;padding:16px 0;color:var(--gold);font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
 .optional-toggle .arrow{transition:transform .3s;font-size:10px}
@@ -172,25 +189,13 @@ select option{background:var(--dark2)}
     <div class="field-row">
       <div class="field-group">
         <label>Barrio</label>
-        <select id="barrio" required>
-          <option value="">Seleccioná un barrio</option>
-          <option>Recoleta</option><option>Palermo</option><option>Belgrano</option>
-          <option>Caballito</option><option>Núñez</option><option>Villa Urquiza</option>
-          <option>Almagro</option><option>Villa Crespo</option><option>Colegiales</option>
-          <option>Devoto</option><option>Flores</option><option>Barrio Norte</option>
-          <option>Retiro</option><option>Puerto Madero</option><option>San Telmo</option>
-          <option>Monserrat</option><option>Boedo</option><option>Parque Patricios</option>
-          <option>Saavedra</option><option>Versalles</option><option>Villa del Parque</option>
-          <option>Chacarita</option><option>Coghlan</option><option>Villa Pueyrredón</option>
-          <option>Balvanera</option><option>San Cristóbal</option><option>La Boca</option>
-          <option>Constitución</option><option>Liniers</option><option>Mataderos</option>
-          <option>Monte Castro</option><option>Vélez Sársfield</option><option>Villa Luro</option>
-          <option>Villa General Mitre</option><option>Agronomía</option><option>Parque Chas</option>
-          <option>Paternal</option><option>Villa Ortúzar</option><option>Villa Santa Rita</option>
-          <option>Barracas</option><option>Pompeya</option><option>Villa Soldati</option>
-          <option>Villa Lugano</option><option>Villa Riachuelo</option><option>Parque Avellaneda</option>
-          <option>Parque Chacabuco</option>
-        </select>
+        <input type="hidden" id="barrio" required>
+        <div class="custom-select" id="barrioSelect">
+          <div class="custom-select-trigger placeholder" id="barrioTrigger">Seleccioná un barrio</div>
+          <div class="custom-select-dropdown" id="barrioDropdown">
+            <input type="text" class="custom-select-search" id="barrioSearch" placeholder="Buscar barrio..." autocomplete="off">
+          </div>
+        </div>
       </div>
       <div class="field-group">
         <label>Tipo de propiedad</label>
@@ -201,6 +206,11 @@ select option{background:var(--dark2)}
           <option value="ph">PH</option>
         </select>
       </div>
+    </div>
+
+    <div class="field-group">
+      <label>Dirección</label>
+      <input type="text" id="direccion" placeholder="Ej: Av. Libertador 1234, 5°B" class="w-full">
     </div>
     
     <div class="field-row">
@@ -366,6 +376,64 @@ select option{background:var(--dark2)}
 // Ref ID
 const refId = 'STR-' + String(Math.floor(10000 + Math.random() * 90000));
 
+// Custom barrio dropdown
+const barrios = [
+  'Agronomía','Almagro','Balvanera','Barracas','Barrio Norte','Belgrano','Boedo',
+  'Caballito','Chacarita','Coghlan','Colegiales','Constitución','Devoto','Flores',
+  'La Boca','Liniers','Mataderos','Monte Castro','Monserrat','Núñez','Palermo',
+  'Parque Avellaneda','Parque Chacabuco','Parque Chas','Parque Patricios','Paternal',
+  'Pompeya','Puerto Madero','Recoleta','Retiro','Saavedra','San Cristóbal','San Telmo',
+  'Vélez Sársfield','Versalles','Villa Crespo','Villa del Parque','Villa General Mitre',
+  'Villa Lugano','Villa Luro','Villa Ortúzar','Villa Pueyrredón','Villa Riachuelo',
+  'Villa Santa Rita','Villa Soldati','Villa Urquiza'
+];
+
+(function initBarrioDropdown() {
+  const dropdown = document.getElementById('barrioDropdown');
+  const trigger = document.getElementById('barrioTrigger');
+  const search = document.getElementById('barrioSearch');
+  const hidden = document.getElementById('barrio');
+  const wrapper = document.getElementById('barrioSelect');
+
+  barrios.forEach(b => {
+    const opt = document.createElement('div');
+    opt.className = 'custom-select-option';
+    opt.textContent = b;
+    opt.dataset.value = b;
+    opt.addEventListener('click', () => {
+      hidden.value = b;
+      trigger.textContent = b;
+      trigger.classList.remove('placeholder');
+      wrapper.classList.remove('open');
+      search.value = '';
+      filterBarrios('');
+      document.querySelectorAll('.custom-select-option').forEach(o => o.classList.toggle('selected', o.dataset.value === b));
+      updatePrecision();
+    });
+    dropdown.appendChild(opt);
+  });
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    wrapper.classList.toggle('open');
+    if (wrapper.classList.contains('open')) setTimeout(() => search.focus(), 50);
+  });
+
+  search.addEventListener('input', () => filterBarrios(search.value));
+  search.addEventListener('click', (e) => e.stopPropagation());
+
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) wrapper.classList.remove('open');
+  });
+
+  function filterBarrios(q) {
+    q = q.toLowerCase();
+    dropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+      opt.classList.toggle('hidden', q && !opt.textContent.toLowerCase().includes(q));
+    });
+  }
+})();
+
 // Toggle optional
 function toggleOptional() {
   const btn = document.querySelector('.optional-toggle');
@@ -428,6 +496,11 @@ async function handleSubmit(e) {
   const results = document.getElementById('results');
   const form = document.getElementById('tasarForm');
 
+  if (!document.getElementById('barrio').value) {
+    document.getElementById('barrioSelect').classList.add('open');
+    document.getElementById('barrioSearch').focus();
+    return;
+  }
   btn.disabled = true;
   loading.classList.add('show');
   results.classList.remove('show');
@@ -453,6 +526,7 @@ async function handleSubmit(e) {
     has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
     has_private_garden: document.getElementById('verdeToggle').classList.contains('on'),
     amenities: amenities.length ? amenities : undefined,
+    address: document.getElementById('direccion').value || undefined,
     ref_id: refId
   };
 
@@ -481,7 +555,7 @@ async function handleSubmit(e) {
       const insertData = {
         neighborhood: body.neighborhood,
         property_type: (body.property_type || 'departamentos').replace(/s$/, ''),
-        address: body.neighborhood + ', CABA',
+        address: document.getElementById('direccion').value || (body.neighborhood + ', CABA'),
         size_m2: body.total_area_m2,
         rooms: body.rooms || null,
         has_garage: body.has_garage || false,
