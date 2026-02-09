@@ -1101,7 +1101,7 @@ export const Tasaciones = () => {
             {/* Quick actions */}
             <div className="space-y-2">
               <button onClick={() => {
-                const starPhone = '541135772057'
+                const starPhone = '5491135565132'
                 const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
                 window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
               }}
