@@ -691,52 +691,7 @@ export const Tasaciones = () => {
     const isWeb = selectedAppraisal.type === 'market_valuation'
 
     // ----- Column 1: Compact list -----
-    const renderColumn1 = () => (
-      <div className="flex flex-col h-full bg-white border-r border-gray-200">
-        <div className="flex items-center gap-2 p-3 border-b border-gray-200">
-          <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
-          </button>
-          <span className="text-sm font-semibold text-gray-700">Tasaciones</span>
-          <span className="text-xs text-gray-400 ml-auto">{filteredAppraisals.length}</span>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {filteredAppraisals.map((a) => {
-            const aStatus = a.status as AppraisalStatus
-            const aConfig = APPRAISAL_STATUS_CONFIG[aStatus] || APPRAISAL_STATUS_CONFIG.web_estimate
-            const aPrice = formatPrice(a.estimated_value_min, a.estimated_value_max)
-            const aIsWeb = a.type === 'market_valuation'
-            const isSelected = a.id === selectedId
-            return (
-              <button
-                key={a.id}
-                onClick={() => { setSelectedId(a.id); setShowFormalForm(false); setMobileTab('detail') }}
-                className={`w-full text-left p-3 border-b border-gray-100 transition-colors ${
-                  isSelected ? 'bg-[#D4A745]/10 border-l-2 border-l-[#D4A745]' : 'hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-1 mb-1">
-                  <p className={`text-sm font-medium truncate ${isSelected ? 'text-[#D4A745]' : 'text-gray-900'}`}>
-                    {a.address || a.neighborhood || 'Sin dirección'}
-                  </p>
-                  <span className={`flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded ${aIsWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                    {aIsWeb ? 'Web' : 'Formal'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{a.neighborhood || 'CABA'}</span>
-                  <span className={`ml-auto flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium ${aConfig.bgColor} ${aConfig.color}`}>
-                    {aConfig.label}
-                  </span>
-                </div>
-                {aPrice && <p className="text-xs font-semibold text-[#D4A745] mt-1">{aPrice}</p>}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    )
+    // Column 1 (compact list) removed — detail is now Col 1
 
     // ----- Column 2: Detail -----
     const renderColumn2 = () => (
