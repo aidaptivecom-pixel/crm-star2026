@@ -998,8 +998,9 @@ export const Tasaciones = () => {
 
     // ----- Column 3: Active step -----
     const renderColumn3 = () => {
-      // Visit preparation (visit_scheduled)
-      if (status === 'visit_scheduled') {
+      // Visit preparation — show for ALL visit-related statuses (always visible)
+      const visitStatuses: AppraisalStatus[] = ['visit_scheduled', 'visit_completed', 'processing', 'draft', 'pending_review', 'approved_by_admin', 'signed', 'delivered']
+      if (visitStatuses.includes(status) && selectedAppraisal.type === 'formal_appraisal') {
         const visitData = (selectedAppraisal as any).visit_data || {}
         const visitNotes = (selectedAppraisal as any).property_data?.visit_notes || ''
         const inspectionState = (selectedAppraisal as any).property_data?.inspection_state
