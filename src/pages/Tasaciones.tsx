@@ -1579,48 +1579,219 @@ export const Tasaciones = () => {
     }
 
     // Col 5: Informe / PDF preview
+    const generateReportHTML = () => {
+      const a = selectedAppraisal as any
+      const ai = a.ai_analysis || {}
+      const pd = a.property_data || {}
+      const details = ai.details || []
+      const estimation = ai.estimation || {}
+      const min = a.estimated_value_min || 0
+      const max = a.estimated_value_max || 0
+      const value = a.estimated_value || ((min + max) / 2)
+      const position = max > min ? ((value - min) / (max - min)) * 100 : 50
+      const photos: string[] = pd.target_photos || []
+      const date = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+      const shortId = a.id?.slice(0, 8) || '0000'
+
+      return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Informe de Tasación — ${a.address || ''}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#f5f5f5}
+.page{width:210mm;min-height:297mm;margin:20px auto;background:white;box-shadow:0 4px 24px rgba(0,0,0,.1);overflow:hidden}
+.cover{min-height:297mm;display:flex;flex-direction:column;position:relative;background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:white;padding:60px}
+.cover-accent{position:absolute;right:0;top:0;width:8px;height:100%;background:#D4A745}
+.cover-logo{font-size:14px;letter-spacing:8px;text-transform:uppercase;color:#D4A745;font-weight:700;margin-bottom:auto}
+.cover-star{font-size:48px;margin-bottom:8px}.cover-title{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#999;margin-bottom:60px}
+.cover-address{font-size:42px;font-weight:800;line-height:1.1;margin-bottom:16px}
+.cover-neighborhood{font-size:22px;font-weight:300;color:#D4A745;margin-bottom:60px}
+.cover-value{margin-top:auto}.cover-value-label{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:8px}
+.cover-value-number{font-size:56px;font-weight:800;color:#D4A745}.cover-value-m2{font-size:18px;color:#888;margin-top:4px}
+.cover-footer{margin-top:40px;display:flex;justify-content:space-between;font-size:12px;color:#666}
+.cover-footer span{display:block}
+.content{padding:50px 60px}
+.page-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:2px solid #D4A745;margin-bottom:30px}
+.page-header-logo{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#D4A745;font-weight:700}
+.page-header-title{font-size:11px;color:#999}
+h2{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #eee}
+h2 .sn{color:#D4A745;margin-right:8px}h3{font-size:14px;font-weight:600;color:#333;margin:16px 0 8px}
+.summary-box{background:linear-gradient(135deg,#faf6eb,#f5f0e0);border:1px solid #D4A745;border-radius:12px;padding:30px;margin-bottom:30px}
+.summary-value{font-size:40px;font-weight:800;color:#D4A745;text-align:center}
+.summary-label{font-size:12px;color:#888;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.summary-m2{font-size:16px;color:#666;text-align:center;margin-top:4px}
+.summary-range{display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid #D4A74540}
+.summary-range-item{text-align:center}.summary-range-item .val{font-size:18px;font-weight:700;color:#333}
+.summary-range-item .lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px}
+.position-bar{height:12px;background:linear-gradient(90deg,#ef4444 0%,#eab308 35%,#22c55e 100%);border-radius:6px;position:relative;margin:20px 0}
+.position-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:#D4A745;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.position-labels{display:flex;justify-content:space-between;font-size:10px;color:#999}
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.data-item{background:#f8f8f8;padding:12px 16px;border-radius:8px}
+.data-item .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:4px}
+.data-item .value{font-size:14px;font-weight:600;color:#333}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0}
+.photo-grid img{width:100%;height:140px;object-fit:cover;border-radius:8px;background:#eee}
+.comp-card{background:#f8f8f8;border-radius:10px;padding:16px;margin-bottom:10px}
+.comp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.comp-name{font-weight:600;font-size:13px}.comp-score{background:#D4A745;color:white;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.comp-details{display:flex;gap:16px;font-size:12px;color:#666;margin-bottom:8px}
+.comp-notes{font-size:11px;color:#888}.comp-notes .positive{color:#16a34a}.comp-notes .negative{color:#ea580c}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+table th{background:#f8f8f8;text-align:left;padding:10px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#666;border-bottom:2px solid #eee}
+table td{padding:10px 12px;border-bottom:1px solid #f0f0f0}
+.methodology{background:#f8f9fa;border-radius:12px;padding:24px;margin:16px 0;font-size:13px;line-height:1.7;color:#555}
+.conclusion{background:linear-gradient(135deg,#faf6eb,#f5f0e0);border:1px solid #D4A745;border-radius:12px;padding:24px;margin:16px 0}
+.conclusion p{font-size:14px;line-height:1.8;color:#333}
+.signature-line{margin-top:60px;display:flex;gap:60px}.signature-box{flex:1;text-align:center}
+.signature-box .line{border-top:1px solid #333;margin-bottom:8px}
+.signature-box .name{font-size:12px;font-weight:600;color:#333}.signature-box .role{font-size:10px;color:#888}
+.disclaimer{margin-top:30px;padding:16px;background:#f8f8f8;border-radius:8px;font-size:10px;color:#999;line-height:1.6}
+.footer{margin-top:40px;padding-top:20px;border-top:2px solid #eee;display:flex;justify-content:space-between;font-size:11px;color:#999}
+@media print{body{background:white}.page{box-shadow:none;margin:0;page-break-after:always}}
+</style></head><body>
+
+<!-- COVER -->
+<div class="page"><div class="cover"><div class="cover-accent"></div>
+<div><div class="cover-star">⭐</div><div class="cover-logo">Star Inmobiliaria</div><div class="cover-title">Informe de Tasación</div></div>
+<div><div class="cover-address">${a.address || 'Dirección'}</div><div class="cover-neighborhood">${a.neighborhood || ''}, Capital Federal</div></div>
+<div class="cover-value"><div class="cover-value-label">Valor de Tasación</div>
+<div class="cover-value-number">USD ${(value/1000).toFixed(0)}.000</div>
+<div class="cover-value-m2">USD ${a.price_per_m2?.toLocaleString() || '—'} /m²</div></div>
+<div class="cover-footer"><div><span>Fecha: ${date}</span><span>Informe Nº: ST-2026-${shortId}</span></div>
+<div style="text-align:right"><span>Tasador: Jonathan Rodríguez</span><span>Matrícula: CMCPSI Nº XXXX</span></div></div></div></div>
+
+<!-- RESUMEN + DATOS -->
+<div class="page"><div class="content">
+<div class="page-header"><div class="page-header-logo">⭐ Star Inmobiliaria</div><div class="page-header-title">${a.address} — ${a.neighborhood} | ST-2026-${shortId}</div></div>
+<h2><span class="sn">01</span> Resumen Ejecutivo</h2>
+<div class="summary-box">
+<div class="summary-label">Valor de Tasación</div><div class="summary-value">USD ${(value/1000).toFixed(0)}.000</div>
+<div class="summary-m2">USD ${a.price_per_m2?.toLocaleString() || '—'} /m²</div>
+<div class="position-bar"><div class="position-marker" style="left:${Math.max(5,Math.min(95,position))}%"></div></div>
+<div class="position-labels"><span>USD ${(min/1000).toFixed(0)}k (piso)</span><span>USD ${(max/1000).toFixed(0)}k (techo)</span></div>
+<div class="summary-range">
+<div class="summary-range-item"><div class="lbl">Mínimo</div><div class="val">USD ${min.toLocaleString()}</div></div>
+<div class="summary-range-item"><div class="lbl">Valor Tasación</div><div class="val" style="color:#D4A745">USD ${value.toLocaleString()}</div></div>
+<div class="summary-range-item"><div class="lbl">Máximo</div><div class="val">USD ${max.toLocaleString()}</div></div>
+</div></div>
+<h2><span class="sn">02</span> Descripción del Inmueble</h2>
+<div class="data-grid">
+<div class="data-item"><div class="label">Dirección</div><div class="value">${a.address}, ${a.neighborhood}</div></div>
+<div class="data-item"><div class="label">Tipo</div><div class="value">${a.property_type === 'departamento' ? 'Departamento' : a.property_type || '—'}</div></div>
+<div class="data-item"><div class="label">Superficie Total</div><div class="value">${a.size_m2 || '—'} m²</div></div>
+<div class="data-item"><div class="label">Ambientes</div><div class="value">${a.rooms || '—'}</div></div>
+<div class="data-item"><div class="label">Baños</div><div class="value">${pd.bathrooms || '—'}</div></div>
+<div class="data-item"><div class="label">Pisos</div><div class="value">${pd.floors || '—'}</div></div>
+<div class="data-item"><div class="label">Antigüedad</div><div class="value">${a.building_age ? a.building_age + ' años' : '—'}</div></div>
+<div class="data-item"><div class="label">Estado</div><div class="value">${(a.condition || '—').replace(/_/g,' ')}</div></div>
+<div class="data-item"><div class="label">Cochera</div><div class="value">${a.has_garage ? 'Sí (' + (pd.garage_count||1) + ')' : 'No'}</div></div>
+<div class="data-item"><div class="label">Gas Natural</div><div class="value">${pd.has_gas ? 'Sí' : 'No'}</div></div>
+</div></div></div>
+
+<!-- FOTOS + COMPARABLES -->
+<div class="page"><div class="content">
+<div class="page-header"><div class="page-header-logo">⭐ Star Inmobiliaria</div><div class="page-header-title">${a.address} — ${a.neighborhood} | ST-2026-${shortId}</div></div>
+<h2><span class="sn">03</span> Registro Fotográfico</h2>
+<div class="photo-grid">${photos.length > 0 ? photos.map((url: string) => `<img src="${url}" alt="Foto" />`).join('') : '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ccc">📸 Sin fotografías cargadas</div>'}</div>
+<h2 style="margin-top:30px"><span class="sn">04</span> Análisis de Mercado</h2>
+<p style="font-size:13px;color:#555;margin-bottom:16px">Se analizaron propiedades en la zona de ${a.neighborhood}, de las cuales se seleccionaron ${details.length} comparables con características similares al inmueble tasado.</p>
+${details.map((det: any, idx: number) => `<div class="comp-card">
+<div class="comp-header"><span class="comp-name">Comparable ${idx+1} — ${det.address || a.neighborhood}</span>
+<span class="comp-score" ${det.ai_score < 6 ? 'style="background:#eab308"' : ''}>${det.ai_score || '—'}/10</span></div>
+<div class="comp-details"><span><strong>USD ${det.price_usd?.toLocaleString()}</strong></span><span>${det.total_area_m2}m²</span><span>USD ${det.original_price_per_m2?.toLocaleString()}/m²</span><span>Estado: ${(det.ai_condition||'—').replace(/_/g,' ')}</span></div>
+<div class="comp-notes">${(det.highlights||[]).length ? '<span class="positive">✅ '+(det.highlights||[]).join(', ')+'</span><br>' : ''}${(det.issues||[]).length ? '<span class="negative">⚠️ '+(det.issues||[]).join(', ')+'</span>' : ''}</div>
+</div>`).join('')}
+</div></div>
+
+<!-- TABLA + METODOLOGÍA + CONCLUSIÓN -->
+<div class="page"><div class="content">
+<div class="page-header"><div class="page-header-logo">⭐ Star Inmobiliaria</div><div class="page-header-title">${a.address} — ${a.neighborhood} | ST-2026-${shortId}</div></div>
+<h2><span class="sn">05</span> Tabla Comparativa</h2>
+<table><thead><tr><th>Comparable</th><th>Precio</th><th>Sup.</th><th>USD/m²</th><th>Estado</th><th>Score</th></tr></thead><tbody>
+${details.map((det: any, idx: number) => `<tr><td>Comp. ${idx+1}</td><td><strong>USD ${det.price_usd?.toLocaleString()}</strong></td><td>${det.total_area_m2}m²</td><td>USD ${det.original_price_per_m2?.toLocaleString()}</td><td>${(det.ai_condition||'—').replace(/_/g,' ')}</td><td>${det.ai_score||'—'}/10</td></tr>`).join('')}
+<tr style="background:#faf6eb;font-weight:600"><td>📍 ${a.address}</td><td style="color:#D4A745"><strong>USD ${value.toLocaleString()}</strong></td><td>${a.size_m2}m²</td><td style="color:#D4A745">USD ${a.price_per_m2?.toLocaleString()}</td><td>${(a.condition||'—').replace(/_/g,' ')}</td><td>—</td></tr>
+</tbody></table>
+<h2><span class="sn">06</span> Metodología</h2>
+<div class="methodology"><p><strong>Método:</strong> Comparativo directo de mercado con ajustes por condición.</p>
+<p style="margin-top:8px">Se relevaron propiedades en venta en ${a.neighborhood} con características comparables. Cada comparable fue evaluado mediante inspección fotográfica asistida por inteligencia artificial para determinar su estado de conservación real.</p>
+<p style="margin-top:8px">Los precios fueron normalizados y se aplicaron coeficientes de ajuste correspondientes a las características del inmueble tasado. El valor final fue posicionado dentro del rango de mercado considerando la calidad relativa del inmueble respecto a los comparables.</p></div>
+<h2><span class="sn">07</span> Conclusión</h2>
+<div class="conclusion"><p>En base al análisis comparativo realizado, considerando las características del inmueble ubicado en <strong>${a.address}, ${a.neighborhood}</strong>, su estado de conservación <strong>${(a.condition||'').replace(/_/g,' ')}</strong>${a.has_garage ? ', la inclusión de cochera,' : ''} y su ubicación, se determina:</p>
+<div style="text-align:center;margin:20px 0"><div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:2px">Valor de Tasación</div>
+<div style="font-size:36px;font-weight:800;color:#D4A745">USD ${value.toLocaleString()}</div></div>
+${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin-top:12px">'+estimation.positioning_reasoning+'</p>' : ''}
+</div></div></div>
+
+<!-- LEGAL + FIRMAS -->
+<div class="page"><div class="content">
+<div class="page-header"><div class="page-header-logo">⭐ Star Inmobiliaria</div><div class="page-header-title">${a.address} — ${a.neighborhood} | ST-2026-${shortId}</div></div>
+<h2><span class="sn">08</span> Datos Legales y Firmas</h2>
+<div class="data-grid">
+<div class="data-item"><div class="label">Solicitante</div><div class="value">${a.client_name || '—'}</div></div>
+<div class="data-item"><div class="label">Contacto</div><div class="value">${a.client_phone || '—'}</div></div>
+<div class="data-item"><div class="label">Fecha de Emisión</div><div class="value">${date}</div></div>
+<div class="data-item"><div class="label">Nº de Informe</div><div class="value">ST-2026-${shortId}</div></div>
+<div class="data-item"><div class="label">Vigencia</div><div class="value">90 días desde emisión</div></div>
+</div>
+<div class="signature-line"><div class="signature-box"><div style="height:80px"></div><div class="line"></div><div class="name">Jonathan Rodríguez</div><div class="role">Tasador — Matrícula CMCPSI Nº XXXX</div></div>
+<div class="signature-box"><div style="height:80px"></div><div class="line"></div><div class="name">Star Inmobiliaria</div><div class="role">Sello de la empresa</div></div></div>
+<div class="disclaimer"><strong>Aviso Legal:</strong> El presente informe ha sido elaborado en base a la información proporcionada y la inspección realizada. Los valores reflejan las condiciones del mercado al momento de la tasación y pueden variar. Vigencia: 90 días corridos. La tasación sigue los lineamientos del Tribunal de Tasaciones de la Nación.</div>
+<div class="footer"><span>⭐ Star Inmobiliaria — Buenos Aires, Argentina</span><span>Informe generado el ${date}</span></div>
+</div></div>
+</body></html>`
+    }
+
+    const openReportFullscreen = () => {
+      const html = generateReportHTML()
+      const blob = new Blob([html], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+    }
+
     const renderReportColumn = () => {
-      const hasPdf = !!selectedAppraisal.pdf_url
+      const aiAnalysis = (selectedAppraisal as any).ai_analysis
+      const hasReport = !!aiAnalysis
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
             <h3 className="text-sm font-bold text-gray-900">📄 Informe</h3>
-            <p className="text-xs text-gray-500 mt-0.5">{hasPdf ? 'PDF generado' : 'Pendiente de generación'}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{hasReport ? 'Vista previa disponible' : 'Pendiente de procesamiento'}</p>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {hasPdf ? (
-              <div className="space-y-4">
-                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <p className="text-sm font-medium text-green-800 flex items-center gap-2">✅ PDF generado</p>
-                  <a href={selectedAppraisal.pdf_url!} target="_blank" rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-white border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50">
-                    📄 Ver PDF
-                  </a>
-                </div>
-                {/* PDF preview iframe */}
-                <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50" style={{ height: '60vh' }}>
-                  <iframe src={selectedAppraisal.pdf_url!} className="w-full h-full" title="PDF Preview" />
-                </div>
-              </div>
+          <div className="flex-1 overflow-hidden">
+            {hasReport ? (
+              <iframe
+                srcDoc={generateReportHTML()}
+                className="w-full h-full border-0"
+                title="Informe Preview"
+                sandbox="allow-same-origin"
+              />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+              <div className="flex flex-col items-center justify-center h-full text-center p-4">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8 text-gray-300" />
                 </div>
-                <p className="text-sm text-gray-500 mb-2">Informe no generado</p>
-                <p className="text-xs text-gray-400">Se generará automáticamente al procesar la tasación, o podés generarlo manualmente</p>
+                <p className="text-sm text-gray-500 mb-2">Informe no disponible</p>
+                <p className="text-xs text-gray-400">Procesá la tasación primero para generar el informe</p>
               </div>
             )}
           </div>
           <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
-            <button className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
-              📄 {hasPdf ? 'Regenerar PDF' : 'Generar PDF'}
-            </button>
-            {hasPdf && (
-              <a href={selectedAppraisal.pdf_url!} target="_blank" rel="noopener noreferrer"
+            {hasReport && (
+              <>
+                <button onClick={openReportFullscreen}
+                  className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                  ↗ Ver pantalla completa
+                </button>
+                <button onClick={() => { openReportFullscreen() }}
+                  className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                  🖨️ Imprimir / PDF
+                </button>
+              </>
+            )}
+            {!hasReport && (
+              <button onClick={() => setPipelinePage(1)}
                 className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                ↗ Descargar
-              </a>
+                ← Volver a Relevamiento
+              </button>
             )}
           </div>
         </div>
