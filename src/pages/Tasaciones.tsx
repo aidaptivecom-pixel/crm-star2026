@@ -732,27 +732,6 @@ export const Tasaciones = () => {
             </div>
           )}
 
-          {/* Cliente */}
-          {(selectedAppraisal.client_name || selectedAppraisal.client_phone) && (
-            <CollapsibleSection title="Cliente" icon={<User className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="font-medium text-gray-900 text-sm">{selectedAppraisal.client_name || 'Sin nombre'}</p>
-                <div className="flex flex-wrap items-center gap-3 mt-2">
-                  {selectedAppraisal.client_phone && (
-                    <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)} className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700">
-                      <Phone className="w-3.5 h-3.5" />{selectedAppraisal.client_phone}
-                    </button>
-                  )}
-                  {selectedAppraisal.client_email && (
-                    <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-xs text-[#D4A745]">
-                      <Mail className="w-3.5 h-3.5" />{selectedAppraisal.client_email}
-                    </a>
-                  )}
-                </div>
-              </div>
-            </CollapsibleSection>
-          )}
-
           {/* Propiedad */}
           <CollapsibleSection title="Propiedad" icon={<Home className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
             <div className="bg-gray-50 rounded-xl p-3">
@@ -793,6 +772,27 @@ export const Tasaciones = () => {
               )}
             </div>
           </CollapsibleSection>
+
+          {/* Cliente */}
+          {(selectedAppraisal.client_name || selectedAppraisal.client_phone) && (
+            <CollapsibleSection title="Cliente" icon={<User className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="font-medium text-gray-900 text-sm">{selectedAppraisal.client_name || 'Sin nombre'}</p>
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  {selectedAppraisal.client_phone && (
+                    <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)} className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700">
+                      <Phone className="w-3.5 h-3.5" />{selectedAppraisal.client_phone}
+                    </button>
+                  )}
+                  {selectedAppraisal.client_email && (
+                    <a href={`mailto:${selectedAppraisal.client_email}`} className="flex items-center gap-1.5 text-xs text-[#D4A745]">
+                      <Mail className="w-3.5 h-3.5" />{selectedAppraisal.client_email}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </CollapsibleSection>
+          )}
 
           {/* Valuación */}
           {priceRange && (
