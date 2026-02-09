@@ -168,6 +168,7 @@ export const Tasaciones = () => {
   const [uploadingAudio, setUploadingAudio] = useState(false)
   const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const [showFormalForm, setShowFormalForm] = useState(false)
+  const [showScorePopover, setShowScorePopover] = useState(false)
   const [_formalFormData, setFormalFormData] = useState({
     address: '',
     covered_area_m2: '',
@@ -698,12 +699,6 @@ export const Tasaciones = () => {
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center gap-2 mb-3">
-            <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <span className="text-sm font-medium text-gray-500">Volver a tasaciones</span>
-          </div>
           <div className="flex items-center gap-2">
             <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
               {isWeb ? '🌐 Web' : '📋 Formal'}
@@ -712,20 +707,24 @@ export const Tasaciones = () => {
               <span className={`text-xs font-medium px-2 py-0.5 rounded ${config.bgColor} ${config.color}`}>{config.label}</span>
             )}
             {score > 0 && (
-              <span className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color}`}>
+              <button
+                onClick={() => setShowScorePopover(prev => !prev)}
+                className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color} hover:opacity-80 transition-opacity relative`}
+              >
                 {scoreClass.emoji} {score}
-              </span>
+              </button>
             )}
           </div>
-          <h2 className="text-base font-bold text-gray-900">{selectedAppraisal.address || selectedAppraisal.neighborhood || 'Tasación'}</h2>
-          <p className="text-xs text-gray-500 mt-0.5">{selectedAppraisal.neighborhood}, {selectedAppraisal.city || 'CABA'}</p>
         </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {/* Score breakdown */}
-          {factors.length > 0 && (
-            <div className={`p-3 rounded-xl ${scoreClass.bgColor}`}>
+          {/* Score popover */}
+          {showScorePopover && factors.length > 0 && (
+            <div className={`p-3 rounded-xl ${scoreClass.bgColor} relative`}>
+              <button onClick={() => setShowScorePopover(false)} className="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
+                <XCircle className="w-4 h-4" />
+              </button>
               <p className={`text-sm font-medium ${scoreClass.color} mb-1`}>{scoreClass.emoji} {scoreClass.label} — {score} puntos</p>
               <div className="flex flex-wrap gap-1">
                 {factors.map((f, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded-full bg-white/50 ${scoreClass.color}`}>{f}</span>)}
@@ -757,6 +756,13 @@ export const Tasaciones = () => {
           {/* Propiedad */}
           <CollapsibleSection title="Propiedad" icon={<Home className="w-4 h-4 text-gray-500" />} defaultOpen={true}>
             <div className="bg-gray-50 rounded-xl p-3">
+              <div className="flex items-start gap-2 mb-3 pb-3 border-b border-gray-200">
+                <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{selectedAppraisal.address || selectedAppraisal.neighborhood || 'Sin dirección'}</p>
+                  <p className="text-xs text-gray-500">{selectedAppraisal.neighborhood}, {selectedAppraisal.city || 'CABA'}</p>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-base font-bold text-gray-900">{formatText(selectedAppraisal.property_type) || '-'}</p>
@@ -1179,6 +1185,11 @@ export const Tasaciones = () => {
         <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
+              {selectedAppraisal && (
+                <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700">
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
               <Calculator className="w-5 h-5 text-[#D4A745]" />
               <h1 className="text-lg font-bold text-gray-900">Tasaciones</h1>
             </div>
