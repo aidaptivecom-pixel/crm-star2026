@@ -819,17 +819,23 @@ export const Tasaciones = () => {
                   <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.created_at)}</p>
                 </div>
               </div>
-              {selectedAppraisal.visit_scheduled_at && (
+              {(selectedAppraisal.visit_scheduled_at || status === 'visit_scheduled' || status === 'visit_completed') && (
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-yellow-500 mt-1.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium">Visita agendada</p>
-                    <p className="text-xs text-gray-500">{formatDate(selectedAppraisal.visit_scheduled_at)}</p>
-                    {(selectedAppraisal as any).assigned_agent_id && (
-                      <p className="text-xs text-gray-500 mt-0.5">👤 Asignado a: {(selectedAppraisal as any).assigned_agent_name || (selectedAppraisal as any).assigned_agent_id}</p>
+                    <p className="text-xs text-gray-500">
+                      {selectedAppraisal.visit_scheduled_at 
+                        ? formatDate(selectedAppraisal.visit_scheduled_at)
+                        : (selectedAppraisal as any).visit_data?.scheduled_date 
+                          ? `${(selectedAppraisal as any).visit_data.scheduled_date}`
+                          : formatDate(selectedAppraisal.updated_at)}
+                    </p>
+                    {((selectedAppraisal as any).visit_data?.scheduled_time || (selectedAppraisal as any).visit_data?.time) && (
+                      <p className="text-xs text-gray-500 mt-0.5">🕐 {(selectedAppraisal as any).visit_data?.scheduled_time || (selectedAppraisal as any).visit_data?.time}</p>
                     )}
-                    {(selectedAppraisal as any).visit_data?.scheduled_time && (
-                      <p className="text-xs text-gray-500 mt-0.5">🕐 {(selectedAppraisal as any).visit_data.scheduled_time}hs</p>
+                    {((selectedAppraisal as any).assigned_agent_id || (selectedAppraisal as any).visitor_id || (selectedAppraisal as any).visit_data?.agent_name) && (
+                      <p className="text-xs text-gray-500 mt-0.5">👤 {(selectedAppraisal as any).visit_data?.agent_name || (selectedAppraisal as any).assigned_agent_name || 'Agente asignado'}</p>
                     )}
                   </div>
                 </div>
