@@ -965,54 +965,54 @@ export const Tasaciones = () => {
         </div>
 
         {/* Action buttons - sticky bottom */}
-        <div className="flex-shrink-0 p-3 border-t border-gray-200 bg-white flex flex-wrap gap-2">
+        <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
           {status === 'web_estimate' && (
-            <button onClick={() => setShowScheduleModal(true)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+            <button onClick={() => setShowScheduleModal(true)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
               📅 Agendar visita
             </button>
           )}
           {status === 'visit_scheduled' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
               ✅ Marcar visitada
             </button>
           )}
           {(status === 'visit_completed' || status === 'processing') && (
-            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
               📝 Generar borrador
             </button>
           )}
           {isWeb && !(selectedAppraisal as any).ai_analysis && !showFormalForm && (
-            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
+            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">
               🔍 Convertir a Formal
             </button>
           )}
           {status === 'draft' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
               📤 Enviar a revisión
             </button>
           )}
           {status === 'pending_review' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
               ✅ Aprobar
             </button>
           )}
           {status === 'approved_by_admin' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
               ✍️ Firmada
             </button>
           )}
           {status === 'signed' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
               📨 Entregada
             </button>
           )}
           {selectedAppraisal.pdf_url && (
-            <a href={selectedAppraisal.pdf_url} target="_blank" rel="noopener noreferrer" className="py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 text-center">
+            <a href={selectedAppraisal.pdf_url} target="_blank" rel="noopener noreferrer" className="py-2 px-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors text-center">
               📄 PDF
             </a>
           )}
           {status !== 'cancelled' && status !== 'delivered' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'cancelled')} className="py-2 px-3 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50">
+            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'cancelled')} className="py-2 px-3 bg-gray-100 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50 transition-colors">
               ❌
             </button>
           )}
@@ -1155,44 +1155,6 @@ export const Tasaciones = () => {
               />
             </div>
 
-            {/* Audio upload & reprocess */}
-            {(inspectionState?.status === 'completed' || status !== 'visit_scheduled') && (
-              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                <p className="text-sm font-semibold text-gray-700">🎙️ Notas de voz ({((selectedAppraisal as any).property_data?.voice_notes || []).length})</p>
-                <div className="flex gap-2">
-                  <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
-                  <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
-                    {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : '🎙️ Subir audio'}
-                  </button>
-                  <button onClick={async () => {
-                    setReprocessingAudio(true)
-                    try {
-                      const resp = await fetch(`${SCRAPER_URL}/reprocess-audio`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ appraisal_id: selectedAppraisal.id }),
-                      })
-                      const result = await resp.json()
-                      if (result.success) {
-                        refetch()
-                        alert(`✅ ${result.processed} audios re-procesados`)
-                      } else {
-                        throw new Error(result.error || 'Error')
-                      }
-                    } catch (err) {
-                      alert('Error: ' + (err as Error).message)
-                    } finally {
-                      setReprocessingAudio(false)
-                    }
-                  }} disabled={reprocessingAudio}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
-                    {reprocessingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : '🔄 Re-procesar audios'}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Quick actions */}
             <div className="space-y-2">
               {status === 'visit_scheduled' && (
@@ -1213,6 +1175,41 @@ export const Tasaciones = () => {
               )}
             </div>
             </div>{/* close scrollable */}
+
+            {/* Footer - Audio actions */}
+            {(inspectionState?.status === 'completed' || status !== 'visit_scheduled') && (
+              <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+                <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+                <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
+                  className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                  {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : '🎙️ Subir audio'}
+                </button>
+                <button onClick={async () => {
+                  setReprocessingAudio(true)
+                  try {
+                    const resp = await fetch(`${SCRAPER_URL}/reprocess-audio`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ appraisal_id: selectedAppraisal.id }),
+                    })
+                    const result = await resp.json()
+                    if (result.success) {
+                      refetch()
+                      alert(`✅ ${result.processed} audios re-procesados`)
+                    } else {
+                      throw new Error(result.error || 'Error')
+                    }
+                  } catch (err) {
+                    alert('Error: ' + (err as Error).message)
+                  } finally {
+                    setReprocessingAudio(false)
+                  }
+                }} disabled={reprocessingAudio}
+                  className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                  {reprocessingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : '🔄 Re-procesar audios'}
+                </button>
+              </div>
+            )}
           </div>
         )
       }

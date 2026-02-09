@@ -476,16 +476,16 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       )}
 
       {/* Sticky actions */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+      <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
         <button
           onClick={onProcessFormal}
-          className="flex-1 py-3 bg-gradient-to-r from-[#D4A745] to-[#B8912E] text-gray-900 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-shadow flex items-center justify-center gap-2"
+          className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2"
         >
           <Zap className="w-4 h-4" /> Procesar tasación
         </button>
         <button
           onClick={onClose}
-          className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
         >
           <ClipboardList className="w-4 h-4" /> Incompleta
         </button>
