@@ -947,14 +947,35 @@ export const Tasaciones = () => {
         const address = selectedAppraisal.address || selectedAppraisal.neighborhood || ''
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address + ', ' + (selectedAppraisal.neighborhood || '') + ', Buenos Aires')}`
         
-        const checklist = [
-          { id: 'fotos_frente', label: 'Fotos del frente del edificio', icon: '📸' },
-          { id: 'fotos_interior', label: 'Fotos de todos los ambientes', icon: '📸' },
-          { id: 'fotos_bano', label: 'Fotos de baño y cocina', icon: '📸' },
-          { id: 'mediciones', label: 'Verificar medidas declaradas', icon: '📏' },
-          { id: 'estado_general', label: 'Evaluar estado general', icon: '🔍' },
-          { id: 'amenities', label: 'Registrar amenities del edificio', icon: '🏢' },
-          { id: 'nota_voz', label: 'Grabar nota de voz con observaciones', icon: '🎤' },
+        const checklistGroups = [
+          { title: '📸 Fotos obligatorias', items: [
+            { id: 'foto_frente', label: 'Frente del edificio y entrada' },
+            { id: 'foto_ambientes', label: 'Cada ambiente (general)' },
+            { id: 'foto_cocina', label: 'Cocina (mesada, griferías, bajo-mesada)' },
+            { id: 'foto_bano', label: 'Baño/s (sanitarios, revestimientos)' },
+            { id: 'foto_vista', label: 'Vista desde ventana principal' },
+          ]},
+          { title: '📏 Verificaciones', items: [
+            { id: 'superficie', label: 'Superficie real vs declarada' },
+            { id: 'estado_pisos', label: 'Estado: pisos, paredes, techos' },
+            { id: 'instalaciones', label: 'Instalaciones (eléctrica, gas, agua)' },
+            { id: 'carpinterias', label: 'Carpinterías (ventanas, puertas)' },
+            { id: 'climatizacion', label: 'Calefacción / AC (tipo)' },
+          ]},
+          { title: '🏢 Edificio', items: [
+            { id: 'partes_comunes', label: 'Partes comunes (palier, ascensor)' },
+            { id: 'seguridad', label: 'Seguridad (portero, cámaras)' },
+            { id: 'amenities', label: 'Amenities (pileta, gym, SUM, etc.)' },
+            { id: 'cochera_check', label: 'Cochera (verificar existencia)' },
+          ]},
+          { title: '📍 Entorno', items: [
+            { id: 'orientacion', label: 'Orientación (N/S/E/O)' },
+            { id: 'ruido', label: 'Nivel de ruido de la calle' },
+            { id: 'entorno', label: 'Comercios, transporte, accesos' },
+          ]},
+          { title: '🎤 Observaciones', items: [
+            { id: 'nota_voz', label: 'Grabar nota de voz con observaciones generales' },
+          ]},
         ]
         
         return (
@@ -997,13 +1018,20 @@ export const Tasaciones = () => {
 
             {/* Checklist */}
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm font-semibold text-gray-700 mb-3">✅ Checklist pre-visita</p>
-              <div className="space-y-2">
-                {checklist.map(item => (
-                  <label key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
-                    <span className="text-sm text-gray-700">{item.icon} {item.label}</span>
-                  </label>
+              <p className="text-sm font-semibold text-gray-700 mb-3">✅ Checklist de visita</p>
+              <div className="space-y-4">
+                {checklistGroups.map(group => (
+                  <div key={group.title}>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{group.title}</p>
+                    <div className="space-y-1">
+                      {group.items.map(item => (
+                        <label key={item.id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
+                          <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#D4A745] focus:ring-[#D4A745]" />
+                          <span className="text-sm text-gray-700">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
