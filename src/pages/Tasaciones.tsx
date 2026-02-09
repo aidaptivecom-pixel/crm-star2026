@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Calculator, MapPin, Phone, Mail, User, Home, Clock, XCircle, AlertCircle, Plus, Loader2, MessageSquare, TrendingUp, Building, ArrowUpRight, Camera, Upload, Trash2, Eye, Mic, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowLeft, Zap, FileText } from 'lucide-react'
 import FormalInspectionView from '../components/FormalInspectionView'
 import { useAppraisals, updateAppraisalStatus, scheduleVisit, APPRAISAL_STATUS_CONFIG } from '../hooks/useAppraisals'
 import type { AppraisalStatus } from '../hooks/useAppraisals'
@@ -187,6 +187,7 @@ export const Tasaciones = () => {
   })
   // Mobile tab for 3-column view
   const [mobileTab, setMobileTab] = useState<'list' | 'detail' | 'action'>('detail')
+  const [pipelinePage, setPipelinePage] = useState<1 | 2>(1)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const [newForm, setNewForm] = useState({
@@ -695,7 +696,7 @@ export const Tasaciones = () => {
   if (selectedAppraisal) {
     const status = selectedAppraisal.status as AppraisalStatus
     const config = APPRAISAL_STATUS_CONFIG[status] || APPRAISAL_STATUS_CONFIG.web_estimate
-    const priceRange = formatPrice(selectedAppraisal.estimated_value_min, selectedAppraisal.estimated_value_max)
+    const priceRange = formatPrice((selectedAppraisal as any).estimated_value_min, (selectedAppraisal as any).estimated_value_max)
     const { score, factors } = calculatePropertyScore(selectedAppraisal)
     const scoreClass = getScoreClassification(score)
     const isWeb = selectedAppraisal.type === 'market_valuation'
@@ -1419,6 +1420,220 @@ export const Tasaciones = () => {
       )
     }
 
+    // ─── Page 2 Column Renderers ───
+
+    // Col 4: Resultado de tasación
+    const renderResultColumn = () => {
+      const aiAnalysis = (selectedAppraisal as any)?.ai_analysis
+      return (
+        <div className="flex flex-col h-full bg-white">
+          <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
+            <h3 className="text-sm font-bold text-gray-900">📊 Resultado de tasación</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{aiAnalysis ? 'Procesada' : 'Pendiente de procesamiento'}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {!aiAnalysis ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <Zap className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-sm text-gray-500 mb-2">Tasación no procesada aún</p>
+                <p className="text-xs text-gray-400 mb-4">Volvé a la página de Relevamiento y hacé clic en "Procesar tasación"</p>
+                <button onClick={() => setPipelinePage(1)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">
+                  ← Volver a Relevamiento
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Valuation card */}
+                <div className="bg-gradient-to-r from-[#D4A745]/10 to-[#D4A745]/5 rounded-xl p-5 border border-[#D4A745]/20">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-gray-900">⚡ Valuación</h3>
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700">✅ Procesada</span>
+                  </div>
+                  {(() => {
+                    const v = aiAnalysis.recalculated || aiAnalysis.valuation || aiAnalysis
+                    const min = v.min || (selectedAppraisal as any).estimated_value_min || 0
+                    const max = v.max || (selectedAppraisal as any).estimated_value_max || 0
+                    const avg = v.avg || (selectedAppraisal as any).estimated_value_avg || ((min + max) / 2)
+                    return (
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center bg-white rounded-xl p-3">
+                          <p className="text-xs text-gray-400 mb-1">Mínimo</p>
+                          <p className="text-xl font-bold text-gray-900">USD {(min / 1000).toFixed(0)}k</p>
+                        </div>
+                        <div className="text-center bg-white rounded-xl p-3 ring-2 ring-[#D4A745]/30">
+                          <p className="text-xs text-[#D4A745] mb-1 font-medium">Promedio</p>
+                          <p className="text-xl font-bold text-[#D4A745]">USD {(avg / 1000).toFixed(0)}k</p>
+                        </div>
+                        <div className="text-center bg-white rounded-xl p-3">
+                          <p className="text-xs text-gray-400 mb-1">Máximo</p>
+                          <p className="text-xl font-bold text-gray-900">USD {(max / 1000).toFixed(0)}k</p>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                  {(selectedAppraisal as any).price_per_m2 && (
+                    <p className="text-sm text-gray-500 text-center mt-3">USD {(selectedAppraisal as any).price_per_m2?.toLocaleString()}/m²</p>
+                  )}
+                </div>
+
+                {/* Comparables */}
+                <div className="bg-white rounded-xl border border-gray-200">
+                  <div className="p-4 border-b border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-900">🏘️ Comparables analizados ({(aiAnalysis.details || []).length})</h3>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {(aiAnalysis.details || []).map((det: any, idx: number) => (
+                      <div key={idx} className="p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-900">{det.address || `Comparable ${idx + 1}`}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {det.ai_score ? `${det.ai_score}/10` : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="font-medium text-gray-700">USD {det.price_usd?.toLocaleString()}</span>
+                          <span>{det.total_area_m2}m²</span>
+                          <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
+                          {det.ai_condition && <span className="capitalize">{det.ai_condition.replace(/_/g, ' ')}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          {aiAnalysis && (
+            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+              <button onClick={() => handleConvertToFormal(selectedAppraisal)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                <Zap className="w-4 h-4" /> Re-procesar
+              </button>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Col 5: Informe / PDF preview
+    const renderReportColumn = () => {
+      const hasPdf = !!selectedAppraisal.pdf_url
+      return (
+        <div className="flex flex-col h-full bg-white">
+          <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
+            <h3 className="text-sm font-bold text-gray-900">📄 Informe</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{hasPdf ? 'PDF generado' : 'Pendiente de generación'}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {hasPdf ? (
+              <div className="space-y-4">
+                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                  <p className="text-sm font-medium text-green-800 flex items-center gap-2">✅ PDF generado</p>
+                  <a href={selectedAppraisal.pdf_url!} target="_blank" rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-white border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50">
+                    📄 Ver PDF
+                  </a>
+                </div>
+                {/* PDF preview iframe */}
+                <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50" style={{ height: '60vh' }}>
+                  <iframe src={selectedAppraisal.pdf_url!} className="w-full h-full" title="PDF Preview" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-sm text-gray-500 mb-2">Informe no generado</p>
+                <p className="text-xs text-gray-400">Se generará automáticamente al procesar la tasación, o podés generarlo manualmente</p>
+              </div>
+            )}
+          </div>
+          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+            <button className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+              📄 {hasPdf ? 'Regenerar PDF' : 'Generar PDF'}
+            </button>
+            {hasPdf && (
+              <a href={selectedAppraisal.pdf_url!} target="_blank" rel="noopener noreferrer"
+                className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                ↗ Descargar
+              </a>
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    // Col 6: Entrega
+    const renderDeliveryColumn = () => {
+      const status = selectedAppraisal.status as AppraisalStatus
+      const isApproved = ['approved_by_admin', 'signed', 'delivered'].includes(status)
+      const isSigned = ['signed', 'delivered'].includes(status)
+      const isDelivered = status === 'delivered'
+      return (
+        <div className="flex flex-col h-full bg-white">
+          <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
+            <h3 className="text-sm font-bold text-gray-900">📨 Entrega</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{isDelivered ? 'Entregada' : isSigned ? 'Firmada' : isApproved ? 'Aprobada' : 'Pendiente'}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Pipeline steps */}
+            <div className="space-y-3">
+              {[
+                { label: 'Revisión admin', done: isApproved || isSigned || isDelivered, status: status === 'pending_review' ? 'current' : '' },
+                { label: 'Aprobación', done: isApproved || isSigned || isDelivered, status: status === 'approved_by_admin' ? 'current' : '' },
+                { label: 'Firma', done: isSigned || isDelivered, status: isSigned && !isDelivered ? 'current' : '' },
+                { label: 'Entrega al cliente', done: isDelivered, status: isDelivered ? 'current' : '' },
+              ].map((step, idx) => (
+                <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl ${step.done ? 'bg-green-50 border border-green-200' : step.status === 'current' ? 'bg-[#D4A745]/10 border border-[#D4A745]/30' : 'bg-gray-50 border border-gray-200'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step.done ? 'bg-green-500 text-white' : step.status === 'current' ? 'bg-[#D4A745] text-white' : 'bg-gray-200 text-gray-400'}`}>
+                    {step.done ? '✓' : idx + 1}
+                  </div>
+                  <span className={`text-sm font-medium ${step.done ? 'text-green-700' : step.status === 'current' ? 'text-[#D4A745]' : 'text-gray-400'}`}>{step.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Client info */}
+            {selectedAppraisal.client_name && (
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-xs font-medium text-gray-400 mb-2">CLIENTE</p>
+                <p className="text-sm font-medium text-gray-900">{selectedAppraisal.client_name}</p>
+                {selectedAppraisal.client_phone && <p className="text-xs text-gray-500 mt-1">{selectedAppraisal.client_phone}</p>}
+                {selectedAppraisal.client_email && <p className="text-xs text-gray-500">{selectedAppraisal.client_email}</p>}
+              </div>
+            )}
+          </div>
+          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+            {status === 'draft' && (
+              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
+                📤 Enviar a revisión
+              </button>
+            )}
+            {status === 'pending_review' && (
+              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+                ✅ Aprobar
+              </button>
+            )}
+            {status === 'approved_by_admin' && (
+              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+                ✍️ Firmar
+              </button>
+            )}
+            {status === 'signed' && (
+              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+                📨 Marcar entregada
+              </button>
+            )}
+            {isDelivered && (
+              <p className="flex-1 text-center text-sm font-medium text-green-600">✅ Tasación entregada</p>
+            )}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA] h-[calc(100vh-56px)] lg:h-[calc(100vh-32px)]">
         {/* Header */}
@@ -1443,6 +1658,21 @@ export const Tasaciones = () => {
           </div>
         </div>
 
+        {/* Pipeline page tabs (desktop) */}
+        {showCol3 && (
+          <div className="flex-shrink-0 hidden lg:flex border-b border-gray-200 bg-white px-4">
+            {([
+              { page: 1 as const, label: '📋 Relevamiento', icon: '1' },
+              { page: 2 as const, label: '📊 Tasación', icon: '2' },
+            ]).map(({ page, label }) => (
+              <button key={page} onClick={() => setPipelinePage(page)}
+                className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${pipelinePage === page ? 'text-[#D4A745] border-[#D4A745]' : 'text-gray-400 border-transparent hover:text-gray-600'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Mobile tabs */}
         <div className="flex-shrink-0 lg:hidden flex border-b border-gray-200 bg-white">
           {(['detail', 'action'] as const).map(tab => (
@@ -1453,7 +1683,8 @@ export const Tasaciones = () => {
           ))}
         </div>
 
-        {/* Multi-column layout: detail + action + draft */}
+        {/* PAGE 1: Relevamiento — detail + inspection + borrador */}
+        {pipelinePage === 1 && (
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Col 1 - detail */}
           <div className={`${mobileTab === 'detail' || mobileTab === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col overflow-hidden`}>
@@ -1463,13 +1694,32 @@ export const Tasaciones = () => {
           <div className={`${mobileTab === 'action' ? 'flex' : 'hidden'} lg:flex lg:w-[400px] lg:min-w-[360px] flex-shrink-0 flex-col min-w-0 overflow-hidden border-r border-gray-200`}>
             {renderColumn3()}
           </div>
-          {/* Col 3 - draft/formal (only when available) */}
+          {/* Col 3 - draft/formal checklist */}
           {showCol3 && (
             <div className={`hidden lg:flex flex-1 flex-col min-w-0 overflow-hidden`}>
               {renderColumn4()}
             </div>
           )}
         </div>
+        )}
+
+        {/* PAGE 2: Tasación — resultado + informe + entrega */}
+        {pipelinePage === 2 && (
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {/* Col 4 - Resultado tasación */}
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+            {renderResultColumn()}
+          </div>
+          {/* Col 5 - Informe / PDF */}
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden border-l border-gray-200">
+            {renderReportColumn()}
+          </div>
+          {/* Col 6 - Entrega */}
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden border-l border-gray-200">
+            {renderDeliveryColumn()}
+          </div>
+        </div>
+        )}
 
         {/* Schedule Visit Modal */}
         {showScheduleModal && (() => {
