@@ -1902,27 +1902,52 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
         {/* Header */}
         <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {selectedAppraisal && (
-                <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700">
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              )}
-              <Calculator className="w-5 h-5 text-[#D4A745]" />
-              <h1 className="text-lg font-bold text-gray-900">Tasaciones</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="text" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50" />
-              <button onClick={() => setShowNewModal(true)} className="flex items-center gap-1 px-3 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
-                <Plus className="w-4 h-4" /><span className="hidden sm:inline">Nueva</span>
-              </button>
-            </div>
+            {showCol3 ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-2 bg-[#D4A745] text-white rounded-lg hover:bg-[#c49a3d] transition-colors">
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <Calculator className="w-5 h-5 text-[#D4A745]" />
+                  <h1 className="text-lg font-bold text-gray-900">Tasaciones</h1>
+                  <div className="hidden lg:flex ml-4 gap-1">
+                    {([
+                      { page: 1 as const, label: '📋 Relevamiento' },
+                      { page: 2 as const, label: '📊 Tasación' },
+                    ]).map(({ page, label }) => (
+                      <button key={page} onClick={() => setPipelinePage(page)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${pipelinePage === page ? 'bg-[#D4A745]/15 text-[#D4A745]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  {selectedAppraisal && (
+                    <button onClick={() => { setSelectedId(null); setShowFormalForm(false) }} className="p-2 bg-[#D4A745] text-white rounded-lg hover:bg-[#c49a3d] transition-colors">
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                  )}
+                  <Calculator className="w-5 h-5 text-[#D4A745]" />
+                  <h1 className="text-lg font-bold text-gray-900">Tasaciones</h1>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="text" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                    className="hidden sm:block w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A745]/50" />
+                  <button onClick={() => setShowNewModal(true)} className="flex items-center gap-1 px-3 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
+                    <Plus className="w-4 h-4" /><span className="hidden sm:inline">Nueva</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Pipeline page tabs (desktop) */}
-        {showCol3 && (
+        {/* Pipeline page tabs (desktop) - only when NOT in formal view */}
+        {showCol3 && false && (
           <div className="flex-shrink-0 hidden lg:flex border-b border-gray-200 bg-white px-4">
             {([
               { page: 1 as const, label: '📋 Relevamiento', icon: '1' },
