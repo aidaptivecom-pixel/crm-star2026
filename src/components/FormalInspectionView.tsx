@@ -366,12 +366,12 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
         <div className="flex-1 min-w-0 flex flex-col items-center"><div className="w-full max-w-2xl space-y-3 flex flex-col">
         {/* Photo strip */}
         {photos.length > 0 && (
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
-            {photos.map((url, idx) => (
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(photos.length, 5)}, 1fr)` }}>
+            {photos.slice(0, 5).map((url, idx) => (
               <div
                 key={idx}
                 onClick={() => setLightboxIdx(idx)}
-                className="flex-shrink-0 w-[120px] h-[80px] rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#D4A745] transition-all"
+                className="aspect-[3/2] rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#D4A745] transition-all"
               >
                 <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
               </div>
