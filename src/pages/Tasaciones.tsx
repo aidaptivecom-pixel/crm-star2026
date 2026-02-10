@@ -798,9 +798,14 @@ export const Tasaciones = () => {
     const renderColumn2 = () => (
       <div className="flex flex-col h-full bg-white border-r border-gray-200">
         {/* Header */}
-        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
-          <p className="text-sm font-bold text-gray-900 mb-1">📋 Detalle de propiedad</p>
-          <div className="flex items-center gap-2">
+        <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex items-center overflow-hidden">
+          <p className="text-sm font-bold text-gray-900">1. Detalle de propiedad</p>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Status badges */}
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`text-xs font-medium px-2 py-0.5 rounded ${isWeb ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
               {isWeb ? '🌐 Web' : '📋 Formal'}
             </span>
@@ -810,16 +815,12 @@ export const Tasaciones = () => {
             {score > 0 && (
               <button
                 onClick={() => setShowScorePopover(prev => !prev)}
-                className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color} hover:opacity-80 transition-opacity relative`}
+                className={`text-xs font-medium px-2 py-1 rounded-lg ${scoreClass.bgColor} ${scoreClass.color} hover:opacity-80 transition-opacity`}
               >
                 {scoreClass.emoji} {score}
               </button>
             )}
           </div>
-        </div>
-
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {/* Score popover */}
           {showScorePopover && factors.length > 0 && (
             <div className={`p-3 rounded-xl ${scoreClass.bgColor} relative`}>
@@ -1044,7 +1045,7 @@ export const Tasaciones = () => {
             {/* Fixed header */}
             <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                {inspectionState?.status === 'in_progress' ? '📱 Recorrido en curso' : inspectionState?.status === 'completed' ? '✅ Recorrido completado' : '📋 Preparación de visita'}
+                {inspectionState?.status === 'in_progress' ? '2. Recorrido en curso' : inspectionState?.status === 'completed' ? '2. Recorrido completado' : '2. Preparación de visita'}
               </h3>
             </div>
             {/* Scrollable content */}
