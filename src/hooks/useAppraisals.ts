@@ -205,19 +205,29 @@ export async function updateAppraisalStatus(id: string, status: AppraisalStatus)
   return data as Appraisal
 }
 
-export async function scheduleVisit(id: string, visitDate: string) {
+export async function scheduleVisit(id: string, visitDate: string, visitNotes?: string) {
   if (!isSupabaseConfigured() || !supabase) {
     throw new Error('Supabase not configured')
   }
 
+  // If notes provided, merge into property_data
+  let updateObj: any = { 
+    status: 'visit_scheduled',
+    type: 'formal_appraisal',
+    visit_scheduled_at: visitDate,
+    updated_at: new Date().toISOString() 
+  }
+
+  if (visitNotes) {
+    // Fetch current property_data to merge
+    const { data: current } = await (supabase as any).from('appraisals').select('property_data').eq('id', id).single()
+    const propertyData = current?.property_data || {}
+    updateObj.property_data = { ...propertyData, visit_notes: visitNotes }
+  }
+
   const { data, error } = await (supabase as any)
     .from('appraisals')
-    .update({ 
-      status: 'visit_scheduled',
-      type: 'formal_appraisal',
-      visit_scheduled_at: visitDate,
-      updated_at: new Date().toISOString() 
-    })
+    .update(updateObj)
     .eq('id', id)
     .select()
     .single()

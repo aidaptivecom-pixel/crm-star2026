@@ -577,7 +577,9 @@ export const Tasaciones = () => {
   const handleScheduleVisit = async () => {
     if (!selectedId || !scheduleDate) return
     try {
-      await scheduleVisit(selectedId, scheduleDate)
+      const notesEl = document.getElementById('schedule-visit-notes') as HTMLTextAreaElement | null
+      const visitNotes = notesEl?.value?.trim() || undefined
+      await scheduleVisit(selectedId, scheduleDate, visitNotes)
       setShowScheduleModal(false)
       setScheduleDate('')
       refetch()
@@ -2018,6 +2020,19 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
                 </div>
               )}
               
+              {/* Visit notes */}
+              {selectedDay && (
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas para la visita</p>
+                  <textarea
+                    id="schedule-visit-notes"
+                    placeholder="Ej: llamar al portero, piso 4 sin ascensor, llevar metro láser..."
+                    className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A745]/30 focus:border-[#D4A745]"
+                    rows={3}
+                  />
+                </div>
+              )}
+
               {/* Selected summary */}
               {scheduleDate && scheduleDate.includes('T') && (
                 <div className="bg-[#D4A745]/10 rounded-lg p-3 mb-4 text-center">
