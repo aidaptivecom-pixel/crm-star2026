@@ -1902,8 +1902,7 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
 
     // Col 6: Entrega
     const renderDeliveryColumn = () => {
-      const status = selectedAppraisal.status as AppraisalStatus
-      // isSigned/isDelivered now tracked via property_data approvals
+      // Delivery state now tracked via property_data approvals
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
