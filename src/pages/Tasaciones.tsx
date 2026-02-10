@@ -1458,8 +1458,7 @@ export const Tasaciones = () => {
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
-            <h3 className="text-sm font-bold text-gray-900">📊 Resultado de tasación</h3>
-            <p className="text-xs text-gray-500 mt-0.5">{aiAnalysis ? 'Procesada' : 'Pendiente de procesamiento'}</p>
+            <h3 className="text-sm font-bold text-gray-900">4. Resultado de tasación</h3>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {!aiAnalysis ? (
@@ -1783,8 +1782,7 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
-            <h3 className="text-sm font-bold text-gray-900">📄 Informe</h3>
-            <p className="text-xs text-gray-500 mt-0.5">{hasReport ? 'Vista previa disponible' : 'Pendiente de procesamiento'}</p>
+            <h3 className="text-sm font-bold text-gray-900">5. Informe</h3>
           </div>
           <div className="flex-1 overflow-hidden">
             {hasReport ? (
@@ -1837,8 +1835,7 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
-            <h3 className="text-sm font-bold text-gray-900">📨 Entrega</h3>
-            <p className="text-xs text-gray-500 mt-0.5">{isDelivered ? 'Entregada' : isSigned ? 'Firmada' : isApproved ? 'Aprobada' : 'Pendiente'}</p>
+            <h3 className="text-sm font-bold text-gray-900">6. Entrega</h3>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Pipeline steps */}
