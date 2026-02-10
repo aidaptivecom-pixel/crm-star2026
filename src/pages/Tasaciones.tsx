@@ -1092,6 +1092,17 @@ export const Tasaciones = () => {
               </a>
             </div>
 
+            {/* Notes */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas previas</p>
+              <textarea
+                placeholder="Notas para la visita (ej: llamar al portero, piso 4 sin ascensor...)"
+                className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A745]/30 focus:border-[#D4A745]"
+                rows={3}
+                defaultValue={visitNotes}
+              />
+            </div>
+
             {/* Checklist */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-sm font-semibold text-gray-700 mb-3">✅ Checklist de visita</p>
@@ -1113,17 +1124,6 @@ export const Tasaciones = () => {
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Notes */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas previas</p>
-              <textarea
-                placeholder="Notas para la visita (ej: llamar al portero, piso 4 sin ascensor...)"
-                className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A745]/30 focus:border-[#D4A745]"
-                rows={3}
-                defaultValue={visitNotes}
-              />
             </div>
 
             {/* Quick actions */}
