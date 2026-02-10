@@ -482,21 +482,23 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       {lightboxIdx !== null && (
         <div className="fixed inset-0 bg-black/85 z-[100] flex items-center justify-center" onClick={() => setLightboxIdx(null)}>
           <button className="absolute top-4 right-4 text-white text-3xl z-[101]" onClick={() => setLightboxIdx(null)}>×</button>
-          {/* Prev */}
-          <button
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-[101] w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white text-2xl backdrop-blur-sm transition-colors disabled:opacity-30"
-            disabled={lightboxIdx === 0}
-            onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.max(0, lightboxIdx - 1)); }}
-          >‹</button>
-          <div onClick={e => e.stopPropagation()} className="max-w-[90vw] max-h-[80vh]">
-            <img src={photos[lightboxIdx]} alt="" className="max-w-full max-h-[80vh] rounded-xl object-contain" />
+          <div className="flex items-center gap-5" onClick={e => e.stopPropagation()}>
+            {/* Prev */}
+            <button
+              className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white text-2xl backdrop-blur-sm transition-colors disabled:opacity-30 flex-shrink-0"
+              disabled={lightboxIdx === 0}
+              onClick={() => setLightboxIdx(Math.max(0, lightboxIdx - 1))}
+            >‹</button>
+            <div className="max-w-[80vw] max-h-[80vh]">
+              <img src={photos[lightboxIdx]} alt="" className="max-w-full max-h-[80vh] rounded-xl object-contain" />
+            </div>
+            {/* Next */}
+            <button
+              className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white text-2xl backdrop-blur-sm transition-colors disabled:opacity-30 flex-shrink-0"
+              disabled={lightboxIdx === photos.length - 1}
+              onClick={() => setLightboxIdx(Math.min(photos.length - 1, lightboxIdx + 1))}
+            >›</button>
           </div>
-          {/* Next */}
-          <button
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-[101] w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white text-2xl backdrop-blur-sm transition-colors disabled:opacity-30"
-            disabled={lightboxIdx === photos.length - 1}
-            onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.min(photos.length - 1, lightboxIdx + 1)); }}
-          >›</button>
           <p className="absolute bottom-8 text-white text-sm">{lightboxIdx + 1}/{photos.length}</p>
         </div>
       )}
