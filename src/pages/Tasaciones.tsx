@@ -1610,12 +1610,15 @@ export const Tasaciones = () => {
             )}
           </div>
           <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+            <button onClick={() => setPipelinePage(1)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+              ← Relevamiento
+            </button>
             {aiAnalysis && (
               <button onClick={() => handleConvertToFormal(selectedAppraisal)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
                 <Zap className="w-4 h-4" /> Re-procesar
               </button>
             )}
-            {aiAnalysis && !(selectedAppraisal as any).result_approved_at && (
+            {aiAnalysis && !(selectedAppraisal as any).property_data?.result_approval && (
               isAdmin ? (
                 <button onClick={async () => {
                   const approval = { approved_by: currentUserName, approved_at: new Date().toISOString() }
@@ -1636,9 +1639,6 @@ export const Tasaciones = () => {
                 ✅ Aprobado por {(selectedAppraisal as any).property_data.result_approval.approved_by}
               </div>
             )}
-            <button onClick={() => setPipelinePage(1)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-              ← Volver a Relevamiento
-            </button>
           </div>
         </div>
       )
@@ -1850,29 +1850,17 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex flex-col gap-2">
-            <div className="flex gap-3 h-[36px] items-center">
+          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
             {hasReport && (
               <>
                 <button onClick={openReportFullscreen}
                   className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
-                  ↗ Ver pantalla completa
+                  ↗ Ver completa
                 </button>
                 <button onClick={() => { openReportFullscreen() }}
                   className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                  🖨️ Imprimir / PDF
+                  🖨️ PDF
                 </button>
-              </>
-            )}
-            {!hasReport && (
-              <button onClick={() => setPipelinePage(1)}
-                className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                ← Volver a Relevamiento
-              </button>
-            )}
-            </div>
-            {hasReport && (
-              <div className="flex gap-3 h-[36px] items-center">
                 {!(selectedAppraisal as any).property_data?.report_approval ? (
                   isAdmin ? (
                     <button onClick={async () => {
@@ -1881,19 +1869,25 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
                       await supabaseUpdate(selectedAppraisal.id, { property_data: { ...pd, report_approval: approval } })
                       refetch()
                     }} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
-                      ✅ Aprobar informe
+                      ✅ Aprobar
                     </button>
                   ) : (
                     <div className="flex-1 py-2 bg-gray-50 text-gray-400 rounded-xl text-xs font-medium text-center border border-gray-200">
-                      🔒 Solo admin puede aprobar
+                      🔒 Solo admin
                     </div>
                   )
                 ) : (
                   <div className="flex-1 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold text-center border border-emerald-200">
-                    ✅ Aprobado por {(selectedAppraisal as any).property_data.report_approval.approved_by}
+                    ✅ {(selectedAppraisal as any).property_data.report_approval.approved_by}
                   </div>
                 )}
-              </div>
+              </>
+            )}
+            {!hasReport && (
+              <button onClick={() => setPipelinePage(1)}
+                className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                ← Volver a Relevamiento
+              </button>
             )}
           </div>
         </div>
