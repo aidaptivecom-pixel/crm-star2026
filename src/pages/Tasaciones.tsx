@@ -1905,7 +1905,6 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
     // Col 6: Entrega
     const renderDeliveryColumn = () => {
       const status = selectedAppraisal.status as AppraisalStatus
-      const isApproved = ['approved_by_admin', 'signed', 'delivered'].includes(status)
       const isSigned = ['signed', 'delivered'].includes(status)
       const isDelivered = status === 'delivered'
       return (
