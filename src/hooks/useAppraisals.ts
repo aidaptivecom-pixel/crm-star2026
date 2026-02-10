@@ -16,15 +16,15 @@ export type AppraisalStatus =
 
 export const APPRAISAL_STATUS_CONFIG: Record<AppraisalStatus, { label: string; color: string; bgColor: string }> = {
   web_estimate: { label: 'Web', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-  visit_scheduled: { label: 'Agendadas', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  visit_completed: { label: 'Visitadas', color: 'text-orange-600', bgColor: 'bg-orange-100' },
+  visit_scheduled: { label: 'Agendada', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
+  visit_completed: { label: 'Visitada', color: 'text-orange-600', bgColor: 'bg-orange-100' },
   processing: { label: 'En Proceso', color: 'text-gray-600', bgColor: 'bg-gray-100' },
   draft: { label: 'Borrador', color: 'text-purple-600', bgColor: 'bg-purple-100' },
   pending_review: { label: 'Revisar', color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  approved_by_admin: { label: 'Aprobadas', color: 'text-green-600', bgColor: 'bg-green-100' },
-  signed: { label: 'Firmadas', color: 'text-green-600', bgColor: 'bg-green-100' },
-  delivered: { label: 'Entregadas', color: 'text-green-700', bgColor: 'bg-green-200' },
-  cancelled: { label: 'Canceladas', color: 'text-red-600', bgColor: 'bg-red-100' },
+  approved_by_admin: { label: 'Aprobada', color: 'text-green-600', bgColor: 'bg-green-100' },
+  signed: { label: 'Firmada', color: 'text-green-600', bgColor: 'bg-green-100' },
+  delivered: { label: 'Entregada', color: 'text-green-700', bgColor: 'bg-green-200' },
+  cancelled: { label: 'Cancelada', color: 'text-red-600', bgColor: 'bg-red-100' },
 }
 
 export function useAppraisals(filters?: {
