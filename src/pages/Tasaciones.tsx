@@ -1785,11 +1785,12 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
             <h3 className="text-sm font-bold text-gray-900">5. Informe</h3>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden relative">
             {hasReport ? (
               <iframe
                 srcDoc={generateReportHTML()}
-                className="w-full h-full border-0"
+                className="border-0 origin-top-left"
+                style={{ width: '210mm', height: '297mm', transform: 'scale(0.45)', transformOrigin: 'top left' }}
                 title="Informe Preview"
                 sandbox="allow-same-origin"
               />
