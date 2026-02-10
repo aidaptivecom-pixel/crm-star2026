@@ -1468,10 +1468,7 @@ export const Tasaciones = () => {
                   <Zap className="w-8 h-8 text-gray-300" />
                 </div>
                 <p className="text-sm text-gray-500 mb-2">Tasación no procesada aún</p>
-                <p className="text-xs text-gray-400 mb-4">Volvé a la página de Relevamiento y hacé clic en "Procesar tasación"</p>
-                <button onClick={() => setPipelinePage(1)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">
-                  ← Volver a Relevamiento
-                </button>
+                <p className="text-xs text-gray-400">Volvé a la página de Relevamiento y hacé clic en "Procesar tasación"</p>
               </div>
             ) : (
               <>
@@ -1597,13 +1594,16 @@ export const Tasaciones = () => {
               </>
             )}
           </div>
-          {aiAnalysis && (
-            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+            {aiAnalysis && (
               <button onClick={() => handleConvertToFormal(selectedAppraisal)} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
                 <Zap className="w-4 h-4" /> Re-procesar
               </button>
-            </div>
-          )}
+            )}
+            <button onClick={() => setPipelinePage(1)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+              ← Volver a Relevamiento
+            </button>
+          </div>
         </div>
       )
     }
