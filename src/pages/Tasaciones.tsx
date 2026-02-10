@@ -1920,8 +1920,8 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
                 const steps = [
                   { label: 'Revisión admin', done: !!resultApproval, detail: resultApproval ? `${resultApproval.approved_by}` : null },
                   { label: 'Aprobación informe', done: !!reportApproval, detail: reportApproval ? `${reportApproval.approved_by}` : null },
-                  { label: 'Firma', done: isSigned || isDelivered, detail: null },
-                  { label: 'Entrega al cliente', done: isDelivered, detail: null },
+                  { label: 'Aprobación martillero', done: !!pd.martillero_approval, detail: pd.martillero_approval ? pd.martillero_approval.approved_by : null },
+                  { label: 'Entrega al cliente', done: !!pd.delivered_at, detail: pd.delivered_by || null },
                 ]
                 return steps.map((step, idx) => {
                   const isCurrent = !step.done && (idx === 0 || steps[idx - 1].done)
@@ -1951,29 +1951,50 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
             )}
           </div>
           <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
-            {status === 'draft' && (
-              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
-                📤 Enviar a revisión
-              </button>
-            )}
-            {status === 'pending_review' && (
-              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-                ✅ Aprobar
-              </button>
-            )}
-            {status === 'approved_by_admin' && (
-              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-                ✍️ Firmar
-              </button>
-            )}
-            {status === 'signed' && (
-              <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-                📨 Marcar entregada
-              </button>
-            )}
-            {isDelivered && (
-              <p className="flex-1 text-center text-sm font-medium text-green-600">✅ Tasación entregada</p>
-            )}
+            {(() => {
+              const pd = (selectedAppraisal as any).property_data || {}
+              const hasMartilleroApproval = !!pd.martillero_approval
+              const hasDelivery = !!pd.delivered_at
+              
+              if (hasDelivery) {
+                return <p className="flex-1 text-center text-sm font-medium text-green-600">✅ Tasación entregada</p>
+              }
+              
+              return (
+                <>
+                  {!hasMartilleroApproval ? (
+                    isAdmin ? (
+                      <button onClick={async () => {
+                        const approval = { approved_by: currentUserName, approved_at: new Date().toISOString() }
+                        await supabaseUpdate(selectedAppraisal.id, { property_data: { ...pd, martillero_approval: approval } })
+                        refetch()
+                      }} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+                        ✍️ Aprobación martillero
+                      </button>
+                    ) : (
+                      <div className="flex-1 py-2 bg-gray-50 text-gray-400 rounded-xl text-xs font-medium text-center border border-gray-200">
+                        🔒 Solo martillero
+                      </div>
+                    )
+                  ) : (
+                    <div className="flex-1 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold text-center border border-emerald-200">
+                      ✅ {pd.martillero_approval.approved_by}
+                    </div>
+                  )}
+                  {hasMartilleroApproval && !hasDelivery && (
+                    <button onClick={async () => {
+                      await supabaseUpdate(selectedAppraisal.id, { 
+                        property_data: { ...pd, delivered_at: new Date().toISOString(), delivered_by: currentUserName },
+                        status: 'delivered'
+                      })
+                      refetch()
+                    }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
+                      📨 Enviar al cliente
+                    </button>
+                  )}
+                </>
+              )
+            })()}
           </div>
         </div>
       )
