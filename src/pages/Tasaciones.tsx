@@ -1134,16 +1134,6 @@ export const Tasaciones = () => {
 
             {/* Quick actions */}
             <div className="space-y-2">
-              {status === 'visit_scheduled' && (
-                <button onClick={() => {
-                  const starPhone = '5491135565132'
-                  const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
-                  window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
-                }}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#D4A745] text-white rounded-lg text-sm font-bold hover:bg-[#c49a3d] transition-colors">
-                  📋 Iniciar recorrido guiado
-                </button>
-              )}
               {selectedAppraisal.client_phone && status === 'visit_scheduled' && !showClientMsgOptions && (
                 <button onClick={() => setShowClientMsgOptions(true)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
@@ -1182,9 +1172,16 @@ export const Tasaciones = () => {
             </div>
             </div>{/* close scrollable */}
 
-            {/* Footer - Visit scheduled: mark visited */}
+            {/* Footer - Visit scheduled: recorrido + marcar visitada */}
             {status === 'visit_scheduled' && inspectionState?.status !== 'completed' && (
               <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+                <button onClick={() => {
+                  const starPhone = '5491135565132'
+                  const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
+                  window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
+                }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                  📋 Iniciar recorrido
+                </button>
                 <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
                   ✅ Marcar visitada
                 </button>
