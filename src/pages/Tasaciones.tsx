@@ -379,6 +379,21 @@ export const Tasaciones = () => {
 
   const selectedAppraisal = appraisals.find(a => a.id === selectedId)
 
+  // Admin check — based on localStorage user settings (connect to Supabase auth later)
+  const currentUserName = localStorage.getItem('star-crm-user-name') || 'Usuario'
+  const isAdmin = localStorage.getItem('star-crm-user-role') === 'admin'
+
+  // Supabase direct update helper
+  const supabaseUpdate = async (id: string, fields: Record<string, any>) => {
+    const url = `https://wuoptaejdobinsmmkmoq.supabase.co/rest/v1/appraisals?id=eq.${id}`
+    const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1b3B0YWVqZG9iaW5zbW1rbW9xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTEwMzQwNiwiZXhwIjoyMDg0Njc5NDA2fQ.SIQ0tlRI1JCnSpBz1UV3-Y6OQPld3STYxyhaCnu5gBs'
+    await fetch(url, {
+      method: 'PATCH',
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({ ...fields, updated_at: new Date().toISOString() }),
+    })
+  }
+
   const handlePhotoUpload = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0 || !selectedAppraisal) return
     setUploadingPhotos(true)
@@ -1600,6 +1615,27 @@ export const Tasaciones = () => {
                 <Zap className="w-4 h-4" /> Re-procesar
               </button>
             )}
+            {aiAnalysis && !(selectedAppraisal as any).result_approved_at && (
+              isAdmin ? (
+                <button onClick={async () => {
+                  const approval = { approved_by: currentUserName, approved_at: new Date().toISOString() }
+                  const pd = (selectedAppraisal as any).property_data || {}
+                  await supabaseUpdate(selectedAppraisal.id, { property_data: { ...pd, result_approval: approval } })
+                  refetch()
+                }} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+                  ✅ Aprobar
+                </button>
+              ) : (
+                <div className="flex-1 py-2 bg-gray-50 text-gray-400 rounded-xl text-xs font-medium text-center border border-gray-200">
+                  🔒 Solo admin puede aprobar
+                </div>
+              )
+            )}
+            {(selectedAppraisal as any).property_data?.result_approval && (
+              <div className="flex-1 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold text-center border border-emerald-200">
+                ✅ Aprobado por {(selectedAppraisal as any).property_data.result_approval.approved_by}
+              </div>
+            )}
             <button onClick={() => setPipelinePage(1)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
               ← Volver a Relevamiento
             </button>
@@ -1814,7 +1850,8 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex flex-col gap-2">
+            <div className="flex gap-3 h-[36px] items-center">
             {hasReport && (
               <>
                 <button onClick={openReportFullscreen}
@@ -1832,6 +1869,31 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
                 className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
                 ← Volver a Relevamiento
               </button>
+            )}
+            </div>
+            {hasReport && (
+              <div className="flex gap-3 h-[36px] items-center">
+                {!(selectedAppraisal as any).property_data?.report_approval ? (
+                  isAdmin ? (
+                    <button onClick={async () => {
+                      const approval = { approved_by: currentUserName, approved_at: new Date().toISOString() }
+                      const pd = (selectedAppraisal as any).property_data || {}
+                      await supabaseUpdate(selectedAppraisal.id, { property_data: { ...pd, report_approval: approval } })
+                      refetch()
+                    }} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+                      ✅ Aprobar informe
+                    </button>
+                  ) : (
+                    <div className="flex-1 py-2 bg-gray-50 text-gray-400 rounded-xl text-xs font-medium text-center border border-gray-200">
+                      🔒 Solo admin puede aprobar
+                    </div>
+                  )
+                ) : (
+                  <div className="flex-1 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold text-center border border-emerald-200">
+                    ✅ Aprobado por {(selectedAppraisal as any).property_data.report_approval.approved_by}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
