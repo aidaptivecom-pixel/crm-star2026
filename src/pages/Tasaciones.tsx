@@ -1173,15 +1173,33 @@ export const Tasaciones = () => {
             </div>{/* close scrollable */}
 
             {/* Footer - Visit scheduled: recorrido + marcar visitada */}
-            {status === 'visit_scheduled' && inspectionState?.status !== 'completed' && (
+            {status === 'visit_scheduled' && inspectionState?.status !== 'completed' && inspectionState?.status !== 'in_progress' && (
               <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
-                <button onClick={() => {
-                  const starPhone = '5491135565132'
-                  const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
-                  window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
+                <button onClick={async () => {
+                  try {
+                    await fetch('https://star.igreen.com.ar/webhook/start-inspection', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ appraisal_id: selectedAppraisal.id, current_property_data: (selectedAppraisal as any).property_data || {} }),
+                    })
+                    const starPhone = '5491135565132'
+                    const msg = encodeURIComponent(`Iniciar recorrido #T-${selectedAppraisal.id.slice(0, 8)}`)
+                    window.open(`https://wa.me/${starPhone}?text=${msg}`, '_blank')
+                    refetch()
+                  } catch (err) { console.error('Error starting inspection:', err) }
                 }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
                   📋 Iniciar recorrido
                 </button>
+                <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                  ✅ Marcar visitada
+                </button>
+              </div>
+            )}
+            {status === 'visit_scheduled' && inspectionState?.status === 'in_progress' && (
+              <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+                <div className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-semibold text-center border border-blue-200 flex items-center justify-center gap-2">
+                  🔄 Recorrido en proceso
+                </div>
                 <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
                   ✅ Marcar visitada
                 </button>
