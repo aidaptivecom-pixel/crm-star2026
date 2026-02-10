@@ -1785,12 +1785,22 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
             <h3 className="text-sm font-bold text-gray-900">5. Informe</h3>
           </div>
-          <div className="flex-1 overflow-hidden relative">
+          <div className="flex-1 overflow-hidden relative" ref={(el) => {
+            if (el) {
+              const iframe = el.querySelector('iframe')
+              if (iframe) {
+                const scale = el.clientWidth / 793 // 210mm ≈ 793px
+                iframe.style.transform = `scale(${scale})`
+                iframe.style.width = '793px'
+                iframe.style.height = `${el.clientHeight / scale}px`
+              }
+            }
+          }}>
             {hasReport ? (
               <iframe
                 srcDoc={generateReportHTML()}
-                className="border-0 origin-top-left"
-                style={{ width: '210mm', height: '297mm', transform: 'scale(0.45)', transformOrigin: 'top left' }}
+                className="border-0"
+                style={{ transformOrigin: 'top left' }}
                 title="Informe Preview"
                 sandbox="allow-same-origin"
               />
