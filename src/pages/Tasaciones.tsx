@@ -1993,15 +1993,15 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
         {pipelinePage === 2 && (
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Col 4 - Resultado tasación */}
-          <div className="flex flex-col overflow-hidden w-[400px] flex-shrink-0">
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
             {renderResultColumn()}
           </div>
           {/* Col 5 - Informe / PDF */}
-          <div className="flex flex-col overflow-hidden border-l border-gray-200 w-[400px] flex-shrink-0">
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden border-l border-gray-200">
             {renderReportColumn()}
           </div>
           {/* Col 6 - Entrega */}
-          <div className="flex flex-1 flex-col min-w-0 overflow-hidden border-l border-gray-200">
+          <div className="flex flex-col overflow-hidden border-l border-gray-200 w-[350px] flex-shrink-0">
             {renderDeliveryColumn()}
           </div>
         </div>
