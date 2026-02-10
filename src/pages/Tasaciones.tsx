@@ -157,6 +157,7 @@ export const Tasaciones = () => {
   const [filterDays, setFilterDays] = useState<number | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [notesExpanded, setNotesExpanded] = useState(false)
+  const [showClientMsgOptions, setShowClientMsgOptions] = useState(false)
   const [scheduleDate, setScheduleDate] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewModal, setShowNewModal] = useState(false)
@@ -1143,12 +1144,41 @@ export const Tasaciones = () => {
                   📋 Iniciar recorrido guiado
                 </button>
               )}
-              {selectedAppraisal.client_phone && status === 'visit_scheduled' && (
-                <button onClick={() => openWhatsApp(selectedAppraisal.client_phone!)}
+              {selectedAppraisal.client_phone && status === 'visit_scheduled' && !showClientMsgOptions && (
+                <button onClick={() => setShowClientMsgOptions(true)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
-                  <Phone className="w-4 h-4" /> Confirmar visita con cliente
+                  <Phone className="w-4 h-4" /> Informar al cliente
                 </button>
               )}
+              {selectedAppraisal.client_phone && showClientMsgOptions && (() => {
+                const clientPhone = selectedAppraisal.client_phone!.replace(/[^0-9]/g, '')
+                const clientName = selectedAppraisal.client_name || 'cliente'
+                const visitTime = selectedAppraisal.visit_scheduled_at 
+                  ? new Date(selectedAppraisal.visit_scheduled_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                  : ''
+                const msgs = [
+                  { emoji: '🟢', label: 'Llego a horario', text: `Hola ${clientName}, te aviso que estoy en camino para la visita${visitTime ? ` de las ${visitTime}` : ''}. Llego a horario. ¡Nos vemos!` },
+                  { emoji: '🟡', label: 'Retraso ~10 min', text: `Hola ${clientName}, estoy en camino pero voy a tener un pequeño retraso de unos 10 minutos. Disculpá las molestias, ¡ya llego!` },
+                  { emoji: '💬', label: 'Escribir mensaje', text: '' },
+                ]
+                return (
+                  <div className="w-full space-y-1.5 bg-green-50 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-green-800">Informar al cliente</p>
+                      <button onClick={() => setShowClientMsgOptions(false)} className="text-xs text-green-600 hover:underline">✕ Cerrar</button>
+                    </div>
+                    {msgs.map((m, i) => (
+                      <button key={i} onClick={() => {
+                        window.open(`https://wa.me/${clientPhone}${m.text ? `?text=${encodeURIComponent(m.text)}` : ''}`, '_blank')
+                        setShowClientMsgOptions(false)
+                      }}
+                        className="w-full flex items-center gap-2 py-2 px-3 bg-white rounded-lg text-sm text-gray-700 hover:bg-green-100 transition-colors text-left">
+                        <span>{m.emoji}</span> {m.label}
+                      </button>
+                    ))}
+                  </div>
+                )
+              })()}
             </div>
             </div>{/* close scrollable */}
 
