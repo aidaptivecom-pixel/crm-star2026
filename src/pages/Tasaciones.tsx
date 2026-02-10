@@ -380,8 +380,8 @@ export const Tasaciones = () => {
   const selectedAppraisal = appraisals.find(a => a.id === selectedId)
 
   // Admin check — based on localStorage user settings (connect to Supabase auth later)
-  const currentUserName = localStorage.getItem('star-crm-user-name') || 'Usuario'
-  const isAdmin = localStorage.getItem('star-crm-user-role') === 'admin'
+  const currentUserName = localStorage.getItem('star-crm-user-name') || 'Jony M.'
+  const isAdmin = (localStorage.getItem('star-crm-user-role') || 'admin') === 'admin'
 
   // Supabase direct update helper
   const supabaseUpdate = async (id: string, fields: Record<string, any>) => {
