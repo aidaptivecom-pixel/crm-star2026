@@ -728,6 +728,7 @@ export const Tasaciones = () => {
               onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
               onClose={() => setShowFormalForm(false)}
               onRefetch={() => refetch({ silent: true })}
+              onGoToTasacion={() => setPipelinePage(2)}
             />
           </div>
         )

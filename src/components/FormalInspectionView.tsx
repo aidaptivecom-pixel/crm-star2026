@@ -10,6 +10,7 @@ interface FormalInspectionViewProps {
   onProcessFormal: (config?: any) => void
   onClose: () => void
   onRefetch: () => void
+  onGoToTasacion?: () => void
 }
 
 type ItemStatus = 'ok' | 'warn' | 'miss'
@@ -151,7 +152,7 @@ function buildObservationItems(_appraisal: any, extraction: any): CheckItem[] {
 }
 
 // ─── Component ───
-export default function FormalInspectionView({ appraisal, onProcessFormal, onClose, onRefetch }: FormalInspectionViewProps) {
+export default function FormalInspectionView({ appraisal, onProcessFormal, onClose, onRefetch, onGoToTasacion }: FormalInspectionViewProps) {
   const [currentSection, setCurrentSection] = useState(0)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -511,10 +512,10 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
           <Zap className="w-4 h-4" /> Procesar tasación
         </button>
         <button
-          onClick={onClose}
+          onClick={onGoToTasacion || onClose}
           className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
         >
-          <ClipboardList className="w-4 h-4" /> Incompleta
+          <ClipboardList className="w-4 h-4" /> Continuar a tasación
         </button>
       </div>
 
