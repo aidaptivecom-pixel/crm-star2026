@@ -1908,19 +1908,31 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Pipeline steps */}
             <div className="space-y-3">
-              {[
-                { label: 'Revisión admin', done: isApproved || isSigned || isDelivered, status: status === 'pending_review' ? 'current' : '' },
-                { label: 'Aprobación', done: isApproved || isSigned || isDelivered, status: status === 'approved_by_admin' ? 'current' : '' },
-                { label: 'Firma', done: isSigned || isDelivered, status: isSigned && !isDelivered ? 'current' : '' },
-                { label: 'Entrega al cliente', done: isDelivered, status: isDelivered ? 'current' : '' },
-              ].map((step, idx) => (
-                <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl ${step.done ? 'bg-green-50 border border-green-200' : step.status === 'current' ? 'bg-[#D4A745]/10 border border-[#D4A745]/30' : 'bg-gray-50 border border-gray-200'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step.done ? 'bg-green-500 text-white' : step.status === 'current' ? 'bg-[#D4A745] text-white' : 'bg-gray-200 text-gray-400'}`}>
-                    {step.done ? '✓' : idx + 1}
-                  </div>
-                  <span className={`text-sm font-medium ${step.done ? 'text-green-700' : step.status === 'current' ? 'text-[#D4A745]' : 'text-gray-400'}`}>{step.label}</span>
-                </div>
-              ))}
+              {(() => {
+                const pd = (selectedAppraisal as any).property_data || {}
+                const resultApproval = pd.result_approval
+                const reportApproval = pd.report_approval
+                const steps = [
+                  { label: 'Revisión admin', done: !!resultApproval, detail: resultApproval ? `${resultApproval.approved_by}` : null },
+                  { label: 'Aprobación informe', done: !!reportApproval, detail: reportApproval ? `${reportApproval.approved_by}` : null },
+                  { label: 'Firma', done: isSigned || isDelivered, detail: null },
+                  { label: 'Entrega al cliente', done: isDelivered, detail: null },
+                ]
+                return steps.map((step, idx) => {
+                  const isCurrent = !step.done && (idx === 0 || steps[idx - 1].done)
+                  return (
+                    <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl ${step.done ? 'bg-green-50 border border-green-200' : isCurrent ? 'bg-[#D4A745]/10 border border-[#D4A745]/30' : 'bg-gray-50 border border-gray-200'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${step.done ? 'bg-green-500 text-white' : isCurrent ? 'bg-[#D4A745] text-white' : 'bg-gray-200 text-gray-400'}`}>
+                        {step.done ? '✓' : idx + 1}
+                      </div>
+                      <div>
+                        <span className={`text-sm font-medium ${step.done ? 'text-green-700' : isCurrent ? 'text-[#D4A745]' : 'text-gray-400'}`}>{step.label}</span>
+                        {step.detail && <p className="text-xs text-green-600">{step.detail}</p>}
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
             </div>
 
             {/* Client info */}
