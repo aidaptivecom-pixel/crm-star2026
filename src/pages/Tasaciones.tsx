@@ -156,6 +156,7 @@ export const Tasaciones = () => {
   const [filterType, setFilterType] = useState<'todas' | 'market_valuation' | 'formal_appraisal'>('todas')
   const [filterDays, setFilterDays] = useState<number | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [notesExpanded, setNotesExpanded] = useState(false)
   const [scheduleDate, setScheduleDate] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewModal, setShowNewModal] = useState(false)
@@ -1095,15 +1096,17 @@ export const Tasaciones = () => {
             </div>
 
             {/* Notes */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas previas</p>
-              <textarea
-                placeholder="Notas para la visita (ej: llamar al portero, piso 4 sin ascensor...)"
-                className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A745]/30 focus:border-[#D4A745]"
-                rows={3}
-                defaultValue={visitNotes}
-              />
-            </div>
+            {visitNotes && (
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">📝 Notas previas</p>
+                <p className={`text-sm text-gray-600 ${!notesExpanded && visitNotes.length > 80 ? 'line-clamp-2' : ''}`}>{visitNotes}</p>
+                {visitNotes.length > 80 && (
+                  <button onClick={() => setNotesExpanded(!notesExpanded)} className="text-xs text-[#D4A745] font-medium mt-1 hover:underline">
+                    {notesExpanded ? 'Ver menos' : 'Ver más'}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Checklist */}
             <div className="bg-gray-50 rounded-xl p-4">
