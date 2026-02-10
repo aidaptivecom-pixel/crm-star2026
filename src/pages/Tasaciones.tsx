@@ -972,40 +972,10 @@ export const Tasaciones = () => {
               📅 Agendar visita
             </button>
           )}
-          {status === 'visit_scheduled' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
-              ✅ Marcar visitada
-            </button>
-          )}
-          {(status === 'visit_completed' || status === 'processing') && (
-            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
-              📝 Generar borrador
-            </button>
-          )}
-          {isWeb && !(selectedAppraisal as any).ai_analysis && !showFormalForm && (
-            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="flex-1 py-2 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">
-              🔍 Convertir a Formal
-            </button>
-          )}
-          {status === 'draft' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'pending_review')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors">
-              📤 Enviar a revisión
-            </button>
-          )}
-          {status === 'pending_review' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'approved_by_admin')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-              ✅ Aprobar
-            </button>
-          )}
-          {status === 'approved_by_admin' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'signed')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-              ✍️ Firmada
-            </button>
-          )}
-          {status === 'signed' && (
-            <button onClick={() => handleStatusChange(selectedAppraisal.id, 'delivered')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-              📨 Entregada
-            </button>
+          {status !== 'web_estimate' && status !== 'cancelled' && status !== 'delivered' && (
+            <div className="flex-1 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-semibold text-center border border-emerald-200">
+              ✅ Visita agendada
+            </div>
           )}
           {selectedAppraisal.pdf_url && (
             <a href={selectedAppraisal.pdf_url} target="_blank" rel="noopener noreferrer" className="py-2 px-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors text-center">
@@ -1176,6 +1146,15 @@ export const Tasaciones = () => {
               )}
             </div>
             </div>{/* close scrollable */}
+
+            {/* Footer - Visit scheduled: mark visited */}
+            {status === 'visit_scheduled' && inspectionState?.status !== 'completed' && (
+              <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+                <button onClick={() => handleStatusChange(selectedAppraisal.id, 'visit_completed')} className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2">
+                  ✅ Marcar visitada
+                </button>
+              </div>
+            )}
 
             {/* Footer - Audio actions */}
             {(inspectionState?.status === 'completed' || status !== 'visit_scheduled') && (
