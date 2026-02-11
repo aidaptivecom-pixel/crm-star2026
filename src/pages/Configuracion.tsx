@@ -82,9 +82,9 @@ export const Configuracion = () => {
     return (first + last).toUpperCase() || '??'
   }
   const [agentSettings, setAgentSettings] = useState({
-    emprendimientos: { active: true, autoReply: true, workingHours: true },
-    inmuebles: { active: true, autoReply: true, workingHours: false },
-    tasaciones: { active: true, autoReply: false, workingHours: true },
+    emprendimientos: { active: true, autoReply: false, training: true, workingHours: true },
+    inmuebles: { active: true, autoReply: false, training: true, workingHours: false },
+    tasaciones: { active: true, autoReply: false, training: true, workingHours: true },
   })
   const [notifications, setNotifications] = useState({
     newLead: true,
@@ -137,7 +137,8 @@ export const Configuracion = () => {
         ...prev,
         emprendimientos: {
           active: empConfig.is_active ?? true,
-          autoReply: empConfig.auto_reply_enabled ?? true,
+          autoReply: empConfig.auto_reply_enabled ?? false,
+          training: empConfig.training_mode ?? true,
           workingHours: empConfig.active_hours_start !== null,
         }
       }))
@@ -162,16 +163,25 @@ export const Configuracion = () => {
     })
   }
   
-  const handleAgentToggle = async (agentType: string, field: 'active' | 'autoReply', value: boolean) => {
+  const handleAgentToggle = async (agentType: string, field: 'active' | 'autoReply' | 'training', value: boolean) => {
+    // Mutual exclusion: training and autoReply
+    const updates: Partial<{ active: boolean; autoReply: boolean; training: boolean; workingHours: boolean }> = { [field]: value }
+    if (field === 'training' && value) updates.autoReply = false
+    if (field === 'autoReply' && value) updates.training = false
+
     // Update local state immediately
     setAgentSettings(prev => ({
       ...prev,
-      [agentType]: { ...prev[agentType as keyof typeof prev], [field]: value }
+      [agentType]: { ...prev[agentType as keyof typeof prev], ...updates }
     }))
     
     // Save to Supabase
-    const dbField = field === 'active' ? 'is_active' : 'auto_reply_enabled'
-    await saveAgentConfig(agentType, { [dbField]: value })
+    const dbFieldMap: Record<string, string> = { active: 'is_active', autoReply: 'auto_reply_enabled', training: 'training_mode' }
+    const saveData: Record<string, boolean> = {}
+    for (const [k, v] of Object.entries(updates)) {
+      if (dbFieldMap[k]) saveData[dbFieldMap[k]] = v as boolean
+    }
+    await saveAgentConfig(agentType, saveData)
   }
 
   return (
@@ -411,15 +421,39 @@ export const Configuracion = () => {
                 
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium">🎓 Modo Entrenamiento</span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente genera borradores que requieren aprobación humana</p>
+                    </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={agentSettings.emprendimientos.autoReply}
-                        onChange={(e) => handleAgentToggle('emprendimientos', 'autoReply', e.target.checked)}
+                        checked={agentSettings.emprendimientos.training}
+                        onChange={(e) => handleAgentToggle('emprendimientos', 'training', e.target.checked)}
                         className="sr-only peer"
                       />
                       <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between opacity-60">
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium flex items-center gap-2">
+                        Respuesta automática
+                        <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                          <Lock className="w-3 h-3" />
+                          Próximamente
+                        </span>
+                      </span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente responde directamente sin aprobación</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-not-allowed">
+                      <input
+                        type="checkbox"
+                        disabled
+                        checked={agentSettings.emprendimientos.autoReply}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-100 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-4 after:w-4"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between">
@@ -472,15 +506,39 @@ export const Configuracion = () => {
                 </div>
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium">🎓 Modo Entrenamiento</span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente genera borradores que requieren aprobación humana</p>
+                    </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={agentSettings.inmuebles.autoReply}
-                        onChange={(e) => handleAgentToggle('inmuebles', 'autoReply', e.target.checked)}
+                        checked={agentSettings.inmuebles.training}
+                        onChange={(e) => handleAgentToggle('inmuebles', 'training', e.target.checked)}
                         className="sr-only peer"
                       />
                       <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between opacity-60">
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium flex items-center gap-2">
+                        Respuesta automática
+                        <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                          <Lock className="w-3 h-3" />
+                          Próximamente
+                        </span>
+                      </span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente responde directamente sin aprobación</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-not-allowed">
+                      <input
+                        type="checkbox"
+                        disabled
+                        checked={agentSettings.inmuebles.autoReply}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-100 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-4 after:w-4"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between">
@@ -533,15 +591,39 @@ export const Configuracion = () => {
                 </div>
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium">🎓 Modo Entrenamiento</span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente genera borradores que requieren aprobación humana</p>
+                    </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={agentSettings.tasaciones.autoReply}
-                        onChange={(e) => handleAgentToggle('tasaciones', 'autoReply', e.target.checked)}
+                        checked={agentSettings.tasaciones.training}
+                        onChange={(e) => handleAgentToggle('tasaciones', 'training', e.target.checked)}
                         className="sr-only peer"
                       />
                       <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between opacity-60">
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium flex items-center gap-2">
+                        Respuesta automática
+                        <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                          <Lock className="w-3 h-3" />
+                          Próximamente
+                        </span>
+                      </span>
+                      <p className="text-xs text-gray-400 mt-0.5">El agente responde directamente sin aprobación</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-not-allowed">
+                      <input
+                        type="checkbox"
+                        disabled
+                        checked={agentSettings.tasaciones.autoReply}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-100 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-4 after:w-4"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between">

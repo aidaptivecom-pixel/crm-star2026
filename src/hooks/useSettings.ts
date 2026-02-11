@@ -36,6 +36,7 @@ export interface AgentConfig {
   active_hours_start: string | null
   active_hours_end: string | null
   active_days: number[] | null
+  training_mode?: boolean
 }
 
 // Hook
