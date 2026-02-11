@@ -50,15 +50,22 @@ export interface Database {
         Row: {
           id: string
           name: string
+          last_name: string | null
           email: string | null
           phone: string | null
           whatsapp: string | null
           role: 'admin' | 'agent' | 'viewer' | null
           avatar_url: string | null
           is_active: boolean | null
+          type: string | null
+          model: string | null
+          system_prompt: string | null
+          config: Record<string, unknown> | null
           created_at: string | null
+          updated_at: string | null
+          last_login: string | null
         }
-        Insert: Omit<Database['public']['Tables']['agents']['Row'], 'id' | 'created_at'>
+        Insert: Omit<Database['public']['Tables']['agents']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['agents']['Insert']>
       }
       leads: {

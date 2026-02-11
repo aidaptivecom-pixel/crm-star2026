@@ -3,6 +3,7 @@ import { Settings, User, Bot, Link2, Bell, Users, Building, Check, ChevronRight,
 import { usePreferences } from '../contexts/PreferencesContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSettings } from '../hooks/useSettings'
+import { useProfile } from '../hooks/useProfile'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
@@ -48,6 +49,51 @@ export const Configuracion = () => {
   } = useSettings()
   
   const [activeTab, setActiveTab] = useState<Tab>('perfil')
+  const { activeAgent, humanAgents: _humanAgents, loading: profileLoading, saving: profileSaving, updateProfile } = useProfile()
+  
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+  })
+  const [profileDirty, setProfileDirty] = useState(false)
+  
+  // Sync profile form when active agent loads
+  useEffect(() => {
+    if (activeAgent) {
+      setProfileForm({
+        name: activeAgent.name || '',
+        last_name: activeAgent.last_name || '',
+        email: activeAgent.email || '',
+        phone: activeAgent.phone || '',
+      })
+      setProfileDirty(false)
+    }
+  }, [activeAgent])
+  
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileForm(prev => ({ ...prev, [field]: value }))
+    setProfileDirty(true)
+  }
+  
+  const handleSaveProfile = async () => {
+    const success = await updateProfile(profileForm)
+    if (success) setProfileDirty(false)
+  }
+  
+  const roleLabels: Record<string, string> = {
+    admin: 'Administrador',
+    agent: 'Agente',
+    viewer: 'Visor',
+  }
+  
+  const getInitials = () => {
+    const first = profileForm.name?.charAt(0) || ''
+    const last = profileForm.last_name?.charAt(0) || ''
+    return (first + last).toUpperCase() || '??'
+  }
   const [agentSettings, setAgentSettings] = useState({
     emprendimientos: { active: true, autoReply: true, workingHours: true },
     inmuebles: { active: true, autoReply: true, workingHours: false },
@@ -231,53 +277,65 @@ export const Configuracion = () => {
               </div>
               
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-xl sm:text-2xl font-bold border-2 border-[#D4A745]/20">
-                    JM
+                {profileLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Jony Martinez</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">Administrador</p>
-                    <button className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#D4A745] font-medium hover:underline">
-                      Cambiar foto
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-xl sm:text-2xl font-bold border-2 border-[#D4A745]/20">
+                        {getInitials()}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{profileForm.name} {profileForm.last_name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500">{roleLabels[activeAgent?.role || ''] || 'Sin rol'}</p>
+                        <button className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#D4A745] font-medium hover:underline">
+                          Cambiar foto
+                        </button>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                    <input
-                      type="text"
-                      defaultValue="Jony"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                    <input
-                      type="text"
-                      defaultValue="Martinez"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input
-                      type="email"
-                      defaultValue="jony@starinmobiliaria.com"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                    <input
-                      type="tel"
-                      defaultValue="+54 9 11 6214-8113"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
-                    />
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                        <input
+                          type="text"
+                          value={profileForm.name}
+                          onChange={(e) => handleProfileChange('name', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                        <input
+                          type="text"
+                          value={profileForm.last_name}
+                          onChange={(e) => handleProfileChange('last_name', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                          type="email"
+                          value={profileForm.email}
+                          onChange={(e) => handleProfileChange('email', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input
+                          type="tel"
+                          value={profileForm.phone}
+                          onChange={(e) => handleProfileChange('phone', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Accesibilidad - Tamaño de fuente */}
@@ -341,8 +399,17 @@ export const Configuracion = () => {
               </div>
 
               <div className="mt-4 sm:mt-6 flex justify-end">
-                <button className="px-4 py-2 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
-                  Guardar
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={profileSaving || !profileDirty}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${
+                    profileDirty
+                      ? 'bg-[#D4A745] text-white hover:bg-[#c49a3d]'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {profileSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {profileSaving ? 'Guardando...' : 'Guardar'}
                 </button>
               </div>
             </div>
