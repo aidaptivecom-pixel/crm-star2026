@@ -54,7 +54,7 @@ export interface Database {
           email: string | null
           phone: string | null
           whatsapp: string | null
-          role: 'admin' | 'agent' | 'viewer' | null
+          role: 'admin' | 'agent' | 'viewer' | 'developer' | null
           avatar_url: string | null
           is_active: boolean | null
           type: string | null

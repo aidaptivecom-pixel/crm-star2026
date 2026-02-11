@@ -85,6 +85,7 @@ export const Configuracion = () => {
   
   const roleLabels: Record<string, string> = {
     admin: 'Administrador',
+    developer: 'Developer',
     agent: 'Agente',
     viewer: 'Visor',
   }
@@ -267,7 +268,7 @@ export const Configuracion = () => {
                         <div className={`w-10 h-10 rounded-full ${u.color} flex items-center justify-center text-white text-sm font-bold`}>{u.initials}</div>
                         <div className="text-left">
                           <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                          <p className="text-xs text-gray-500">{u.role === 'admin' ? '🔑 Admin' : '👤 Agente'}</p>
+                          <p className="text-xs text-gray-500">{u.role === 'admin' ? '🔑 Admin' : u.role === 'developer' ? '⚡ Dev' : '👤 Agente'}</p>
                         </div>
                         {isActive && <Check className="w-5 h-5 text-[#D4A745] ml-auto" />}
                       </button>
