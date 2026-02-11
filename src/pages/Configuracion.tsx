@@ -7,20 +7,6 @@ import { useProfile } from '../hooks/useProfile'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
-interface TeamMember {
-  id: string
-  name: string
-  email: string
-  role: 'admin' | 'vendedor' | 'viewer'
-  avatar: string
-  active: boolean
-}
-
-const TEAM_MEMBERS: TeamMember[] = [
-  { id: '1', name: 'Jony Martinez', email: 'jony@starinmobiliaria.com', role: 'admin', avatar: 'https://picsum.photos/40/40?random=100', active: true },
-  { id: '2', name: 'Matias', email: 'matias@aidaptive.com', role: 'admin', avatar: 'https://picsum.photos/40/40?random=101', active: true },
-]
-
 const TABS: { id: Tab; label: string; shortLabel: string; icon: React.ElementType }[] = [
   { id: 'perfil', label: 'Mi perfil', shortLabel: 'Perfil', icon: User },
   { id: 'agentes', label: 'Agentes IA', shortLabel: 'Agentes', icon: Bot },
@@ -49,7 +35,7 @@ export const Configuracion = () => {
   } = useSettings()
   
   const [activeTab, setActiveTab] = useState<Tab>('perfil')
-  const { activeAgent, humanAgents, loading: profileLoading, saving: profileSaving, updateProfile, setActiveAgent } = useProfile()
+  const { activeAgent, humanAgents, loading: profileLoading, saving: profileSaving, updateProfile } = useProfile()
   
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -248,34 +234,6 @@ export const Configuracion = () => {
             <div className="max-w-2xl">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Mi perfil</h2>
 
-              {/* User selector */}
-              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
-                <p className="text-sm font-semibold text-gray-700 mb-3">👤 Sesión activa</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {humanAgents.map((u, idx) => {
-                    const colors = ['bg-[#D4A745]', 'bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500']
-                    const initials = `${(u.name || '')[0] || ''}${(u.last_name || '')[0] || (u.name || '').split(' ')[1]?.[0] || ''}`.toUpperCase()
-                    const isActive = activeAgent?.id === u.id
-                    const roleLabel = u.role === 'admin' ? '🔑 Admin' : u.role === 'developer' ? '⚡ Dev' : '👤 Agente'
-                    return (
-                      <button key={u.id} onClick={() => {
-                        setActiveAgent(u)
-                        localStorage.setItem('star-crm-user-name', u.name || '')
-                        localStorage.setItem('star-crm-user-role', u.role || '')
-                      }}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isActive ? 'border-[#D4A745] bg-[#D4A745]/5' : 'border-gray-100 hover:border-gray-200'}`}>
-                        <div className={`w-10 h-10 rounded-full ${colors[idx % colors.length]} flex items-center justify-center text-white text-sm font-bold`}>{initials}</div>
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-gray-900">{u.name}{u.last_name ? ` ${u.last_name[0]}.` : ''}</p>
-                          <p className="text-xs text-gray-500">{roleLabel}</p>
-                        </div>
-                        {isActive && <Check className="w-5 h-5 text-[#D4A745] ml-auto" />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-              
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
                 {profileLoading ? (
                   <div className="flex items-center justify-center py-8">
@@ -482,35 +440,126 @@ export const Configuracion = () => {
                 </div>
               </div>
 
-              {/* Agentes Próximamente */}
-              <div className="space-y-3 mb-4">
-                {[
-                  { name: 'Agente Inmuebles', desc: 'Atiende consultas de propiedades usadas', color: 'purple' },
-                  { name: 'Agente Tasaciones', desc: 'Recopila datos para tasaciones', color: 'amber' },
-                ].map((agent) => (
-                  <div key={agent.name} className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center`}>
-                          <Bot className="w-5 h-5 text-gray-400" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-500 text-sm sm:text-base">{agent.name}</h3>
-                            <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-medium">
-                              <Lock className="w-3 h-3" />
-                              Próximamente
-                            </span>
-                          </div>
-                          <p className="text-xs sm:text-sm text-gray-400">{agent.desc}</p>
-                        </div>
+              {/* Agente Inmuebles */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Agente Inmuebles</h3>
+                        {agentSettings.inmuebles.active && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-medium">
+                            <Check className="w-3 h-3" />
+                            Activo
+                          </span>
+                        )}
                       </div>
-                      <div className="w-11 h-6 bg-gray-100 rounded-full relative">
-                        <div className="absolute top-[2px] left-[2px] bg-white border-gray-200 border rounded-full h-5 w-5"></div>
-                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">Atiende consultas de propiedades usadas</p>
                     </div>
                   </div>
-                ))}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agentSettings.inmuebles.active}
+                      onChange={(e) => handleAgentToggle('inmuebles', 'active', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4A745]"></div>
+                  </label>
+                </div>
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.inmuebles.autoReply}
+                        onChange={(e) => handleAgentToggle('inmuebles', 'autoReply', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Solo en horario laboral</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.inmuebles.workingHours}
+                        onChange={(e) => setAgentSettings(prev => ({
+                          ...prev,
+                          inmuebles: { ...prev.inmuebles, workingHours: e.target.checked }
+                        }))}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agente Tasaciones */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Agente Tasaciones</h3>
+                        {agentSettings.tasaciones.active && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-medium">
+                            <Check className="w-3 h-3" />
+                            Activo
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">Recopila datos para tasaciones</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agentSettings.tasaciones.active}
+                      onChange={(e) => handleAgentToggle('tasaciones', 'active', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4A745]"></div>
+                  </label>
+                </div>
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Respuesta automática</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.tasaciones.autoReply}
+                        onChange={(e) => handleAgentToggle('tasaciones', 'autoReply', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Solo en horario laboral</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={agentSettings.tasaciones.workingHours}
+                        onChange={(e) => setAgentSettings(prev => ({
+                          ...prev,
+                          tasaciones: { ...prev.tasaciones, workingHours: e.target.checked }
+                        }))}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               {/* Horario laboral */}
@@ -766,74 +815,84 @@ export const Configuracion = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {TEAM_MEMBERS.map((member) => (
-                      <tr key={member.id} className="hover:bg-gray-50">
-                        <td className="px-4 sm:px-5 py-3 sm:py-4">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <img src={member.avatar} alt={member.name} className="w-8 sm:w-9 h-8 sm:h-9 rounded-full object-cover" />
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                    {humanAgents.map((member) => {
+                      const initials = `${(member.name || '')[0] || ''}${(member.last_name || '')[0] || ''}`.toUpperCase()
+                      const roleName = member.role === 'admin' ? 'Admin' : member.role === 'developer' ? 'Developer' : member.role === 'agent' ? 'Agente' : 'Viewer'
+                      return (
+                        <tr key={member.id} className="hover:bg-gray-50">
+                          <td className="px-4 sm:px-5 py-3 sm:py-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{initials}</div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{member.name} {member.last_name || ''}</p>
+                                <p className="text-xs text-gray-500 truncate">{member.email || ''}</p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-4">
-                          <span className={`text-xs font-medium px-2 py-1 rounded ${
-                            member.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                            member.role === 'vendedor' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
-                            {member.role === 'admin' ? 'Admin' : member.role === 'vendedor' ? 'Vendedor' : 'Viewer'}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-4">
-                          <span className={`flex items-center gap-1.5 text-xs ${
-                            member.active ? 'text-emerald-600' : 'text-gray-400'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${member.active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                            {member.active ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-4 text-right">
-                          <button className="text-sm text-gray-500 hover:text-gray-700">Editar</button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-4 sm:px-5 py-3 sm:py-4">
+                            <span className={`text-xs font-medium px-2 py-1 rounded ${
+                              member.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                              member.role === 'developer' ? 'bg-blue-100 text-blue-700' :
+                              member.role === 'agent' ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {roleName}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-5 py-3 sm:py-4">
+                            <span className={`flex items-center gap-1.5 text-xs ${
+                              member.is_active ? 'text-emerald-600' : 'text-gray-400'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${member.is_active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                              {member.is_active ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-5 py-3 sm:py-4 text-right">
+                            <button className="text-sm text-gray-500 hover:text-gray-700">Editar</button>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3">
-                {TEAM_MEMBERS.map((member) => (
-                  <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                {humanAgents.map((member) => {
+                  const initials = `${(member.name || '')[0] || ''}${(member.last_name || '')[0] || ''}`.toUpperCase()
+                  const roleName = member.role === 'admin' ? 'Admin' : member.role === 'developer' ? 'Developer' : member.role === 'agent' ? 'Agente' : 'Viewer'
+                  return (
+                    <div key={member.id} className="bg-white rounded-xl border border-gray-100 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{initials}</div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{member.name} {member.last_name || ''}</p>
+                            <p className="text-xs text-gray-500 truncate">{member.email || ''}</p>
+                          </div>
                         </div>
+                        <button className="text-xs text-gray-500 hover:text-gray-700 flex-shrink-0">Editar</button>
                       </div>
-                      <button className="text-xs text-gray-500 hover:text-gray-700 flex-shrink-0">Editar</button>
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${
+                          member.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                          member.role === 'developer' ? 'bg-blue-100 text-blue-700' :
+                          member.role === 'agent' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {roleName}
+                        </span>
+                        <span className={`flex items-center gap-1.5 text-xs ${
+                          member.is_active ? 'text-emerald-600' : 'text-gray-400'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${member.is_active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                          {member.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        member.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                        member.role === 'vendedor' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {member.role === 'admin' ? 'Admin' : member.role === 'vendedor' ? 'Vendedor' : 'Viewer'}
-                      </span>
-                      <span className={`flex items-center gap-1.5 text-xs ${
-                        member.active ? 'text-emerald-600' : 'text-gray-400'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${member.active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                        {member.active ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
