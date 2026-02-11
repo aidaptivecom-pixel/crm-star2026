@@ -49,7 +49,7 @@ export const Configuracion = () => {
   } = useSettings()
   
   const [activeTab, setActiveTab] = useState<Tab>('perfil')
-  const { activeAgent, humanAgents: _humanAgents, loading: profileLoading, saving: profileSaving, updateProfile } = useProfile()
+  const { activeAgent, humanAgents, loading: profileLoading, saving: profileSaving, updateProfile, setActiveAgent } = useProfile()
   
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -252,23 +252,22 @@ export const Configuracion = () => {
               <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
                 <p className="text-sm font-semibold text-gray-700 mb-3">👤 Sesión activa</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {[
-                    { name: 'Jony M.', role: 'admin', initials: 'JM', color: 'bg-[#D4A745]' },
-                    { name: 'Agente 1', role: 'agent', initials: 'A1', color: 'bg-blue-500' },
-                    { name: 'Agente 2', role: 'agent', initials: 'A2', color: 'bg-purple-500' },
-                  ].map(u => {
-                    const isActive = (localStorage.getItem('star-crm-user-name') || 'Jony M.') === u.name
+                  {humanAgents.map((u, idx) => {
+                    const colors = ['bg-[#D4A745]', 'bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500']
+                    const initials = `${(u.name || '')[0] || ''}${(u.last_name || '')[0] || (u.name || '').split(' ')[1]?.[0] || ''}`.toUpperCase()
+                    const isActive = activeAgent?.id === u.id
+                    const roleLabel = u.role === 'admin' ? '🔑 Admin' : u.role === 'developer' ? '⚡ Dev' : '👤 Agente'
                     return (
-                      <button key={u.name} onClick={() => {
-                        localStorage.setItem('star-crm-user-name', u.name)
-                        localStorage.setItem('star-crm-user-role', u.role)
-                        window.location.reload()
+                      <button key={u.id} onClick={() => {
+                        setActiveAgent(u)
+                        localStorage.setItem('star-crm-user-name', u.name || '')
+                        localStorage.setItem('star-crm-user-role', u.role || '')
                       }}
                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isActive ? 'border-[#D4A745] bg-[#D4A745]/5' : 'border-gray-100 hover:border-gray-200'}`}>
-                        <div className={`w-10 h-10 rounded-full ${u.color} flex items-center justify-center text-white text-sm font-bold`}>{u.initials}</div>
+                        <div className={`w-10 h-10 rounded-full ${colors[idx % colors.length]} flex items-center justify-center text-white text-sm font-bold`}>{initials}</div>
                         <div className="text-left">
-                          <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                          <p className="text-xs text-gray-500">{u.role === 'admin' ? '🔑 Admin' : u.role === 'developer' ? '⚡ Dev' : '👤 Agente'}</p>
+                          <p className="text-sm font-medium text-gray-900">{u.name}{u.last_name ? ` ${u.last_name[0]}.` : ''}</p>
+                          <p className="text-xs text-gray-500">{roleLabel}</p>
                         </div>
                         {isActive && <Check className="w-5 h-5 text-[#D4A745] ml-auto" />}
                       </button>
