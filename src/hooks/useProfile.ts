@@ -39,11 +39,13 @@ export function useProfile() {
       const humans = agents.filter(a => a.type === 'human')
       setHumanAgents(humans)
 
-      // TODO: When auth is implemented, get active agent from auth session
-      // For now, default to the first human admin agent
+      // Read active user from localStorage (set by UserSelector)
       if (!activeAgent) {
-        const defaultAgent = humans.find(a => a.role === 'admin') || humans[0] || null
-        setActiveAgentState(defaultAgent)
+        const storedId = localStorage.getItem('star-crm-active-user-id')
+        const matchedAgent = storedId
+          ? humans.find(a => a.id === storedId) || null
+          : humans.find(a => a.role === 'admin') || humans[0] || null
+        setActiveAgentState(matchedAgent)
       }
     } catch (err) {
       console.error('Error fetching profile:', err)

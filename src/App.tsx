@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Sidebar } from './components/Sidebar'
+import { UserSelector } from './components/UserSelector'
+import { useActiveUser } from './hooks/useActiveUser'
 import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
 import { Pipeline } from './pages/Pipeline'
@@ -18,6 +20,11 @@ import { Menu, X } from 'lucide-react'
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { activeUserId, activeUserName, activeUserRole, login, logout } = useActiveUser()
+
+  if (!activeUserId) {
+    return <UserSelector onSelect={login} />
+  }
 
   return (
     <div className="h-screen bg-[#F8F9FA] lg:bg-[#D1D5DB] lg:p-4 font-sans overflow-hidden">
@@ -57,7 +64,7 @@ function App() {
           >
             <X className="w-5 h-5" />
           </button>
-          <Sidebar onNavigate={() => setSidebarOpen(false)} />
+          <Sidebar onNavigate={() => setSidebarOpen(false)} onLogout={logout} userName={activeUserName} userRole={activeUserRole} />
         </div>
         
         {/* Main Content - Routes */}

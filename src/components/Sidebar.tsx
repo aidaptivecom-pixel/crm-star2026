@@ -13,15 +13,19 @@ import {
   Settings, 
   HelpCircle,
   Star,
-  Activity
+  Activity,
+  LogOut
 } from 'lucide-react'
 import { CONVERSATIONS } from '../constants'
 
 interface SidebarProps {
   onNavigate?: () => void
+  onLogout?: () => void
+  userName?: string | null
+  userRole?: string | null
 }
 
-export const Sidebar = ({ onNavigate }: SidebarProps) => {
+export const Sidebar = ({ onNavigate, onLogout, userName, userRole }: SidebarProps) => {
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
   return (
@@ -99,11 +103,22 @@ export const Sidebar = ({ onNavigate }: SidebarProps) => {
         
         {/* User Profile */}
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-          <img src="https://picsum.photos/40/40?random=100" alt="User" className="w-9 h-9 rounded-full object-cover border border-gray-100" />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-700">Jony M.</span>
-            <span className="text-xs text-gray-500">Admin</span>
+          <div className="w-9 h-9 rounded-full bg-[#D4A745] flex items-center justify-center text-white text-sm font-bold">
+            {userName?.charAt(0)?.toUpperCase() || '?'}
           </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="text-sm font-semibold text-gray-700 truncate">{userName || 'Usuario'}</span>
+            <span className="text-xs text-gray-500 capitalize">{userRole || ''}</span>
+          </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-1.5 rounded-md hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </aside>
