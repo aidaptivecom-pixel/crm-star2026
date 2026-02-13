@@ -26,7 +26,8 @@ export function useConversations(filters?: {
       let query = supabase
         .from('conversations')
         .select('*')
-        .order('last_message_at', { ascending: false })
+        .order('last_message_at', { ascending: false, nullsFirst: false })
+        .order('updated_at', { ascending: false })
 
       if (filters?.status) query = query.eq('status', filters.status)
       if (filters?.agentType) query = query.eq('agent_type', filters.agentType)
