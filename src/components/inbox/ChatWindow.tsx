@@ -150,6 +150,8 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     const messageText = text.trim()
     if (!messageText) return
     
+    // Save draft before clearing (needed for learning)
+    const originalDraft = draftResponse
     const tempId = `temp-approve-${Date.now()}`
     
     // Optimistic update - show message immediately
@@ -166,28 +168,8 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     setDraftResponse(null)
     
     try {
-      // 1. Save message to DB
-      await supabaseRest.insert('messages', {
-        conversation_id: conversation.id,
-        content: messageText,
-        sender: 'ai',
-        sender_name: 'Agente STAR',
-        message_type: 'text',
-        status: 'sent',
-        ai_generated: true
-      })
-
-      // 2. Clear draft and update conversation
-      await supabaseRest.update('conversations', conversation.id, {
-        draft_response: null,
-        draft_created_at: null,
-        status: 'ai_active',
-        last_message: messageText,
-        last_message_by: 'agent'
-      })
-
-      // 3. Send via WhatsApp (don't wait)
-      fetch('https://star.igreen.com.ar/webhook/send-approved', {
+      // n8n handles everything: save message, send WhatsApp, clear draft, save learning
+      const response = await fetch('https://star.igreen.com.ar/webhook/send-approved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -195,9 +177,12 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
           phone: conversation.phone,
           message: messageText,
           lead_name: conversation.name,
-          draft_original: draftResponse
+          draft_original: originalDraft,
+          approved_by: user?.id || null
         })
-      }).catch(() => {})
+      })
+
+      if (!response.ok) throw new Error('Webhook failed')
 
       // Mark as sent (remove pending)
       setOptimisticMessages(prev => 
@@ -207,7 +192,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       console.error('Error approving draft:', error)
       // Remove failed message and restore draft
       setOptimisticMessages(prev => prev.filter(m => m.id !== tempId))
-      setDraftResponse(text)
+      setDraftResponse(originalDraft)
       alert('Error al enviar el mensaje. Intenta de nuevo.')
     }
   }
@@ -267,37 +252,22 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     setIsSending(true)
     
     try {
-      // Save message to DB
-      await supabaseRest.insert('messages', {
-        conversation_id: conversation.id,
-        content: messageText,
-        sender: 'human',
-        sender_name: humanName,
-        message_type: 'text',
-        status: 'sent',
-        ai_generated: false,
-        updated_by: user?.id || null
-      })
-
-      // Update conversation
-      await supabaseRest.update('conversations', conversation.id, {
-        last_message: messageText,
-        last_message_by: 'human',
-        status: 'ai_active',
-        updated_by: user?.id || null
-      })
-
-      // Send via WhatsApp (don't wait)
-      fetch('https://star.igreen.com.ar/webhook/send-approved', {
+      // n8n handles everything: save message, send WhatsApp, update conversation
+      const response = await fetch('https://star.igreen.com.ar/webhook/send-approved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversation_id: conversation.id,
           phone: conversation.phone,
           message: messageText,
-          lead_name: conversation.name
+          lead_name: conversation.name,
+          sender: 'human',
+          sender_name: humanName,
+          approved_by: user?.id || null
         })
-      }).catch(() => {})
+      })
+
+      if (!response.ok) throw new Error('Webhook failed')
 
       // Mark as sent (remove pending)
       setOptimisticMessages(prev => 
