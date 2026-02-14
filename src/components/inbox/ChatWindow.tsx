@@ -251,12 +251,15 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     const messageText = message.trim()
     const tempId = `temp-${Date.now()}`
     
+    // TODO: get from auth context when login is implemented
+    const humanName = 'Jony'
+    
     // Optimistic update - show message immediately
     setOptimisticMessages(prev => [...prev, {
       id: tempId,
       content: messageText,
       sender: 'human',
-      senderName: 'Humano',
+      senderName: humanName,
       timestamp: new Date(),
       pending: true
     }])
@@ -269,7 +272,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         conversation_id: conversation.id,
         content: messageText,
         sender: 'human',
-        sender_name: 'Humano',
+        sender_name: humanName,
         message_type: 'text',
         status: 'sent',
         ai_generated: false
@@ -347,7 +350,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
               </button>
             )}
             
-            <Avatar name={conversation.name} size="md" />
+            <Avatar name={conversation.name} size="md" agentType={conversation.agentType} />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-gray-900 text-sm sm:text-base truncate">{conversation.name}</span>
@@ -394,7 +397,9 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
                   msg.sender === 'ai' ? 'text-blue-100' : 'text-amber-100'
                 }`}>
                   {msg.sender === 'ai' ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                  <span className="text-[10px] font-medium">{msg.senderName}</span>
+                  <span className="text-[10px] font-medium">
+                    {msg.sender === 'human' && msg.senderName === 'Humano' ? 'Jony' : msg.senderName}
+                  </span>
                 </div>
               )}
               
