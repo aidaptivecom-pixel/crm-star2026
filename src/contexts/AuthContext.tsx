@@ -60,7 +60,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(p)
       }
       setLoading(false)
+    }).catch(() => {
+      setLoading(false)
     })
+
+    // Safety timeout - never stay loading forever
+    const timeout = setTimeout(() => setLoading(false), 5000)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -76,7 +81,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
