@@ -22,6 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export const MyProfile = () => {
   const { profile, session, user } = useAuth()
+  const isAdmin = profile?.role === 'admin'
   const { fontSize, setFontSize } = usePreferences()
   
   const [form, setForm] = useState({
@@ -80,6 +81,16 @@ export const MyProfile = () => {
       )
       if (!res.ok) throw new Error('Error al guardar perfil')
 
+      // Update email in auth if admin changed it
+      if (isAdmin && email !== user?.email && email.trim() && supabase) {
+        const { error } = await supabase.auth.updateUser({ email: email.trim() })
+        if (error) throw new Error(error.message)
+        setMessage({ type: 'success', text: 'Perfil guardado. Revisá tu nuevo email para confirmar el cambio.' })
+        setDirty(false)
+        setSaving(false)
+        return
+      }
+
       setMessage({ type: 'success', text: 'Perfil actualizado' })
       setDirty(false)
     } catch (err: unknown) {
@@ -131,13 +142,27 @@ export const MyProfile = () => {
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              readOnly
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-            />
-            <p className="text-[10px] text-gray-400 mt-1">Contactá al administrador para cambiar el email</p>
+            {isAdmin ? (
+              <>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Se enviará un email de confirmación al nuevo correo</p>
+              </>
+            ) : (
+              <>
+                <input
+                  type="email"
+                  value={email}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Contactá al administrador para cambiar el email</p>
+              </>
+            )}
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
