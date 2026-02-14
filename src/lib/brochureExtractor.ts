@@ -77,24 +77,34 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 export async function uploadBrochureToStorage(file: File): Promise<string> {
   if (!supabase) throw new Error('Supabase no configurado')
 
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  // Get the authenticated token from session
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token || supabaseAnonKey
+
   const timestamp = Date.now()
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
   const fileName = `${timestamp}-${safeName}`
 
-  const { error } = await supabase.storage
-    .from('brochures')
-    .upload(fileName, file, {
-      contentType: 'application/pdf',
-      upsert: false,
-    })
+  // Direct fetch to bypass SDK storage bug not sending auth token
+  const res = await fetch(`${supabaseUrl}/storage/v1/object/brochures/${fileName}`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': file.type || 'application/pdf',
+    },
+    body: file,
+  })
 
-  if (error) throw new Error(`Error al subir PDF: ${error.message}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Error al subir PDF: ${err.message || err.error || res.statusText}`)
+  }
 
-  const { data: urlData } = supabase.storage
-    .from('brochures')
-    .getPublicUrl(fileName)
-
-  return urlData.publicUrl
+  return `${supabaseUrl}/storage/v1/object/public/brochures/${fileName}`
 }
 
 /**
