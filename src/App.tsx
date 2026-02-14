@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Sidebar } from './components/Sidebar'
-import { UserSelector } from './components/UserSelector'
-import { useActiveUser } from './hooks/useActiveUser'
+import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Inbox } from './pages/Inbox'
 import { Pipeline } from './pages/Pipeline'
@@ -18,17 +18,13 @@ import { Status } from './pages/Status'
 import { NotificationBell } from './components/NotificationBell'
 import { Menu, X } from 'lucide-react'
 
-function App() {
+function AuthenticatedApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { activeUserId, activeUserName, activeUserRole, login, logout } = useActiveUser()
-
-  if (!activeUserId) {
-    return <UserSelector onSelect={login} />
-  }
+  const { profile, signOut } = useAuth()
 
   return (
     <div className="h-screen bg-[#F8F9FA] lg:bg-[#D1D5DB] lg:p-4 font-sans overflow-hidden">
-      {/* Mobile Header - Only visible on small screens */}
+      {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => setSidebarOpen(true)}
@@ -50,24 +46,25 @@ function App() {
 
       {/* Main Container */}
       <div className="flex h-[calc(100vh-56px)] lg:h-[calc(100vh-32px)] bg-[#F8F9FA] rounded-none lg:rounded-3xl overflow-hidden lg:shadow-xl mt-14 lg:mt-0">
-        
-        {/* Sidebar - Responsive */}
         <div className={`
           fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          {/* Close button for mobile */}
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 text-gray-600 z-10"
           >
             <X className="w-5 h-5" />
           </button>
-          <Sidebar onNavigate={() => setSidebarOpen(false)} onLogout={logout} userName={activeUserName} userRole={activeUserRole} />
+          <Sidebar 
+            onNavigate={() => setSidebarOpen(false)} 
+            onLogout={signOut} 
+            userName={profile?.full_name ?? 'Usuario'} 
+            userRole={profile?.role ?? 'agent'} 
+          />
         </div>
         
-        {/* Main Content - Routes */}
         <div className="flex-1 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -87,6 +84,35 @@ function App() {
         </div>
       </div>
     </div>
+  )
+}
+
+function AppContent() {
+  const { session, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-[#D4A745] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-400">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return <Login />
+  }
+
+  return <AuthenticatedApp />
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
 

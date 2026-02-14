@@ -3,6 +3,7 @@ import { Send, Hand, Bot, User, ChevronLeft, UserCircle } from 'lucide-react'
 import { Conversation } from '../../types'
 import { Avatar } from '../Avatar'
 import { DraftApproval } from './DraftApproval'
+import { useAuth } from '../../contexts/AuthContext'
 
 // Direct Supabase REST API calls (avoids type issues)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
@@ -45,6 +46,8 @@ interface ChatWindowProps {
 }
 
 export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps) => {
+  const { profile } = useAuth()
+  const humanName = profile?.full_name ?? 'Usuario'
   const [message, setMessage] = useState('')
   const [draftResponse, setDraftResponse] = useState<string | null>(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -251,9 +254,6 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     const messageText = message.trim()
     const tempId = `temp-${Date.now()}`
     
-    // TODO: get from auth context when login is implemented
-    const humanName = 'Jony'
-    
     // Optimistic update - show message immediately
     setOptimisticMessages(prev => [...prev, {
       id: tempId,
@@ -398,7 +398,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
                 }`}>
                   {msg.sender === 'ai' ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
                   <span className="text-[10px] font-medium">
-                    {msg.sender === 'human' && msg.senderName === 'Humano' ? 'Jony' : msg.senderName}
+                    {msg.sender === 'human' && msg.senderName === 'Humano' ? humanName : msg.senderName}
                   </span>
                 </div>
               )}
