@@ -29,21 +29,34 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext)
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+async function fetchProfileRest(userId: string, accessToken: string): Promise<Profile | null> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data?.[0] ?? null
+  } catch {
+    return null
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const fetchProfile = async (userId: string) => {
-    if (!supabase) return null
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    return data as Profile | null
-  }
 
   useEffect(() => {
     if (!supabase) {
@@ -52,11 +65,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        const p = await fetchProfile(session.user.id)
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      setSession(s)
+      setUser(s?.user ?? null)
+      if (s?.user && s.access_token) {
+        const p = await fetchProfileRest(s.user.id, s.access_token)
         setProfile(p)
       }
       setLoading(false)
@@ -64,16 +77,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false)
     })
 
-    // Safety timeout - never stay loading forever
+    // Safety timeout
     const timeout = setTimeout(() => setLoading(false), 5000)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          const p = await fetchProfile(session.user.id)
+      async (_event, s) => {
+        setSession(s)
+        setUser(s?.user ?? null)
+        if (s?.user && s.access_token) {
+          const p = await fetchProfileRest(s.user.id, s.access_token)
           setProfile(p)
         } else {
           setProfile(null)
