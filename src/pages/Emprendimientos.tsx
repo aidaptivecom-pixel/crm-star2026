@@ -1402,27 +1402,34 @@ function ProjectFormModal({
                           setBrochureError(null)
                           setBrochureProgress('Subiendo PDF...')
                           try {
-                            const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-                            const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+                            const { supabase } = await import('../lib/supabase')
+                            if (!supabase) throw new Error('Supabase not configured')
+                            
                             const slug = formData.slug || generateSlug(formData.name)
                             const fileName = `${slug}.pdf`
                             
-                            const uploadRes = await fetch(
-                              `${SUPABASE_URL}/storage/v1/object/brochures/${fileName}`,
-                              {
-                                method: 'POST',
-                                headers: {
-                                  'apikey': SUPABASE_KEY,
-                                  'Authorization': `Bearer ${SUPABASE_KEY}`,
-                                  'Content-Type': 'application/pdf',
-                                  'x-upsert': 'true',
-                                },
-                                body: pdfFile,
-                              }
-                            )
-                            if (!uploadRes.ok) throw new Error('Error al subir PDF')
+                            // Direct fetch to bypass SDK not sending auth token
+                            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+                            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+                            const { data: { session } } = await supabase.auth.getSession()
+                            const token = session?.access_token || supabaseAnonKey
                             
-                            const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/brochures/${fileName}`
+                            const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/brochures/${fileName}`, {
+                              method: 'POST',
+                              headers: {
+                                'apikey': supabaseAnonKey,
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/pdf',
+                                'x-upsert': 'true',
+                              },
+                              body: pdfFile,
+                            })
+                            if (!uploadRes.ok) {
+                              const errBody = await uploadRes.json().catch(() => ({}))
+                              throw new Error(errBody.message || errBody.error || uploadRes.statusText)
+                            }
+                            
+                            const publicUrl = `${supabaseUrl}/storage/v1/object/public/brochures/${fileName}`
                             updateField('brochure_url', publicUrl)
                             setBrochureProgress(null)
                           } catch (err) {
