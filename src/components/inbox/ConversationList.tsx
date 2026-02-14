@@ -30,6 +30,21 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
     }
   }
 
+  const getStatusBorder = (status: Conversation['status']) => {
+    switch (status) {
+      case 'needs_human':
+        return 'border-l-4 border-red-500'
+      case 'pending_approval':
+        return 'border-l-4 border-orange-400'
+      case 'ai_active':
+        return 'border-l-4 border-green-400'
+      case 'closed':
+        return 'border-l-4 border-gray-300'
+      default:
+        return 'border-l-4 border-transparent'
+    }
+  }
+
   const getStatusIndicator = (status: Conversation['status'], isTyping: boolean) => {
     if (isTyping) {
       return (
@@ -65,7 +80,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
             <button
               key={conv.id}
               onClick={() => onSelect(conv.id)}
-              className={`w-full text-left p-3 rounded-lg transition-colors ${
+              className={`w-full text-left p-3 rounded-lg transition-colors ${getStatusBorder(conv.status)} ${
                 selectedId === conv.id
                   ? 'bg-gray-100'
                   : 'hover:bg-gray-50'
