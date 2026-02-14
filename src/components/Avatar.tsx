@@ -1,6 +1,9 @@
+import { AgentType } from '../types'
+
 interface AvatarProps {
   name: string
   size?: 'xs' | 'sm' | 'md' | 'lg'
+  agentType?: AgentType
   className?: string
 }
 
@@ -10,6 +13,12 @@ const getInitials = (name: string): string => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
   return name.slice(0, 2).toUpperCase()
+}
+
+const agentColors: Record<AgentType, { bg: string; text: string }> = {
+  emprendimientos: { bg: 'bg-blue-500', text: 'text-white' },
+  inmuebles: { bg: 'bg-purple-500', text: 'text-white' },
+  tasaciones: { bg: 'bg-amber-500', text: 'text-white' },
 }
 
 const getColorFromName = (name: string): { bg: string; text: string } => {
@@ -26,7 +35,6 @@ const getColorFromName = (name: string): { bg: string; text: string } => {
     { bg: 'bg-pink-500', text: 'text-white' },
   ]
   
-  // Generate consistent color based on name
   let hash = 0
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -42,9 +50,9 @@ const sizeClasses = {
   lg: 'w-12 h-12 text-base',
 }
 
-export const Avatar = ({ name, size = 'md', className = '' }: AvatarProps) => {
+export const Avatar = ({ name, size = 'md', agentType, className = '' }: AvatarProps) => {
   const initials = getInitials(name)
-  const { bg, text } = getColorFromName(name)
+  const { bg, text } = agentType ? agentColors[agentType] : getColorFromName(name)
   
   return (
     <div

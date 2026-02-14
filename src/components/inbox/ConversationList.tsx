@@ -8,14 +8,14 @@ interface ConversationListProps {
 }
 
 export const ConversationList = ({ conversations, selectedId, onSelect }: ConversationListProps) => {
-  const getAgentBadge = (type: Conversation['agentType']) => {
+  const getAgentLabel = (type: Conversation['agentType']) => {
     switch (type) {
       case 'emprendimientos':
-        return <span className="w-2 h-2 rounded-full bg-blue-500" />
+        return <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Emp</span>
       case 'inmuebles':
-        return <span className="w-2 h-2 rounded-full bg-purple-500" />
+        return <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Prop</span>
       case 'tasaciones':
-        return <span className="w-2 h-2 rounded-full bg-amber-500" />
+        return <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tas</span>
     }
   }
 
@@ -89,7 +89,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
               <div className="flex items-start gap-3">
                 {/* Avatar with status */}
                 <div className="relative flex-shrink-0">
-                  <Avatar name={conv.name} size="md" />
+                  <Avatar name={conv.name} size="md" agentType={conv.agentType} />
                   {conv.unread && (
                     <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#D4A745] rounded-full border-2 border-white" />
                   )}
@@ -104,7 +104,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
                       }`}>
                         {conv.name}
                       </span>
-                      {getAgentBadge(conv.agentType)}
+                      {getAgentLabel(conv.agentType)}
                     </div>
                     <span className="text-[10px] text-gray-400 flex-shrink-0">
                       {conv.lastMessageTime}
@@ -123,7 +123,10 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
                     }`}>
                       {conv.lastMessage}
                     </p>
-                    {getStatusIndicator(conv.status, conv.isTyping)}
+                    {conv.isTyping && getStatusIndicator(conv.status, true)}
+                    {conv.unread && !conv.isTyping && (
+                      <span className="w-2 h-2 rounded-full bg-[#D4A745] flex-shrink-0" />
+                    )}
                   </div>
                 </div>
               </div>
