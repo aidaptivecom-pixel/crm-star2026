@@ -1,7 +1,9 @@
 import { ChevronDown } from 'lucide-react'
 import { NotificationBell } from './NotificationBell'
+import { useAuth } from '../contexts/AuthContext'
 
 export const Header = () => {
+  const { profile } = useAuth()
   const today = new Date()
   const options: Intl.DateTimeFormatOptions = { 
     weekday: 'long', 
@@ -15,7 +17,7 @@ export const Header = () => {
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-          Bienvenido, Jony 👋
+          Bienvenido, {profile?.full_name ?? 'Usuario'} 👋
         </h1>
         <p className="text-xs sm:text-sm text-gray-500 mt-1 capitalize">{formattedDate}</p>
       </div>
