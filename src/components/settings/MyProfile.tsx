@@ -80,12 +80,6 @@ export const MyProfile = () => {
       )
       if (!res.ok) throw new Error('Error al guardar perfil')
 
-      // Update email in auth if changed
-      if (email !== user?.email && supabase) {
-        const { error } = await supabase.auth.updateUser({ email })
-        if (error) throw new Error(error.message)
-      }
-
       setMessage({ type: 'success', text: 'Perfil actualizado' })
       setDirty(false)
     } catch (err: unknown) {
@@ -140,9 +134,10 @@ export const MyProfile = () => {
             <input
               type="email"
               value={email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745]"
+              readOnly
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
             />
+            <p className="text-[10px] text-gray-400 mt-1">Contactá al administrador para cambiar el email</p>
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Teléfono</label>
