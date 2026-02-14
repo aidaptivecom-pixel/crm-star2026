@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Shield, Pencil, Trash2, Plus, Eye, EyeOff, Loader2, Check, X } from 'lucide-react'
+import { Shield, Pencil, Trash2, Plus, Eye, EyeOff, Loader2, Check, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 
@@ -75,7 +75,7 @@ export const TeamManager = () => {
     try {
       // Update profile
       if (supabase) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('profiles')
           .update({ full_name: editForm.full_name, role: editForm.role })
           .eq('id', editingId)
@@ -152,7 +152,7 @@ export const TeamManager = () => {
 
       // Update role in profile (trigger creates it as 'agent')
       if (supabase && inviteForm.role !== 'agent') {
-        await supabase
+        await (supabase as any)
           .from('profiles')
           .update({ role: inviteForm.role })
           .eq('id', user.id)
