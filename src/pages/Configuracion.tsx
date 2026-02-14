@@ -6,6 +6,7 @@ import { useSettings } from '../hooks/useSettings'
 import { useProfile } from '../hooks/useProfile'
 import { TeamManager } from '../components/settings/TeamManager'
 import { ChangePasswordSection } from '../components/settings/ChangePassword'
+import { MyProfile } from '../components/settings/MyProfile'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
@@ -242,7 +243,10 @@ export const Configuracion = () => {
         {/* Tab Content */}
         <div className="flex-1 overflow-auto p-4 sm:p-6">
           {/* Perfil */}
-          {activeTab === 'perfil' && (
+          {activeTab === 'perfil' && <MyProfile />}
+
+          {/* OLD PERFIL - REPLACED */}
+          {false && (
             <div className="max-w-2xl">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Mi perfil</h2>
 

@@ -46,7 +46,7 @@ interface ChatWindowProps {
 }
 
 export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps) => {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const humanName = profile?.full_name ?? 'Usuario'
   const [message, setMessage] = useState('')
   const [draftResponse, setDraftResponse] = useState<string | null>(null)
@@ -275,14 +275,16 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
         sender_name: humanName,
         message_type: 'text',
         status: 'sent',
-        ai_generated: false
+        ai_generated: false,
+        updated_by: user?.id || null
       })
 
       // Update conversation
       await supabaseRest.update('conversations', conversation.id, {
         last_message: messageText,
         last_message_by: 'human',
-        status: 'ai_active'
+        status: 'ai_active',
+        updated_by: user?.id || null
       })
 
       // Send via WhatsApp (don't wait)
