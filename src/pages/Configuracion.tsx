@@ -4,6 +4,8 @@ import { usePreferences } from '../contexts/PreferencesContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSettings } from '../hooks/useSettings'
 import { useProfile } from '../hooks/useProfile'
+import { TeamManager } from '../components/settings/TeamManager'
+import { ChangePasswordSection } from '../components/settings/ChangePassword'
 
 type Tab = 'perfil' | 'agentes' | 'integraciones' | 'notificaciones' | 'equipo' | 'empresa'
 
@@ -343,28 +345,7 @@ export const Configuracion = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 opacity-60">
-                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center justify-between text-sm sm:text-base">
-                  <span className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-gray-400" />
-                    Seguridad
-                  </span>
-                  <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                    <Lock className="w-3 h-3" />
-                    Próximamente
-                  </span>
-                </h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <button disabled className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-not-allowed">
-                    <span className="text-xs sm:text-sm font-medium text-gray-400">Cambiar contraseña</span>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
-                  </button>
-                  <button disabled className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-not-allowed">
-                    <span className="text-xs sm:text-sm font-medium text-gray-400">Autenticación 2FA</span>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
-                  </button>
-                </div>
-              </div>
+              <ChangePasswordSection />
 
               <div className="mt-4 sm:mt-6 flex justify-end">
                 <button
@@ -876,7 +857,10 @@ export const Configuracion = () => {
           )}
 
           {/* Equipo */}
-          {activeTab === 'equipo' && (
+          {activeTab === 'equipo' && <TeamManager />}
+
+          {/* OLD EQUIPO - REPLACED */}
+          {false && (
             <div className="max-w-3xl">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-base sm:text-lg font-semibold text-gray-900">Equipo</h2>
