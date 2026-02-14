@@ -1334,6 +1334,119 @@ function ProjectFormModal({
                 </div>
               </fieldset>
 
+              {/* Section: Brochure */}
+              <fieldset className="mb-6">
+                <legend className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#D4A745]" />
+                  Brochure PDF
+                </legend>
+                {formData.brochure_url ? (
+                  <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                    <FileText className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-emerald-700 truncate">{formData.brochure_url.split('/').pop()}</p>
+                      <a href={formData.brochure_url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline">
+                        Ver PDF ↗
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateField('brochure_url', '')
+                        setPdfFile(null)
+                      }}
+                      className="p-1.5 hover:bg-emerald-100 rounded text-emerald-600"
+                      title="Quitar brochure"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+                        pdfFile ? 'border-[#D4A745] bg-[#D4A745]/5' : 'border-gray-300 hover:border-[#D4A745] hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            setPdfFile(file)
+                            setBrochureError(null)
+                          }
+                        }}
+                      />
+                      {pdfFile ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <FileText className="w-8 h-8 text-[#D4A745]" />
+                          <p className="font-medium text-sm text-gray-900">{pdfFile.name}</p>
+                          <p className="text-xs text-gray-500">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="w-8 h-8 text-gray-400" />
+                          <p className="text-sm font-medium text-gray-700">Click para subir brochure PDF</p>
+                        </div>
+                      )}
+                    </div>
+                    {pdfFile && !formData.brochure_url && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setBrochureError(null)
+                          setBrochureProgress('Subiendo PDF...')
+                          try {
+                            const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+                            const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+                            const slug = formData.slug || generateSlug(formData.name)
+                            const fileName = `${slug}.pdf`
+                            
+                            const uploadRes = await fetch(
+                              `${SUPABASE_URL}/storage/v1/object/brochures/${fileName}`,
+                              {
+                                method: 'POST',
+                                headers: {
+                                  'apikey': SUPABASE_KEY,
+                                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                  'Content-Type': 'application/pdf',
+                                  'x-upsert': 'true',
+                                },
+                                body: pdfFile,
+                              }
+                            )
+                            if (!uploadRes.ok) throw new Error('Error al subir PDF')
+                            
+                            const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/brochures/${fileName}`
+                            updateField('brochure_url', publicUrl)
+                            setBrochureProgress(null)
+                          } catch (err) {
+                            setBrochureError(err instanceof Error ? err.message : 'Error subiendo PDF')
+                            setBrochureProgress(null)
+                          }
+                        }}
+                        disabled={!!brochureProgress}
+                        className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] disabled:opacity-50"
+                      >
+                        {brochureProgress ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> {brochureProgress}</>
+                        ) : (
+                          <><Upload className="w-4 h-4" /> Subir PDF</>
+                        )}
+                      </button>
+                    )}
+                    {brochureError && (
+                      <p className="text-xs text-red-600 mt-2">{brochureError}</p>
+                    )}
+                  </div>
+                )}
+              </fieldset>
+
               {/* Section: Contacto */}
               <fieldset className="mb-6">
                 <legend className="text-sm font-semibold text-gray-900 mb-3">Contacto</legend>
