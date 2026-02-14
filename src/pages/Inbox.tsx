@@ -193,9 +193,9 @@ export const Inbox = () => {
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'Todos' },
-                  { value: 'emprendimientos', label: '🔵' },
-                  { value: 'inmuebles', label: '🟣' },
-                  { value: 'tasaciones', label: '🟡' },
+                  { value: 'emprendimientos', label: '🔵 Emprendimientos' },
+                  { value: 'inmuebles', label: '🟣 Propiedades' },
+                  { value: 'tasaciones', label: '🟡 Tasaciones' },
                 ].map(opt => (
                   <button
                     key={opt.value}
@@ -217,9 +217,10 @@ export const Inbox = () => {
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'Todos' },
-                  { value: 'ai_active', label: 'IA' },
-                  { value: 'needs_human', label: '🔴' },
-                  { value: 'closed', label: '✓' },
+                  { value: 'pending_approval', label: '📟 Pendiente' },
+                  { value: 'ai_active', label: '🤖 IA Activa' },
+                  { value: 'needs_human', label: '🔴 Escalado' },
+                  { value: 'closed', label: '✅ Cerrado' },
                 ].map(opt => (
                   <button
                     key={opt.value}
