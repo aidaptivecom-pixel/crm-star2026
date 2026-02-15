@@ -8,17 +8,24 @@ const VISION_EXTRACTION_PROMPT = `Analizá estas imágenes de un brochure de un 
 IMPORTANTE: Respondé SOLO con el JSON, sin texto adicional, sin markdown, sin backticks.
 
 Revisá TODAS las páginas cuidadosamente. Buscá:
-- El nombre del emprendimiento (suele estar en la portada o header)
-- Ubicación y dirección
+- El nombre del emprendimiento (suele estar en la portada, header o logo — leé texto dentro de imágenes/logos)
+- Ubicación y dirección exacta
 - Tipologías de unidades (ambientes, superficies)
-- Precios si aparecen
-- Amenities y características
+- Precios: buscá tablas de precios, listados de unidades. Extraé el precio mínimo y máximo. Si hay precio por m², extraelo también.
+- Amenities y características del proyecto
 - Estado del proyecto y fecha de entrega
 - Información de financiación
+- Teléfono de contacto y sitio web (suelen aparecer en headers/footers)
+
+REGLAS DE INFERENCIA:
+- Si TODAS las fotos/imágenes son renders 3D y NO hay fotos reales del edificio terminado → estado = "en_construccion"
+- Si hay fotos reales del edificio terminado → estado = "entrega_inmediata"
+- Si hay tablas de precios con unidades listadas, CONTÁ las unidades para units_available
+- Para precio por m², buscá columnas tipo "VALOR M2" o "USD/m²" y extraé el mínimo y máximo
 
 {
   "name": "nombre del emprendimiento",
-  "location": "barrio/zona, ciudad",
+  "location": "barrio/zona, ciudad (ej: Belgrano, CABA)",
   "direccion": "dirección exacta si aparece",
   "description": "descripción general del proyecto (2-3 párrafos, rica en detalles)",
   "estado": "en_construccion | entrega_inmediata | preventa | disponible",
@@ -29,13 +36,17 @@ Revisá TODAS las páginas cuidadosamente. Buscá:
   "price_min": null,
   "price_max": null,
   "price_currency": "USD",
+  "precio_m2_min": null,
+  "precio_m2_max": null,
   "financiacion": "información de financiación si aparece",
   "amenities": ["amenity1", "amenity2"],
-  "features": ["feature1", "feature2"]
+  "features": ["feature1", "feature2"],
+  "contact_phone": "teléfono si aparece",
+  "website": "sitio web si aparece"
 }
 
 Si algún dato no aparece en el brochure, usá null.
-Para units_available, total_units, price_min y price_max usá solo números (sin formato).
+Para valores numéricos usá solo números (sin formato, sin puntos de miles).
 Para amenities y features usá arrays de strings.`
 
 export interface BrochureExtractionResult {
