@@ -42,14 +42,14 @@ REGLAS DE INFERENCIA:
   "amenities": ["amenity1", "amenity2"],
   "features": ["feature1", "feature2"],
   "tipologias": [
-    {"ambientes": "2 Amb", "superficie": "42-67 m² cubiertos", "superficieTotal": "54-94 m²", "unidades": 5},
-    {"ambientes": "3 Amb", "superficie": "73-75 m² cubiertos", "superficieTotal": "94 m²", "unidades": 3}
+    {"ambientes": "2 Amb", "superficie": "42-67 m² cubiertos", "superficieTotal": "54-94 m²", "unidades": 5, "precio_desde": 209657},
+    {"ambientes": "3 Amb", "superficie": "73-75 m² cubiertos", "superficieTotal": "94 m²", "unidades": 3, "precio_desde": 332267}
   ],
   "contact_phone": "teléfono si aparece",
   "website": "sitio web si aparece"
 }
 
-Para tipologias: agrupá por cantidad de ambientes. Si hay tablas de precios con unidades individuales, contá cuántas unidades hay de cada tipo. El campo "unidades" es la cantidad disponible de ese tipo. Si no podés determinar unidades por tipo, usá null.
+Para tipologias: agrupá por cantidad de ambientes. Si hay tablas de precios con unidades individuales, contá cuántas unidades hay de cada tipo. El campo "unidades" es la cantidad disponible de ese tipo. "precio_desde" es el precio más bajo de ese tipo de unidad (buscalo en las tablas de precios). Si no podés determinar un dato, usá null.
 
 Si algún dato no aparece en el brochure, usá null.
 Para valores numéricos usá solo números (sin formato, sin puntos de miles).

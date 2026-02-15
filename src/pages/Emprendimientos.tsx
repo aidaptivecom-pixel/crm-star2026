@@ -77,7 +77,7 @@ function transformDBProject(dbProject: DBProject): Property {
         name: t.nombre || t.name || `Tipo ${i + 1}`,
         ambientes: t.ambientes || 0,
         superficie: t.superficie || t.m2 || '-',
-        precio: t.precio || `USD ${dbProject.price_min?.toLocaleString() || '-'}`,
+        precio: t.precio || (t.precio_desde ? `USD ${Number(t.precio_desde).toLocaleString()}` : 'Consultar'),
         disponibles: t.disponibles || t.unidades || 0,
       }))
     : [{
