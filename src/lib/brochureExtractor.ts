@@ -41,9 +41,15 @@ REGLAS DE INFERENCIA:
   "financiacion": "información de financiación si aparece",
   "amenities": ["amenity1", "amenity2"],
   "features": ["feature1", "feature2"],
+  "tipologias": [
+    {"ambientes": "2 Amb", "superficie": "42-67 m² cubiertos", "superficieTotal": "54-94 m²", "unidades": 5},
+    {"ambientes": "3 Amb", "superficie": "73-75 m² cubiertos", "superficieTotal": "94 m²", "unidades": 3}
+  ],
   "contact_phone": "teléfono si aparece",
   "website": "sitio web si aparece"
 }
+
+Para tipologias: agrupá por cantidad de ambientes. Si hay tablas de precios con unidades individuales, contá cuántas unidades hay de cada tipo. El campo "unidades" es la cantidad disponible de ese tipo. Si no podés determinar unidades por tipo, usá null.
 
 Si algún dato no aparece en el brochure, usá null.
 Para valores numéricos usá solo números (sin formato, sin puntos de miles).
@@ -65,6 +71,9 @@ export interface BrochureExtractionResult {
   financiacion?: string | null
   amenities?: string[] | null
   features?: string[] | null
+  tipologias?: any[] | null
+  contact_phone?: string | null
+  website?: string | null
 }
 
 /**

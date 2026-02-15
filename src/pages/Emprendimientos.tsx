@@ -731,6 +731,7 @@ interface ProjectFormData {
   estado: string
   entrega: string
   tipologias_texto: string
+  tipologias_array: any[]
   units_available: string
   total_units: string
   price_min: string
@@ -747,7 +748,7 @@ interface ProjectFormData {
 function emptyFormData(): ProjectFormData {
   return {
     name: '', slug: '', location: '', direccion: '', description: '',
-    estado: 'en_construccion', entrega: '', tipologias_texto: '',
+    estado: 'en_construccion', entrega: '', tipologias_texto: '', tipologias_array: [],
     units_available: '', total_units: '', price_min: '', price_max: '',
     price_currency: 'USD', financiacion: '', amenities: [], features: [],
     brochure_url: '', contact_phone: '', website: '',
@@ -764,6 +765,7 @@ function dbProjectToFormData(p: DBProject): ProjectFormData {
     estado: p.estado || 'en_construccion',
     entrega: p.entrega || '',
     tipologias_texto: p.tipologias_texto || '',
+    tipologias_array: Array.isArray(p.tipologias) ? p.tipologias as any[] : [],
     units_available: p.units_available != null ? String(p.units_available) : '',
     total_units: p.total_units != null ? String(p.total_units) : '',
     price_min: p.price_min != null ? String(p.price_min) : '',
@@ -788,6 +790,7 @@ function formDataToInput(f: ProjectFormData): ProjectInput {
     estado: (f.estado as any) || null,
     entrega: f.entrega || null,
     tipologias_texto: f.tipologias_texto || null,
+    tipologias: f.tipologias_array.length > 0 ? f.tipologias_array : null,
     units_available: f.units_available ? Number(f.units_available) : null,
     total_units: f.total_units ? Number(f.total_units) : null,
     price_min: f.price_min ? Number(f.price_min) : null,
@@ -896,8 +899,9 @@ function ProjectFormModal({
         financiacion: data.financiacion || prev.financiacion,
         amenities: data.amenities || prev.amenities,
         features: data.features || prev.features,
-        contact_phone: (data as any).contact_phone || prev.contact_phone,
-        website: (data as any).website || prev.website,
+        tipologias_array: data.tipologias || prev.tipologias_array,
+        contact_phone: data.contact_phone || prev.contact_phone,
+        website: data.website || prev.website,
         brochure_url: brochureUrl,
       }))
 
