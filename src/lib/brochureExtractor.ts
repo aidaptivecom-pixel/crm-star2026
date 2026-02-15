@@ -46,8 +46,11 @@ REGLAS DE INFERENCIA:
     {"ambientes": "3 Amb", "superficie": "73-75 m² cubiertos", "superficieTotal": "94 m²", "unidades": 3, "precio_desde": 332267}
   ],
   "contact_phone": "teléfono si aparece",
-  "website": "sitio web si aparece"
+  "website": "sitio web si aparece",
+  "best_image_pages": [1, 5, 18]
 }
+
+Para best_image_pages: indicá los números de página (empezando en 1) que tienen las MEJORES imágenes visuales del proyecto — renders exteriores, vistas aéreas, fotos de amenities, fachada. Elegí entre 3 y 6 páginas. NO incluyas páginas de tablas de precios, texto, planos técnicos ni páginas con solo logos.
 
 Para tipologias: agrupá por cantidad de ambientes. Si hay tablas de precios con unidades individuales, contá cuántas unidades hay de cada tipo. El campo "unidades" es la cantidad disponible de ese tipo. "precio_desde" es el precio más bajo de ese tipo de unidad (buscalo en las tablas de precios). Si no podés determinar un dato, usá null.
 
@@ -74,6 +77,7 @@ export interface BrochureExtractionResult {
   tipologias?: any[] | null
   contact_phone?: string | null
   website?: string | null
+  best_image_pages?: number[] | null
 }
 
 /**
@@ -249,16 +253,65 @@ export async function extractProjectDataWithVision(
 }
 
 /**
+ * Upload selected page images to Supabase Storage
+ * Returns array of public URLs
+ */
+async function uploadProjectImages(
+  images: string[],
+  pageNumbers: number[],
+  slug: string,
+  onProgress?: (step: string) => void
+): Promise<string[]> {
+  if (!supabase) return []
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token || supabaseAnonKey
+
+  const urls: string[] = []
+
+  for (let i = 0; i < pageNumbers.length; i++) {
+    const pageIdx = pageNumbers[i] - 1 // Convert 1-indexed to 0-indexed
+    if (pageIdx < 0 || pageIdx >= images.length) continue
+
+    onProgress?.(`Subiendo imagen ${i + 1}/${pageNumbers.length}...`)
+
+    const base64 = images[pageIdx]
+    const blob = await fetch(`data:image/jpeg;base64,${base64}`).then(r => r.blob())
+    const fileName = `${slug}-${i + 1}.jpg`
+
+    const res = await fetch(`${supabaseUrl}/storage/v1/object/brochures/${fileName}`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true',
+      },
+      body: blob,
+    })
+
+    if (res.ok) {
+      urls.push(`${supabaseUrl}/storage/v1/object/public/brochures/${fileName}`)
+    }
+  }
+
+  return urls
+}
+
+/**
  * Full brochure processing pipeline (Vision-first):
  * 1. Render PDF pages as images
  * 2. Send images to Claude Vision for data extraction
  * 3. Upload PDF to storage
+ * 4. Upload best images to storage
  * Returns extracted data + brochure URL
  */
 export async function processBrochure(
   file: File,
   onProgress?: (step: string) => void
-): Promise<{ data: BrochureExtractionResult; brochureUrl: string }> {
+): Promise<{ data: BrochureExtractionResult; brochureUrl: string; imageUrls: string[] }> {
   // Step 1: Render pages as images
   onProgress?.('Renderizando páginas del PDF...')
   const images = await renderPDFPagesToImages(file, 100, 1.5, onProgress)
@@ -280,5 +333,16 @@ export async function processBrochure(
     console.warn('No se pudo subir el PDF a storage (RLS):', err)
   }
 
-  return { data, brochureUrl }
+  // Step 4: Upload best images
+  let imageUrls: string[] = []
+  if (data.best_image_pages && data.best_image_pages.length > 0) {
+    try {
+      const slug = data.name ? data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '') : `project-${Date.now()}`
+      imageUrls = await uploadProjectImages(images, data.best_image_pages, slug, onProgress)
+    } catch (err) {
+      console.warn('No se pudieron subir las imágenes:', err)
+    }
+  }
+
+  return { data, brochureUrl, imageUrls }
 }

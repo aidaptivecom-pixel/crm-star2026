@@ -732,6 +732,7 @@ interface ProjectFormData {
   entrega: string
   tipologias_texto: string
   tipologias_array: any[]
+  images: string[]
   units_available: string
   total_units: string
   price_min: string
@@ -748,7 +749,7 @@ interface ProjectFormData {
 function emptyFormData(): ProjectFormData {
   return {
     name: '', slug: '', location: '', direccion: '', description: '',
-    estado: 'en_construccion', entrega: '', tipologias_texto: '', tipologias_array: [],
+    estado: 'en_construccion', entrega: '', tipologias_texto: '', tipologias_array: [], images: [],
     units_available: '', total_units: '', price_min: '', price_max: '',
     price_currency: 'USD', financiacion: '', amenities: [], features: [],
     brochure_url: '', contact_phone: '', website: '',
@@ -766,6 +767,7 @@ function dbProjectToFormData(p: DBProject): ProjectFormData {
     entrega: p.entrega || '',
     tipologias_texto: p.tipologias_texto || '',
     tipologias_array: Array.isArray(p.tipologias) ? p.tipologias as any[] : [],
+    images: Array.isArray(p.images) ? p.images as string[] : [],
     units_available: p.units_available != null ? String(p.units_available) : '',
     total_units: p.total_units != null ? String(p.total_units) : '',
     price_min: p.price_min != null ? String(p.price_min) : '',
@@ -799,6 +801,7 @@ function formDataToInput(f: ProjectFormData): ProjectInput {
     financiacion: f.financiacion || null,
     amenities: f.amenities.length > 0 ? f.amenities : null,
     features: f.features.length > 0 ? f.features : null,
+    images: f.images.length > 0 ? f.images : null,
     brochure_url: f.brochure_url || null,
     contact_phone: f.contact_phone || null,
     website: f.website || null,
@@ -876,7 +879,7 @@ function ProjectFormModal({
     setBrochureProgress('Iniciando...')
 
     try {
-      const { data, brochureUrl } = await processBrochure(pdfFile, (step) => {
+      const { data, brochureUrl, imageUrls } = await processBrochure(pdfFile, (step) => {
         setBrochureProgress(step)
       })
 
@@ -900,6 +903,7 @@ function ProjectFormModal({
         amenities: data.amenities || prev.amenities,
         features: data.features || prev.features,
         tipologias_array: data.tipologias || prev.tipologias_array,
+        images: imageUrls.length > 0 ? imageUrls : prev.images,
         contact_phone: data.contact_phone || prev.contact_phone,
         website: data.website || prev.website,
         brochure_url: brochureUrl,
