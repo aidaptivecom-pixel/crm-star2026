@@ -4,14 +4,23 @@ import { supabase } from './supabase'
 // Configure PDF.js worker from CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
-const EXTRACTION_PROMPT = `Analizá este brochure de un emprendimiento inmobiliario y extraé la siguiente información en formato JSON.
+const VISION_EXTRACTION_PROMPT = `Analizá estas imágenes de un brochure de un emprendimiento inmobiliario y extraé la siguiente información en formato JSON.
 IMPORTANTE: Respondé SOLO con el JSON, sin texto adicional, sin markdown, sin backticks.
+
+Revisá TODAS las páginas cuidadosamente. Buscá:
+- El nombre del emprendimiento (suele estar en la portada o header)
+- Ubicación y dirección
+- Tipologías de unidades (ambientes, superficies)
+- Precios si aparecen
+- Amenities y características
+- Estado del proyecto y fecha de entrega
+- Información de financiación
 
 {
   "name": "nombre del emprendimiento",
   "location": "barrio/zona, ciudad",
   "direccion": "dirección exacta si aparece",
-  "description": "descripción general del proyecto (2-3 párrafos)",
+  "description": "descripción general del proyecto (2-3 párrafos, rica en detalles)",
   "estado": "en_construccion | entrega_inmediata | preventa | disponible",
   "entrega": "fecha estimada de entrega si aparece",
   "tipologias_texto": "descripción de tipologías (ej: 1, 2 y 3 ambientes desde 40m² a 120m²)",
@@ -27,10 +36,7 @@ IMPORTANTE: Respondé SOLO con el JSON, sin texto adicional, sin markdown, sin b
 
 Si algún dato no aparece en el brochure, usá null.
 Para units_available, total_units, price_min y price_max usá solo números (sin formato).
-Para amenities y features usá arrays de strings.
-
-Texto del brochure:
-`
+Para amenities y features usá arrays de strings.`
 
 export interface BrochureExtractionResult {
   name?: string | null
@@ -51,7 +57,48 @@ export interface BrochureExtractionResult {
 }
 
 /**
- * Extract text from a PDF file using pdf.js
+ * Render PDF pages as images (base64 JPEG)
+ * Renders up to maxPages pages at the given scale
+ */
+export async function renderPDFPagesToImages(
+  file: File,
+  maxPages: number = 15,
+  scale: number = 1.5,
+  onProgress?: (step: string) => void
+): Promise<string[]> {
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const totalPages = Math.min(pdf.numPages, maxPages)
+  const images: string[] = []
+
+  for (let i = 1; i <= totalPages; i++) {
+    onProgress?.(`Procesando página ${i}/${totalPages}...`)
+    const page = await pdf.getPage(i)
+    const viewport = page.getViewport({ scale })
+
+    const canvas = document.createElement('canvas')
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+    const ctx = canvas.getContext('2d')!
+
+    await page.render({ canvasContext: ctx, viewport, canvas } as any).promise
+
+    // Convert to JPEG base64 (quality 0.7 to keep size manageable)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+    // Extract base64 data without the data:image/jpeg;base64, prefix
+    const base64 = dataUrl.split(',')[1]
+    images.push(base64)
+
+    // Clean up
+    canvas.width = 0
+    canvas.height = 0
+  }
+
+  return images
+}
+
+/**
+ * Extract text from a PDF file using pdf.js (fallback method)
  */
 export async function extractTextFromPDF(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer()
@@ -108,20 +155,34 @@ export async function uploadBrochureToStorage(file: File): Promise<string> {
 }
 
 /**
- * Send extracted text to Claude API to parse brochure data
- * Uses anthropic-dangerous-direct-browser-access header for CORS
+ * Send PDF page images to Claude Vision API to extract brochure data
  */
-export async function extractProjectDataWithClaude(
-  pdfText: string
+export async function extractProjectDataWithVision(
+  images: string[]
 ): Promise<BrochureExtractionResult> {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('API key de Anthropic no configurada (VITE_ANTHROPIC_API_KEY)')
 
-  // Truncate text if too long (Claude has limits)
-  const maxChars = 80000
-  const truncatedText = pdfText.length > maxChars
-    ? pdfText.substring(0, maxChars) + '\n\n[... texto truncado por longitud ...]'
-    : pdfText
+  // Build content array with images + prompt
+  const content: any[] = []
+
+  // Add each page as an image
+  for (let i = 0; i < images.length; i++) {
+    content.push({
+      type: 'image',
+      source: {
+        type: 'base64',
+        media_type: 'image/jpeg',
+        data: images[i],
+      },
+    })
+  }
+
+  // Add the extraction prompt at the end
+  content.push({
+    type: 'text',
+    text: VISION_EXTRACTION_PROMPT,
+  })
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -137,7 +198,7 @@ export async function extractProjectDataWithClaude(
       messages: [
         {
           role: 'user',
-          content: EXTRACTION_PROMPT + truncatedText,
+          content,
         },
       ],
     }),
@@ -151,48 +212,44 @@ export async function extractProjectDataWithClaude(
   }
 
   const data = await response.json()
-  const content = data.content?.[0]?.text
+  const responseText = data.content?.[0]?.text
 
-  if (!content) throw new Error('Respuesta vacía de Claude')
+  if (!responseText) throw new Error('Respuesta vacía de Claude')
 
   // Try to parse JSON from the response
   try {
-    // Try direct parse first
-    return JSON.parse(content)
+    return JSON.parse(responseText)
   } catch {
-    // Try to find JSON in the response
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0])
     }
-    throw new Error('No se pudo extraer datos estructurados del brochure. Respuesta: ' + content.substring(0, 200))
+    throw new Error('No se pudo extraer datos estructurados del brochure. Respuesta: ' + responseText.substring(0, 200))
   }
 }
 
 /**
- * Full brochure processing pipeline:
- * 1. Extract text with pdf.js
- * 2. Send to Claude for data extraction
- * 3. (Optional) Upload PDF to storage if RLS permits
- * Returns extracted data + brochure URL (if uploaded)
+ * Full brochure processing pipeline (Vision-first):
+ * 1. Render PDF pages as images
+ * 2. Send images to Claude Vision for data extraction
+ * 3. Upload PDF to storage
+ * Returns extracted data + brochure URL
  */
 export async function processBrochure(
   file: File,
   onProgress?: (step: string) => void
 ): Promise<{ data: BrochureExtractionResult; brochureUrl: string }> {
-  // Step 1: Extract text
-  onProgress?.('Extrayendo texto del PDF...')
-  const pdfText = await extractTextFromPDF(file)
+  // Step 1: Render pages as images
+  onProgress?.('Renderizando páginas del PDF...')
+  const images = await renderPDFPagesToImages(file, 15, 1.5, onProgress)
 
-  if (!pdfText || pdfText.length < 50) {
-    throw new Error(
-      'No se pudo extraer texto del PDF. Es posible que sea un PDF basado en imágenes. Intentá con un PDF que contenga texto seleccionable.'
-    )
+  if (!images || images.length === 0) {
+    throw new Error('No se pudieron renderizar las páginas del PDF.')
   }
 
-  // Step 2: Send to Claude
-  onProgress?.('Analizando con IA...')
-  const data = await extractProjectDataWithClaude(pdfText)
+  // Step 2: Send to Claude Vision
+  onProgress?.('Analizando con IA (visión)...')
+  const data = await extractProjectDataWithVision(images)
 
   // Step 3: Try to upload PDF (non-blocking)
   let brochureUrl = ''
@@ -201,7 +258,6 @@ export async function processBrochure(
     brochureUrl = await uploadBrochureToStorage(file)
   } catch (err) {
     console.warn('No se pudo subir el PDF a storage (RLS):', err)
-    // Not critical — extraction already succeeded
   }
 
   return { data, brochureUrl }
