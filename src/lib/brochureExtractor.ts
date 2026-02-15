@@ -23,6 +23,13 @@ REGLAS DE INFERENCIA:
 - Si hay tablas de precios con unidades listadas, CONTÁ las unidades para units_available
 - Para precio por m², buscá columnas tipo "VALOR M2" o "USD/m²" y extraé el mínimo y máximo
 
+REGLAS DE PRECISIÓN (MUY IMPORTANTE):
+- El nombre del emprendimiento debe ser EXACTO como aparece en el brochure (respetá mayúsculas, espacios, acentos). Si dice "Roccatagliata" todo junto, no lo separes.
+- Para ubicación: SOLO poné lo que dice EXPLÍCITAMENTE en el PDF. Si no menciona barrio, poné solo la ciudad. NO inventes barrios ni zonas.
+- Para tipologías: si hay tipos distintos como "4 Amb" y "4 Amb c/Dep" o "4 Amb c/Dependencia", son tipologías SEPARADAS. No las agrupes.
+- Contá las unidades EXACTAS de cada tipología mirando las tablas de precios fila por fila.
+- Los precios deben ser números exactos de las tablas, no redondeos.
+
 {
   "name": "nombre del emprendimiento",
   "location": "barrio/zona, ciudad (ej: Belgrano, CABA)",
