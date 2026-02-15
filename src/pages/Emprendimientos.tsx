@@ -896,6 +896,8 @@ function ProjectFormModal({
         financiacion: data.financiacion || prev.financiacion,
         amenities: data.amenities || prev.amenities,
         features: data.features || prev.features,
+        contact_phone: (data as any).contact_phone || prev.contact_phone,
+        website: (data as any).website || prev.website,
         brochure_url: brochureUrl,
       }))
 
