@@ -71,7 +71,7 @@ function generateSlug(name: string): string {
 }
 
 function transformDBProject(dbProject: DBProject): Property {
-  const tipologias: Tipologia[] = Array.isArray(dbProject.tipologias)
+  const tipologias: Tipologia[] = Array.isArray(dbProject.tipologias) && (dbProject.tipologias as any[]).length > 0
     ? (dbProject.tipologias as any[]).map((t, i) => ({
         id: String(i + 1),
         name: t.nombre || t.name || `Tipo ${i + 1}`,
@@ -82,7 +82,7 @@ function transformDBProject(dbProject: DBProject): Property {
       }))
     : [{
         id: '1',
-        name: 'Consultar',
+        name: dbProject.tipologias_texto || 'Consultar',
         ambientes: 0,
         superficie: '-',
         precio: `USD ${dbProject.price_min?.toLocaleString() || '-'}`,
