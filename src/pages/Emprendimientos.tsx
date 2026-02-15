@@ -31,6 +31,7 @@ interface Property {
   status: PropertyStatus
   type: string
   image: string
+  allImages: string[]
   description: string
   amenities: string[]
   tipologias: Tipologia[]
@@ -118,6 +119,9 @@ function transformDBProject(dbProject: DBProject): Property {
     image: Array.isArray(dbProject.images) && (dbProject.images as string[]).length > 0
       ? (dbProject.images as string[])[0]
       : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop',
+    allImages: Array.isArray(dbProject.images) && (dbProject.images as string[]).length > 0
+      ? (dbProject.images as string[])
+      : ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop'],
     description: dbProject.description || '',
     amenities,
     tipologias,
@@ -588,12 +592,41 @@ function DetailModal({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const [currentImage, setCurrentImage] = useState(0)
+  const images = property.allImages
+  const hasMultiple = images.length > 1
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4" onClick={onClose}>
       <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Modal Header Image */}
+        {/* Modal Header Image Carousel */}
         <div className="relative h-40 sm:h-64">
-          <img src={property.image} alt={property.name} className="w-full h-full object-cover" />
+          <img src={images[currentImage]} alt={property.name} className="w-full h-full object-cover transition-opacity duration-300" />
+          {hasMultiple && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => prev === 0 ? images.length - 1 : prev - 1) }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => prev === images.length - 1 ? 0 : prev + 1) }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-12 sm:bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => { e.stopPropagation(); setCurrentImage(idx) }}
+                    className={`w-2 h-2 rounded-full transition-colors ${idx === currentImage ? 'bg-white' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <button onClick={onClose} className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white">
             <X className="w-5 h-5" />
