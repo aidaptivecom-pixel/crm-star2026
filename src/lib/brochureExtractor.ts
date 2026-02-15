@@ -241,7 +241,7 @@ export async function processBrochure(
 ): Promise<{ data: BrochureExtractionResult; brochureUrl: string }> {
   // Step 1: Render pages as images
   onProgress?.('Renderizando páginas del PDF...')
-  const images = await renderPDFPagesToImages(file, 15, 1.5, onProgress)
+  const images = await renderPDFPagesToImages(file, 100, 1.5, onProgress)
 
   if (!images || images.length === 0) {
     throw new Error('No se pudieron renderizar las páginas del PDF.')
