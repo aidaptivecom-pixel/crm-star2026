@@ -606,13 +606,13 @@ function DetailModal({
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => prev === 0 ? images.length - 1 : prev - 1) }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white"
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white z-10"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); setCurrentImage(prev => prev === images.length - 1 ? 0 : prev + 1) }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white z-10"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -627,7 +627,7 @@ function DetailModal({
               </div>
             </>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
           <button onClick={onClose} className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white">
             <X className="w-5 h-5" />
           </button>
