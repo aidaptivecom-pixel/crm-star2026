@@ -1200,7 +1200,7 @@ export const Tasaciones = () => {
               <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
                 <button onClick={async () => {
                   try {
-                    await fetch('https://star.igreen.com.ar/webhook/start-inspection', {
+                    await fetch('/api/start-inspection', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ appraisal_id: selectedAppraisal.id, current_property_data: (selectedAppraisal as any).property_data || {} }),

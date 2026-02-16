@@ -169,7 +169,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     
     try {
       // n8n handles everything: save message, send WhatsApp, clear draft, save learning
-      const response = await fetch('https://star.igreen.com.ar/webhook/send-approved', {
+      const response = await fetch('/api/send-approved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,7 +200,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   const handleRegenerate = async () => {
     setIsRegenerating(true)
     try {
-      const response = await fetch('https://star.igreen.com.ar/webhook/regenerate-draft', {
+      const response = await fetch('/api/regenerate-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -253,7 +253,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     
     try {
       // n8n handles everything: save message, send WhatsApp, update conversation
-      const response = await fetch('https://star.igreen.com.ar/webhook/send-approved', {
+      const response = await fetch('/api/send-approved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
