@@ -207,54 +207,20 @@ export async function uploadBrochureToStorage(file: File): Promise<string> {
 export async function extractProjectDataWithVision(
   images: string[]
 ): Promise<BrochureExtractionResult> {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('API key de Anthropic no configurada (VITE_ANTHROPIC_API_KEY)')
-
-  // Build content array with images + prompt
-  const content: any[] = []
-
-  // Add each page as an image
-  for (let i = 0; i < images.length; i++) {
-    content.push({
-      type: 'image',
-      source: {
-        type: 'base64',
-        media_type: 'image/jpeg',
-        data: images[i],
-      },
-    })
-  }
-
-  // Add the extraction prompt at the end
-  content.push({
-    type: 'text',
-    text: VISION_EXTRACTION_PROMPT,
-  })
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Call our serverless backend (API key is safe on server side)
+  const response = await fetch('/api/extract-brochure', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content,
-        },
-      ],
+      images,
+      prompt: VISION_EXTRACTION_PROMPT,
     }),
   })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     throw new Error(
-      `Error de Claude API (${response.status}): ${errorData?.error?.message || response.statusText}`
+      `Error de extracción (${response.status}): ${errorData?.error || response.statusText}`
     )
   }
 

@@ -10,7 +10,10 @@ export default async function handler(req, res) {
   try {
     const response = await fetch('http://135.181.24.249:3050/estimate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.SCRAPER_API_KEY || 'star_scraper_0ef4b43a2785c724afb3b53d9fa52a952f4ff9960c4598a7',
+      },
       body: JSON.stringify(req.body),
     })
     const data = await response.json()
