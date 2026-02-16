@@ -2,9 +2,10 @@ import { useState, useRef, useMemo, useCallback } from 'react'
 import {
   Building2, MapPin, Bed, Square, Eye, Share2, X, ChevronLeft, ChevronRight,
   LayoutGrid, Table2, Loader2, AlertCircle, Database, Plus, Pencil, Trash2,
-  Upload, FileText, Sparkles, Check, AlertTriangle, XCircle
+  Upload, FileText, Sparkles, Check, AlertTriangle, XCircle, ImagePlus
 } from 'lucide-react'
 import { useProjects, ProjectInput } from '../hooks/useProjects'
+import { ProjectImageManager } from '../components/ProjectImageManager'
 import type { Project as DBProject } from '../types/database'
 import { processBrochure } from '../lib/brochureExtractor'
 
@@ -1375,6 +1376,25 @@ function ProjectFormModal({
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
+              </fieldset>
+
+              {/* Section: Fotos */}
+              <fieldset className="mb-6">
+                <legend className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <ImagePlus className="w-4 h-4 text-[#D4A745]" />
+                  Fotos del emprendimiento
+                </legend>
+                <ProjectImageManager
+                  projectId={project?.id || ''}
+                  projectSlug={formData.slug || generateSlug(formData.name) || 'nuevo'}
+                  images={formData.images}
+                  onImagesChange={(imgs) => updateField('images', imgs)}
+                />
+                {formData.images.length > 0 && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    La primera foto es la principal. Arrastrá para reordenar.
+                  </p>
+                )}
               </fieldset>
 
               {/* Section: Brochure */}
