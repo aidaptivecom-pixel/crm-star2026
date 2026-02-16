@@ -114,15 +114,31 @@ export async function renderPDFPagesToImages(
 
     await page.render({ canvasContext: ctx, viewport, canvas } as any).promise
 
+    // Resize if exceeds Claude's max dimension for multi-image (1568px recommended, 2000px limit)
+    const MAX_DIM = 1568
+    let finalCanvas = canvas
+    if (canvas.width > MAX_DIM || canvas.height > MAX_DIM) {
+      const ratio = Math.min(MAX_DIM / canvas.width, MAX_DIM / canvas.height)
+      const resizedCanvas = document.createElement('canvas')
+      resizedCanvas.width = Math.round(canvas.width * ratio)
+      resizedCanvas.height = Math.round(canvas.height * ratio)
+      const resizedCtx = resizedCanvas.getContext('2d')!
+      resizedCtx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height)
+      // Clean up original
+      canvas.width = 0
+      canvas.height = 0
+      finalCanvas = resizedCanvas
+    }
+
     // Convert to JPEG base64 (quality 0.7 to keep size manageable)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+    const dataUrl = finalCanvas.toDataURL('image/jpeg', 0.7)
     // Extract base64 data without the data:image/jpeg;base64, prefix
     const base64 = dataUrl.split(',')[1]
     images.push(base64)
 
     // Clean up
-    canvas.width = 0
-    canvas.height = 0
+    finalCanvas.width = 0
+    finalCanvas.height = 0
   }
 
   return images
