@@ -50,9 +50,9 @@ export const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#D4A745]/5 via-transparent to-[#D4A745]/3" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#D4A745]/8 via-transparent to-[#D4A745]/5" />
       
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -66,16 +66,16 @@ export const Login = () => {
           <img
             src="/logo-star-text.png"
             alt="Star Real Estate"
-            className="h-12 mx-auto mb-4 opacity-90"
+            className="h-20 mx-auto mb-4 brightness-125"
           />
-          <p className="text-gray-500 text-sm tracking-widest uppercase">
+          <p className="text-gray-400 text-sm tracking-widest uppercase">
             {showReset ? 'Recuperar contraseña' : 'Panel de gestión'}
           </p>
         </div>
 
         {/* Reset Password Form */}
         {showReset ? (
-          <div className="bg-[#111118] border border-[#1e1e2a] rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5">
+          <div className="bg-[#13131d] border border-[#232336] rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5">
             {resetSent ? (
               <div className="text-center space-y-4">
                 <div className="inline-flex items-center justify-center w-14 h-14 bg-[#D4A745]/10 rounded-full mb-2">
@@ -105,7 +105,7 @@ export const Login = () => {
                 </p>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
                   <input
                     type="email"
                     value={resetEmail}
@@ -113,7 +113,7 @@ export const Login = () => {
                     placeholder="tu@email.com"
                     required
                     autoFocus
-                    className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[#1e1e2a] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors"
+                    className="w-full px-4 py-2.5 bg-[#0d0d14] border border-[#232336] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors"
                   />
                 </div>
 
@@ -145,7 +145,7 @@ export const Login = () => {
           </div>
         ) : (
           /* Login Form */
-          <form onSubmit={handleSubmit} className="bg-[#111118] border border-[#1e1e2a] rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5">
+          <form onSubmit={handleSubmit} className="bg-[#13131d] border border-[#232336] rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5">
             {error && (
               <div className="bg-red-500/10 text-red-400 text-sm px-4 py-3 rounded-xl border border-red-500/20">
                 {error}
@@ -153,19 +153,19 @@ export const Login = () => {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
                 required
-                className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[#1e1e2a] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors"
+                className="w-full px-4 py-2.5 bg-[#0d0d14] border border-[#232336] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Contraseña</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -173,7 +173,7 @@ export const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[#1e1e2a] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors pr-10"
+                  className="w-full px-4 py-2.5 bg-[#0d0d14] border border-[#232336] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4A745]/40 focus:border-[#D4A745]/60 transition-colors pr-10"
                 />
                 <button
                   type="button"
@@ -198,7 +198,7 @@ export const Login = () => {
                   <div className={`w-4 h-4 rounded border transition-colors ${
                     rememberMe 
                       ? 'bg-[#D4A745] border-[#D4A745]' 
-                      : 'border-[#2a2a3a] bg-[#0a0a0f] group-hover:border-[#3a3a4a]'
+                      : 'border-[#333348] bg-[#0d0d14] group-hover:border-[#3a3a4a]'
                   }`}>
                     {rememberMe && (
                       <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -238,7 +238,7 @@ export const Login = () => {
           </form>
         )}
 
-        <p className="text-center text-gray-600 text-xs mt-6 tracking-wider">
+        <p className="text-center text-gray-500 text-xs mt-6 tracking-wider">
           STAR REAL ESTATE © {new Date().getFullYear()}
         </p>
       </div>
