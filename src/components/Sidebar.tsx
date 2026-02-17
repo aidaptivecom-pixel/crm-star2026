@@ -20,18 +20,32 @@ import { CONVERSATIONS } from '../constants'
 interface SidebarProps {
   onNavigate?: () => void
   onLogout?: () => void
+  onCollapse?: () => void
   userName?: string | null
   userRole?: string | null
 }
 
-export const Sidebar = ({ onNavigate, onLogout, userName, userRole }: SidebarProps) => {
+export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }: SidebarProps) => {
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
 
   return (
     <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6">
+      <div className="h-16 flex items-center px-6 justify-between">
         <img src="/logo-star-dark.svg" alt="Star" className="h-9" />
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Ocultar sidebar"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 3v18"/>
+              <path d="M14 9l-3 3 3 3"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Search */}
