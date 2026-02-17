@@ -24,7 +24,7 @@ h1,h2,h3,h4{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-style
 .page-content{position:relative;z-index:2;background:var(--dark)}
 
 /* Hero */
-.hero{text-align:center;padding:56px 32px 36px;background:linear-gradient(180deg,rgba(212,167,69,.06) 0%,transparent 100%)}
+.hero{text-align:center;padding:56px 32px 36px;background:none}
 .hero h1{font-size:clamp(32px,6vw,56px);font-weight:700;font-style:italic;text-transform:uppercase;margin-bottom:16px;line-height:1.08;letter-spacing:1.5px}
 .hero h1 span{color:var(--gold)}
 .hero p{color:var(--gray);font-size:clamp(15px,2.2vw,19px);max-width:600px;margin:0 auto;line-height:1.7;font-weight:300}
@@ -356,6 +356,13 @@ select option{background:#fff;color:#1a1a1a}
 // CONFIG — Change API_BASE if deploying elsewhere
 // ============================================================
 const API_BASE = '';
+
+// Zoom param: ?zoom=125 (default 125)
+(function(){
+  const z = new URLSearchParams(location.search).get('zoom');
+  const pct = parseInt(z) || 125;
+  if(pct !== 100) document.documentElement.style.zoom = (pct/100);
+})();
 
 // Ref ID
 const refId = 'STR-' + String(Math.floor(10000 + Math.random() * 90000));
