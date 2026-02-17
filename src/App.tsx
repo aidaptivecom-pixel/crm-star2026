@@ -16,7 +16,7 @@ import { Reportes } from './pages/Reportes'
 import { Configuracion } from './pages/Configuracion'
 import { Status } from './pages/Status'
 import { NotificationBell } from './components/NotificationBell'
-import { Menu, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Menu, X, PanelLeftOpen } from 'lucide-react'
 
 function AuthenticatedApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
