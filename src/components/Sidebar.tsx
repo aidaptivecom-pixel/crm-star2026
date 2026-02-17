@@ -12,7 +12,6 @@ import {
   BarChart3, 
   Settings, 
   HelpCircle,
-  Star,
   Activity,
   LogOut
 } from 'lucide-react'
