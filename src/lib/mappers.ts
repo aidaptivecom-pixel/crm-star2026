@@ -221,6 +221,7 @@ export function mapDbConversationToUi(conv: DbConversation, messages: DbMessage[
     messages: messages.map(mapDbMessageToUi),
     draftResponse: (conv as any).draft_response || null,
     draftCreatedAt: (conv as any).draft_created_at || null,
+    draftAttachments: (conv as any).draft_attachments || null,
   }
 }
 

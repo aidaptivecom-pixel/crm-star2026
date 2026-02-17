@@ -146,7 +146,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
     }
   }
 
-  const handleApprove = async (text: string) => {
+  const handleApprove = async (text: string, sendAttachments: boolean = false) => {
     const messageText = text.trim()
     if (!messageText) return
     
@@ -178,7 +178,8 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
           message: messageText,
           lead_name: conversation.name,
           draft_original: originalDraft,
-          approved_by: user?.id || null
+          approved_by: user?.id || null,
+          send_attachments: sendAttachments
         })
       })
 
@@ -288,7 +289,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       e.preventDefault()
       // If there's a draft waiting, Enter approves it
       if (draftResponse && !isRegenerating) {
-        handleApprove(draftResponse)
+        handleApprove(draftResponse, !!conversation.draftAttachments?.length)
       } else {
         handleSend()
       }
@@ -432,6 +433,7 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
       {(draftResponse || isRegenerating) && (
         <DraftApproval
           draft={draftResponse || ''}
+          attachments={conversation.draftAttachments}
           onApprove={handleApprove}
           onRegenerate={handleRegenerate}
           onDismiss={handleDismissDraft}

@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { Check, Pencil, RefreshCw, Bot, Send, X } from 'lucide-react'
+import { Check, Pencil, RefreshCw, Bot, Send, X, FileText } from 'lucide-react'
+
+interface DraftAttachment {
+  type: string
+  project: string
+}
 
 interface DraftApprovalProps {
   draft: string
-  onApprove: (text: string) => void
+  attachments?: DraftAttachment[] | null
+  onApprove: (text: string, sendAttachments: boolean) => void
   onRegenerate: () => void
   onDismiss: () => void
   isLoading?: boolean
@@ -11,6 +17,7 @@ interface DraftApprovalProps {
 
 export const DraftApproval = ({ 
   draft, 
+  attachments,
   onApprove, 
   onRegenerate, 
   onDismiss,
@@ -18,9 +25,10 @@ export const DraftApproval = ({
 }: DraftApprovalProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedText, setEditedText] = useState(draft)
+  const [sendAttachments, setSendAttachments] = useState(true)
 
   const handleApprove = () => {
-    onApprove(isEditing ? editedText : draft)
+    onApprove(isEditing ? editedText : draft, sendAttachments && !!attachments?.length)
   }
 
   const handleStartEdit = () => {
@@ -86,6 +94,24 @@ export const DraftApproval = ({
           ) : (
             <div className="p-3 bg-white/70 rounded-lg">
               <p className="text-sm text-gray-800 whitespace-pre-wrap">{draft}</p>
+            </div>
+          )}
+
+          {/* Attachment indicator */}
+          {attachments && attachments.length > 0 && (
+            <div className="mt-2 flex items-center gap-2">
+              <label className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={sendAttachments}
+                  onChange={(e) => setSendAttachments(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                />
+                <FileText className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-medium text-amber-800">
+                  📎 Brochure: {attachments[0].project}
+                </span>
+              </label>
             </div>
           )}
         </div>

@@ -96,6 +96,7 @@ export interface Conversation {
   messages: Message[]
   draftResponse?: string | null
   draftCreatedAt?: string | null
+  draftAttachments?: { type: string; project: string }[] | null
 }
 
 export interface LeadDetail {
