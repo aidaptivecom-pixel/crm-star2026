@@ -39,8 +39,8 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
     <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 justify-between">
-        <div className="h-8 overflow-hidden">
-          <img src="/logo-star-dark.png" alt="Star" className="h-14 object-contain object-top" />
+        <div className="flex items-center">
+          <img src="/logo-star-dark.png" alt="Star" className="h-8 object-contain" />
         </div>
         {onCollapse && (
           <button
