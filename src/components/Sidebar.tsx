@@ -40,7 +40,7 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
       {/* Logo */}
       <div className="h-16 flex items-center px-6 justify-between">
         <div className="flex items-center">
-          <img src="/logo-star-crop.png" alt="Star" className="h-11 object-contain" />
+          <img src="/logo-star-crop.png" alt="Star" className="h-12 object-contain" />
         </div>
         {onCollapse && (
           <button
