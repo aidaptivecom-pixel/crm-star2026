@@ -112,7 +112,7 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
                   </div>
                   
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-xs text-gray-500 truncate">{conv.project}</span>
+                    <span className="text-xs text-gray-500 truncate">{conv.project || 'Sin proyecto'}</span>
                     <span className="text-gray-300">·</span>
                     <span className="text-xs flex-shrink-0">{getChannelIcon(conv.channel)}</span>
                   </div>
