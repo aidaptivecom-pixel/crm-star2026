@@ -25,7 +25,7 @@ export const DraftApproval = ({
 }: DraftApprovalProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedText, setEditedText] = useState(draft)
-  const [sendAttachments, setSendAttachments] = useState(true)
+  const [sendAttachments, setSendAttachments] = useState(false)
 
   const handleApprove = () => {
     onApprove(isEditing ? editedText : draft, sendAttachments && !!attachments?.length)
