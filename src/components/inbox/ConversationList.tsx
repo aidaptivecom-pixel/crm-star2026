@@ -11,11 +11,11 @@ export const ConversationList = ({ conversations, selectedId, onSelect }: Conver
   const getAgentLabel = (type: Conversation['agentType']) => {
     switch (type) {
       case 'emprendimientos':
-        return <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Emp</span>
+        return <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Emprendimientos</span>
       case 'inmuebles':
-        return <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Prop</span>
+        return <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Propiedades</span>
       case 'tasaciones':
-        return <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tas</span>
+        return <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tasaciones</span>
     }
   }
 
