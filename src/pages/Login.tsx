@@ -66,7 +66,8 @@ export const Login = () => {
           <img
             src="/logo-star-text.png"
             alt="Star Real Estate"
-            className="h-20 mx-auto mb-4 brightness-150 saturate-150"
+            className="h-20 mx-auto mb-4"
+            style={{ filter: 'brightness(1.3) saturate(0.85) sepia(0.15)' }}
           />
           <p className="text-gray-400 text-sm tracking-widest uppercase">
             {showReset ? 'Recuperar contraseña' : 'Panel de gestión'}
