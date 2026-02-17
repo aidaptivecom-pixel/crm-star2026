@@ -30,10 +30,12 @@ export const Sidebar = ({ onNavigate, onLogout, userName, userRole }: SidebarPro
   return (
     <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6">
-        <div className="h-8 overflow-hidden">
-          <img src="/logo-star-text.png" alt="Star" className="h-12 -mt-0.5 object-contain object-top" />
-        </div>
+      <div className="h-16 flex items-center px-6 gap-0 select-none">
+        <span className="font-bold text-[22px] tracking-tight text-gray-900">ST</span>
+        <svg className="w-5 h-5 mx-[1px] -mt-[3px] text-[#D4A745]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <span className="font-bold text-[22px] tracking-tight text-gray-900">R</span>
       </div>
 
       {/* Search */}
