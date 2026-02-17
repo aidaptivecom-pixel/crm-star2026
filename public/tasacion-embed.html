@@ -491,6 +491,15 @@ async function handleSubmit(e) {
     });
     if (!res.ok) throw new Error('Status ' + res.status);
     const data = await res.json();
+
+    // Check for errors or empty results
+    if (!data.success || !data.estimation || data.estimation.value === 0 || data.comparables_count === 0) {
+      showToast('No encontramos suficientes propiedades similares en la zona. Probá con otro barrio o tipo de propiedad.', 6000);
+      btn.disabled = false;
+      loading.classList.remove('show');
+      return;
+    }
+
     showResults(data);
 
     // Save to Supabase
