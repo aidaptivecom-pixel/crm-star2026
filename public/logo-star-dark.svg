@@ -1,19 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 45" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 42" fill="none">
   <!-- S -->
-  <text x="0" y="36" font-family="'Arial Black', Arial, Helvetica, sans-serif" font-weight="900" font-size="38" fill="#1a1a1a" letter-spacing="2">S</text>
+  <text x="0" y="34" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="36" fill="#1a1a1a" letter-spacing="1">S</text>
   <!-- T -->
-  <text x="26" y="36" font-family="'Arial Black', Arial, Helvetica, sans-serif" font-weight="900" font-size="38" fill="#1a1a1a" letter-spacing="2">T</text>
+  <text x="24" y="34" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="36" fill="#1a1a1a" letter-spacing="1">T</text>
   
-  <!-- Star with integrated A -->
-  <g transform="translate(56, 0)">
-    <!-- Outer star shape -->
-    <path d="M22 1 L28 14.5 L42 16.5 L31.5 26.5 L34 40 L22 33.5 L10 40 L12.5 26.5 L2 16.5 L16 14.5 Z" fill="#D4A745"/>
-    <!-- A crossbar inside star to form the letter A -->
-    <line x1="13" y1="27" x2="31" y2="27" stroke="#1a1a1a" stroke-width="2.5" opacity="0.15"/>
-    <!-- Subtle inner star outline for depth -->
-    <path d="M22 6 L26.5 15.5 L36 17 L30 23 L31 32 L22 27.5 L13 32 L14 23 L8 17 L17.5 15.5 Z" fill="none" stroke="#C49A30" stroke-width="0.5" opacity="0.4"/>
+  <!-- Gold Star replacing A -->
+  <g transform="translate(52, 1)">
+    <!-- Star outline -->
+    <path d="M18 0 L23.5 12 L36 14 L27 22.5 L29 35.5 L18 29.5 L7 35.5 L9 22.5 L0 14 L12.5 12 Z" fill="#D4A745"/>
+    <!-- Star highlight -->
+    <path d="M18 4 L22 13 L32 14.5 L25 21 L26.5 31 L18 26.5 L9.5 31 L11 21 L4 14.5 L14 13 Z" fill="#D9B04A" opacity="0.5"/>
   </g>
   
   <!-- R -->
-  <text x="104" y="36" font-family="'Arial Black', Arial, Helvetica, sans-serif" font-weight="900" font-size="38" fill="#1a1a1a" letter-spacing="2">R</text>
+  <text x="94" y="34" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="36" fill="#1a1a1a" letter-spacing="1">R</text>
 </svg>

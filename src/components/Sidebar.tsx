@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { 
   Search, 
@@ -27,6 +28,12 @@ interface SidebarProps {
 
 export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }: SidebarProps) => {
   const unreadCount = CONVERSATIONS.filter(c => c.unread).length
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const matchesSearch = (label: string) => {
+    if (!searchQuery) return true
+    return label.toLowerCase().includes(searchQuery.toLowerCase())
+  }
 
   return (
     <aside className="w-[240px] min-w-[240px] h-full bg-white border-r border-gray-100 flex flex-col">
@@ -55,6 +62,8 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
           <input 
             type="text" 
             placeholder="Buscar..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4A745]/50 focus:border-[#D4A745] transition-all"
           />
         </div>
@@ -64,42 +73,50 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6">
         
         {/* Principal */}
+        {(['Inicio', 'Inbox', 'Pipeline', 'Leads'].some(matchesSearch)) && (
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Principal</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/" icon={Home} label="Inicio" onNavigate={onNavigate} />
-            <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} onNavigate={onNavigate} />
-            <NavItem to="/pipeline" icon={Trello} label="Pipeline" onNavigate={onNavigate} />
-            <NavItem to="/leads" icon={Users} label="Leads" onNavigate={onNavigate} />
+            {matchesSearch('Inicio') && <NavItem to="/" icon={Home} label="Inicio" onNavigate={onNavigate} />}
+            {matchesSearch('Inbox') && <NavItem to="/inbox" icon={Inbox} label="Inbox" badge={unreadCount > 0 ? String(unreadCount) : undefined} onNavigate={onNavigate} />}
+            {matchesSearch('Pipeline') && <NavItem to="/pipeline" icon={Trello} label="Pipeline" onNavigate={onNavigate} />}
+            {matchesSearch('Leads') && <NavItem to="/leads" icon={Users} label="Leads" onNavigate={onNavigate} />}
           </nav>
         </div>
+        )}
 
         {/* Agentes */}
+        {matchesSearch('Monitoreo IA') && (
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Agentes</h3>
           <nav className="space-y-0.5">
             <NavItem to="/agentes" icon={Bot} label="Monitoreo IA" onNavigate={onNavigate} />
           </nav>
         </div>
+        )}
 
         {/* Catálogo */}
+        {(['Emprendimientos', 'Propiedades', 'Tasaciones', 'Tasación Web'].some(matchesSearch)) && (
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Catálogo</h3>
           <nav className="space-y-0.5">
-            <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" onNavigate={onNavigate} />
-            <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" onNavigate={onNavigate} />
-            <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" onNavigate={onNavigate} />
-            <NavItem to="/tasacion-web" icon={Calculator} label="Tasación Web" onNavigate={onNavigate} />
+            {matchesSearch('Emprendimientos') && <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" onNavigate={onNavigate} />}
+            {matchesSearch('Propiedades') && <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" onNavigate={onNavigate} />}
+            {matchesSearch('Tasaciones') && <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" onNavigate={onNavigate} />}
+            {matchesSearch('Tasación Web') && <NavItem to="/tasacion-web" icon={Calculator} label="Tasación Web" onNavigate={onNavigate} />}
           </nav>
         </div>
+        )}
 
         {/* Analytics */}
+        {matchesSearch('Reportes') && (
         <div>
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Analytics</h3>
           <nav className="space-y-0.5">
             <NavItem to="/reportes" icon={BarChart3} label="Reportes" onNavigate={onNavigate} />
           </nav>
         </div>
+        )}
 
       </div>
 
