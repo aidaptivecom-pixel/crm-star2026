@@ -39,10 +39,10 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
             className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
             title="Ocultar sidebar"
           >
+
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 3v18"/>
-              <path d="M14 9l-3 3 3 3"/>
+              <path d="M11 19l-7-7 7-7"/>
+              <path d="M18 19l-7-7 7-7"/>
             </svg>
           </button>
         )}
