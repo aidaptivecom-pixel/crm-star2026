@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Shield, Pencil, Trash2, Plus, Eye, EyeOff, Loader2, Check, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { adminCreateUser, adminUpdatePassword, adminDeleteUser } from '../../lib/adminApi'
 
 interface Profile {
   id: string
@@ -83,25 +84,9 @@ export const TeamManager = () => {
         if (error) throw new Error(error.message)
       }
 
-      // Update password if provided (requires service role - call via API)
+      // Update password if provided (via secure API route)
       if (editForm.newPassword.trim()) {
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-        const SUPABASE_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY
-        
-        if (SUPABASE_SERVICE_KEY) {
-          const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${editingId}`, {
-            method: 'PUT',
-            headers: {
-              'apikey': SUPABASE_SERVICE_KEY,
-              'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ password: editForm.newPassword }),
-          })
-          if (!res.ok) throw new Error('Error al cambiar contraseña')
-        } else {
-          throw new Error('Se necesita VITE_SUPABASE_SERVICE_KEY para cambiar contraseñas')
-        }
+        await adminUpdatePassword(editingId, editForm.newPassword)
       }
 
       setMessage({ type: 'success', text: 'Usuario actualizado' })
@@ -120,35 +105,12 @@ export const TeamManager = () => {
     setMessage(null)
 
     try {
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-      const SUPABASE_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY
-
-      if (!SUPABASE_SERVICE_KEY) {
-        throw new Error('Se necesita VITE_SUPABASE_SERVICE_KEY para crear usuarios')
-      }
-
-      // Create auth user
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: inviteForm.email,
-          password: inviteForm.password,
-          email_confirm: true,
-          user_metadata: { full_name: inviteForm.full_name },
-        }),
+      // Create auth user via secure API route
+      const user = await adminCreateUser({
+        email: inviteForm.email,
+        password: inviteForm.password,
+        full_name: inviteForm.full_name,
       })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.msg || data.message || 'Error al crear usuario')
-      }
-
-      const user = await res.json()
 
       // Update role in profile (trigger creates it as 'agent')
       if (supabase && inviteForm.role !== 'agent') {
@@ -174,21 +136,7 @@ export const TeamManager = () => {
     if (!confirm('¿Eliminar este usuario? Esta acción no se puede deshacer.')) return
 
     try {
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-      const SUPABASE_SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY
-
-      if (!SUPABASE_SERVICE_KEY) throw new Error('Se necesita VITE_SUPABASE_SERVICE_KEY')
-
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        },
-      })
-
-      if (!res.ok) throw new Error('Error al eliminar')
-      
+      await adminDeleteUser(id)
       setMessage({ type: 'success', text: 'Usuario eliminado' })
       fetchMembers()
     } catch (err: unknown) {
