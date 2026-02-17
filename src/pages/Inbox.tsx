@@ -217,10 +217,10 @@ export const Inbox = () => {
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'Todos' },
-                  { value: 'pending_approval', label: '📟 Pendiente' },
-                  { value: 'ai_active', label: '🤖 IA Activa' },
+                  { value: 'pending_approval', label: '🟠 Pendiente' },
+                  { value: 'ai_active', label: '🟢 IA Activa' },
                   { value: 'needs_human', label: '🔴 Escalado' },
-                  { value: 'closed', label: '✅ Cerrado' },
+                  { value: 'closed', label: '⚪ Cerrado' },
                 ].map(opt => (
                   <button
                     key={opt.value}
