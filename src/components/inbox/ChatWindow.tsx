@@ -104,11 +104,11 @@ export const ChatWindow = ({ conversation, onBack, onViewLead }: ChatWindowProps
   const getAgentBadge = (type: Conversation['agentType']) => {
     switch (type) {
       case 'emprendimientos':
-        return <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-medium rounded">Emp</span>
+        return <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-medium rounded">Emprendimientos</span>
       case 'inmuebles':
-        return <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-medium rounded">Inm</span>
+        return <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-medium rounded">Propiedades</span>
       case 'tasaciones':
-        return <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded">Tas</span>
+        return <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded">Tasaciones</span>
     }
   }
 

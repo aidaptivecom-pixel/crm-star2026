@@ -48,9 +48,9 @@ export const LeadDetailModal = ({ lead, onClose, currentPage }: LeadDetailModalP
 
   const getAgentTypeBadge = (type: AgentType) => {
     const config: Record<AgentType, { label: string; color: string }> = {
-      emprendimientos: { label: 'Emp', color: 'bg-blue-100 text-blue-700' },
-      inmuebles: { label: 'Inm', color: 'bg-purple-100 text-purple-700' },
-      tasaciones: { label: 'Tas', color: 'bg-amber-100 text-amber-700' },
+      emprendimientos: { label: 'Emprendimientos', color: 'bg-blue-100 text-blue-700' },
+      inmuebles: { label: 'Propiedades', color: 'bg-purple-100 text-purple-700' },
+      tasaciones: { label: 'Tasaciones', color: 'bg-amber-100 text-amber-700' },
     }
     return (
       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${config[type].color}`}>
