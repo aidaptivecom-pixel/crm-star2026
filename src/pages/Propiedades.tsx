@@ -166,8 +166,11 @@ export const Propiedades = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#D4A745]" />
+        <div className="flex-1 min-h-[calc(100vh-64px)] flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#D4A745] mx-auto mb-3" />
+            <p className="text-gray-600">Cargando propiedades...</p>
+          </div>
         </div>
       )}
 
