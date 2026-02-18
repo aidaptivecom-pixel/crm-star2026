@@ -755,7 +755,6 @@ export const Tasaciones = () => {
         const a = selectedAppraisal as any
         const hasInspection = !!(a.property_data?.inspection_state)
         const hasAiAnalysis = !!(a.ai_analysis)
-        const hasWebData = !!(a.neighborhood || a.size_m2 || a.property_type)
 
         // Compute completeness
         const fields = [
