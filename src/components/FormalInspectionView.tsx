@@ -175,6 +175,11 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [semiFilters, setSemiFilters] = useState({
+    areaMin: 0, areaMax: 9999,
+    priceMin: 0, priceMax: 99999999,
+    roomsFilter: 0, // 0 = all
+  })
   const touchStartX = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -199,6 +204,11 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
       const data = await resp.json()
       if (data.success && data.comparables) {
         setSearchResults(data.comparables)
+        // Init filters based on target property
+        const targetArea = appraisal?.size_m2 || 0
+        if (targetArea > 0) {
+          setSemiFilters(f => ({ ...f, areaMin: Math.round(targetArea * 0.7), areaMax: Math.round(targetArea * 1.3) }))
+        }
       } else {
         setSearchError(data.error || 'No se encontraron propiedades')
       }
@@ -721,34 +731,82 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
                     </div>
                   )}
 
-                  {/* Results grid */}
-                  {searchResults.length > 0 && (
+                  {/* Results with filters */}
+                  {searchResults.length > 0 && (() => {
+                    const filtered = searchResults.filter(c => {
+                      if (semiFilters.areaMin && c.total_area_m2 < semiFilters.areaMin) return false
+                      if (semiFilters.areaMax && semiFilters.areaMax < 9999 && c.total_area_m2 > semiFilters.areaMax) return false
+                      if (semiFilters.priceMin && c.price_usd < semiFilters.priceMin) return false
+                      if (semiFilters.priceMax && semiFilters.priceMax < 99999999 && c.price_usd > semiFilters.priceMax) return false
+                      if (semiFilters.roomsFilter && (!c.rooms || c.rooms < semiFilters.roomsFilter)) return false
+                      return true
+                    })
+                    return (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500">{searchResults.length} propiedades encontradas</p>
+                        <p className="text-xs text-gray-500">{filtered.length} de {searchResults.length} propiedades</p>
                         <button onClick={handleSearchComparables} className="text-xs text-blue-500 hover:underline">🔄 Buscar de nuevo</button>
                       </div>
-                      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
-                        {searchResults.map((comp: any, idx: number) => {
+
+                      {/* Filters */}
+                      <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+                        <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Filtros</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-gray-400">Superficie m²</label>
+                            <div className="flex gap-1">
+                              <input type="number" value={semiFilters.areaMin || ''} onChange={e => setSemiFilters(f => ({ ...f, areaMin: parseInt(e.target.value) || 0 }))}
+                                placeholder="Min" className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] outline-none" />
+                              <input type="number" value={semiFilters.areaMax < 9999 ? semiFilters.areaMax : ''} onChange={e => setSemiFilters(f => ({ ...f, areaMax: parseInt(e.target.value) || 9999 }))}
+                                placeholder="Max" className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] outline-none" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400">Precio USD</label>
+                            <div className="flex gap-1">
+                              <input type="number" value={semiFilters.priceMin || ''} onChange={e => setSemiFilters(f => ({ ...f, priceMin: parseInt(e.target.value) || 0 }))}
+                                placeholder="Min" className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] outline-none" />
+                              <input type="number" value={semiFilters.priceMax < 99999999 ? semiFilters.priceMax : ''} onChange={e => setSemiFilters(f => ({ ...f, priceMax: parseInt(e.target.value) || 99999999 }))}
+                                placeholder="Max" className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] outline-none" />
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400">Ambientes</label>
+                          <div className="flex gap-1 mt-1">
+                            {[0, 1, 2, 3, 4, 5].map(n => (
+                              <button key={n} onClick={() => setSemiFilters(f => ({ ...f, roomsFilter: n }))}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${semiFilters.roomsFilter === n ? 'bg-[#D4A745] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
+                                {n === 0 ? 'Todos' : `${n}+`}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cards */}
+                      <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1">
+                        {filtered.map((comp: any, idx: number) => {
                           const isSelected = processConfig.selectedComparables.some((s: any) => s.source_id === comp.source_id)
                           return (
                             <div key={comp.source_id || idx} 
-                              onClick={() => toggleComparable(comp)}
-                              className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border-2 ${isSelected ? 'border-[#D4A745] bg-amber-50' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}>
+                              className={`flex items-center gap-3 p-2.5 rounded-xl transition-all border-2 ${isSelected ? 'border-[#D4A745] bg-amber-50' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}>
                               {/* Checkbox */}
-                              <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center ${isSelected ? 'bg-[#D4A745]' : 'border-2 border-gray-300'}`}>
+                              <div onClick={() => toggleComparable(comp)} className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center cursor-pointer ${isSelected ? 'bg-[#D4A745]' : 'border-2 border-gray-300'}`}>
                                 {isSelected && <span className="text-white text-xs font-bold">✓</span>}
                               </div>
                               {/* Photo */}
-                              {comp.photos?.[0] ? (
-                                <img src={comp.photos[0]} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
-                              ) : (
-                                <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-gray-400 text-lg">🏠</span>
-                                </div>
-                              )}
+                              <div onClick={() => toggleComparable(comp)} className="cursor-pointer flex-shrink-0">
+                                {comp.photos?.[0] ? (
+                                  <img src={comp.photos[0]} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                                ) : (
+                                  <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">
+                                    <span className="text-gray-400 text-lg">🏠</span>
+                                  </div>
+                                )}
+                              </div>
                               {/* Info */}
-                              <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleComparable(comp)}>
                                 <p className="text-xs font-semibold text-gray-800 truncate">{comp.address || 'Sin dirección'}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <span className="text-xs font-bold text-green-600">USD {comp.price_usd?.toLocaleString()}</span>
@@ -758,12 +816,21 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
                                 </div>
                                 <p className="text-[10px] text-gray-400 mt-0.5">USD {comp.price_per_m2?.toLocaleString()}/m²</p>
                               </div>
+                              {/* ZonaProp link */}
+                              {comp.source_url && (
+                                <a href={comp.source_url} target="_blank" rel="noopener noreferrer" 
+                                  onClick={e => e.stopPropagation()}
+                                  className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors" title="Ver en ZonaProp">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </a>
+                              )}
                             </div>
                           )
                         })}
                       </div>
                     </div>
-                  )}
+                    )
+                  })()}
 
                   {/* Selection count */}
                   {processConfig.selectedComparables.length > 0 && (
