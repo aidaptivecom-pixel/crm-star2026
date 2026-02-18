@@ -1456,6 +1456,7 @@ export const Tasaciones = () => {
                       <input
                         type={field.type}
                         key={`${selectedAppraisal.id}-${field.key}`}
+                        data-field={field.key}
                         defaultValue={remoteData[field.key] || ''}
                         onBlur={async (e) => {
                           const newVal = field.type === 'number' ? (e.target.value ? Number(e.target.value) : null) : e.target.value
@@ -1486,6 +1487,7 @@ export const Tasaciones = () => {
                 <textarea
                   placeholder="De dónde vino el lead, por qué quiere tasar (venta, sucesión, crédito), notas..."
                   key={`${selectedAppraisal.id}-contact_context`}
+                  data-field="contact_context"
                   defaultValue={remoteData.contact_context || ''}
                   onBlur={async (e) => {
                     if (e.target.value !== (remoteData.contact_context || '')) {
@@ -1499,7 +1501,34 @@ export const Tasaciones = () => {
 
             {/* Footer */}
             <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
-              <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} disabled={_convertingToFormal}
+              <button onClick={async () => {
+                // Save all remote gathering fields before processing
+                const currentData = (selectedAppraisal as any).property_data || {}
+                const updates: Record<string, any> = {}
+                for (const field of suggestedFields) {
+                  const input = document.querySelector(`input[data-field="${field.key}"]`) as HTMLInputElement
+                  if (input && input.value) {
+                    const val = field.type === 'number' ? Number(input.value) : input.value
+                    if (val !== (currentData[field.key] || null)) updates[field.key] = val
+                  }
+                }
+                const contextEl = document.querySelector('textarea[data-field="contact_context"]') as HTMLTextAreaElement
+                if (contextEl && contextEl.value && contextEl.value !== (currentData.contact_context || '')) {
+                  updates.contact_context = contextEl.value
+                }
+                if (Object.keys(updates).length > 0) {
+                  const { supabase } = await import('../lib/supabase')
+                  await (supabase as any).from('appraisals').update({
+                    property_data: { ...currentData, ...updates }
+                  }).eq('id', selectedAppraisal.id)
+                  // Merge updates into the appraisal object so prepareFormalFormData sees them
+                  const merged = { ...selectedAppraisal, property_data: { ...currentData, ...updates } } as any
+                  prepareFormalFormData(merged)
+                } else {
+                  prepareFormalFormData(selectedAppraisal)
+                }
+                setShowFormalForm(true)
+              }} disabled={_convertingToFormal}
                 className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                 {_convertingToFormal ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : '📝 Procesar tasación formal'}
               </button>
