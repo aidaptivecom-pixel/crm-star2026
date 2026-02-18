@@ -725,7 +725,7 @@ export const Tasaciones = () => {
     // Column 1 (compact list) removed — detail is now Col 1
 
     // Col 3 always visible for formal appraisals
-    const showCol3 = selectedAppraisal.type === 'formal_appraisal'
+    const showCol3 = selectedAppraisal.type === 'formal_appraisal' || showFormalForm || (status === 'remote_gathering' as any)
 
     // Auto-show formal inspection when inspection completed or has voice notes with extractions
     const hasInspectionData = !!(
