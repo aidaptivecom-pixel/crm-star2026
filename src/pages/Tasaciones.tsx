@@ -219,6 +219,7 @@ export const Tasaciones = () => {
   })
 
   const SCRAPER_URL = 'https://scraper-star.135.181.24.249.sslip.io'
+  const SCRAPER_HEADERS = { 'Content-Type': 'application/json', 'X-API-Key': 'star_scraper_0ef4b43a2785c724afb3b53d9fa52a952f4ff9960c4598a7' }
 
   // === All handlers (unchanged) ===
 
@@ -268,7 +269,7 @@ export const Tasaciones = () => {
       const endpoint = estimateType === 'formal' ? '/estimate-formal' : '/estimate'
       const resp = await fetch(`${SCRAPER_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: SCRAPER_HEADERS,
         body: JSON.stringify({
           neighborhood: newForm.neighborhood,
           property_type: newForm.property_type,
@@ -334,7 +335,7 @@ export const Tasaciones = () => {
     try {
       const resp = await fetch(`${SCRAPER_URL}/estimate-formal`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: SCRAPER_HEADERS,
         body: JSON.stringify({
           neighborhood: appraisal.neighborhood,
           property_type: appraisal.property_type,
@@ -408,7 +409,7 @@ export const Tasaciones = () => {
         const formData = new FormData()
         formData.append('file', file)
         formData.append('fileName', fileName)
-        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, { method: 'POST', body: formData })
+        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, { method: 'POST', headers: { 'X-API-Key': SCRAPER_HEADERS['X-API-Key'] }, body: formData })
         const uploadResult = await uploadResp.json()
         if (!uploadResult.success) throw new Error(uploadResult.error || 'Upload failed')
         newUrls.push(uploadResult.url)
@@ -450,7 +451,7 @@ export const Tasaciones = () => {
     try {
       const resp = await fetch(`${SCRAPER_URL}/analyze-target`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: SCRAPER_HEADERS,
         body: JSON.stringify({
           appraisal_id: selectedAppraisal.id,
           photo_urls: photos,
@@ -486,7 +487,7 @@ export const Tasaciones = () => {
       })
       const resp = await fetch(`${SCRAPER_URL}/transcribe-audio`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: SCRAPER_HEADERS,
         body: JSON.stringify({ audio_base64: base64, appraisal_id: selectedAppraisal.id, filename: file.name, mime_type: file.type }),
       })
       const result = await resp.json()
@@ -1242,7 +1243,7 @@ export const Tasaciones = () => {
                   try {
                     const resp = await fetch(`${SCRAPER_URL}/reprocess-audio`, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: SCRAPER_HEADERS,
                       body: JSON.stringify({ appraisal_id: selectedAppraisal.id }),
                     })
                     const result = await resp.json()
