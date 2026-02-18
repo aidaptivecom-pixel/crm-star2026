@@ -161,6 +161,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
   const [saving, setSaving] = useState(false)
   const [showProcessModal, setShowProcessModal] = useState(false)
   const [processConfig, setProcessConfig] = useState({
+    mode: 'auto' as 'auto' | 'semi',
     maxComparables: 10,
     searchRadius: 1000, // meters
     areaRange: 30, // ±%
@@ -169,7 +170,6 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     includeSold: false,
     manualComparables: [] as string[], // ZonaProp URLs
   })
-  const [showManualComparables, setShowManualComparables] = useState(false)
   const [newComparableUrl, setNewComparableUrl] = useState('')
   const touchStartX = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -531,148 +531,176 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-[#D4A745]" /> Procesar tasación
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">Configurá los parámetros de búsqueda de comparables</p>
+              {/* Mode tabs */}
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setProcessConfig(c => ({ ...c, mode: 'auto' }))}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ${processConfig.mode === 'auto' ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  🤖 Automática
+                </button>
+                <button onClick={() => setProcessConfig(c => ({ ...c, mode: 'semi' }))}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ${processConfig.mode === 'semi' ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  👤 Semi-automática
+                </button>
+              </div>
             </div>
 
             {/* Modal body */}
             <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-              {/* Cantidad de comparables */}
-              <div>
-                <label className="text-xs font-semibold text-gray-700 mb-2 block">🏘️ Cantidad de comparables</label>
-                <div className="flex gap-2">
-                  {[5, 10, 15, 20].map(n => (
-                    <button key={n} onClick={() => setProcessConfig(c => ({ ...c, maxComparables: n }))}
-                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${processConfig.maxComparables === n ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Radio de búsqueda */}
-              <div>
-                <label className="text-xs font-semibold text-gray-700 mb-2 block">📍 Radio de búsqueda</label>
-                <div className="flex gap-2">
-                  {[
-                    { label: '500m', value: 500 },
-                    { label: '1km', value: 1000 },
-                    { label: '2km', value: 2000 },
-                    { label: 'Toda la zona', value: 0 },
-                  ].map(opt => (
-                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, searchRadius: opt.value }))}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.searchRadius === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rango de superficie */}
-              <div>
-                <label className="text-xs font-semibold text-gray-700 mb-2 block">📏 Rango de superficie</label>
-                <div className="flex gap-2">
-                  {[
-                    { label: '±10%', value: 10 },
-                    { label: '±20%', value: 20 },
-                    { label: '±30%', value: 30 },
-                    { label: 'Cualquiera', value: 0 },
-                  ].map(opt => (
-                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, areaRange: opt.value }))}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.areaRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Antigüedad similar */}
-              <div>
-                <label className="text-xs font-semibold text-gray-700 mb-2 block">🏗️ Antigüedad similar</label>
-                <div className="flex gap-2">
-                  {[
-                    { label: '±5 años', value: 5 },
-                    { label: '±10 años', value: 10 },
-                    { label: '±20 años', value: 20 },
-                    { label: 'Cualquiera', value: 0 },
-                  ].map(opt => (
-                    <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, ageRange: opt.value }))}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.ageRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Manual comparables (ZonaProp URLs) */}
-              <div>
-                <button onClick={() => setShowManualComparables(!showManualComparables)}
-                  className="flex items-center justify-between w-full text-left">
-                  <label className="text-xs font-semibold text-gray-700">🔗 Agregar propiedades a comparar</label>
-                  {showManualComparables ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                </button>
-                {showManualComparables && (
-                  <div className="mt-2 space-y-2">
-                    <p className="text-xs text-gray-400">Pegá URLs de ZonaProp para incluir como comparables</p>
-                    {processConfig.manualComparables.map((url, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-blue-600 truncate hover:underline">{url}</a>
-                        <button onClick={() => setProcessConfig(c => ({ ...c, manualComparables: c.manualComparables.filter((_, i) => i !== idx) }))}
-                          className="text-red-400 hover:text-red-600 text-xs font-bold px-1">✕</button>
-                      </div>
-                    ))}
+              {/* AUTO MODE: filters */}
+              {processConfig.mode === 'auto' && (
+                <>
+                  <p className="text-xs text-gray-500">El sistema busca comparables automáticamente según estos filtros.</p>
+                  
+                  {/* Cantidad de comparables */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 mb-2 block">🏘️ Cantidad de comparables</label>
                     <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={newComparableUrl}
-                        onChange={(e) => setNewComparableUrl(e.target.value)}
-                        placeholder="https://www.zonaprop.com.ar/..."
-                        className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-2 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && newComparableUrl.trim()) {
-                            setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
-                            setNewComparableUrl('')
-                          }
-                        }}
-                      />
-                      <button onClick={() => {
-                        if (newComparableUrl.trim()) {
+                      {[5, 10, 15, 20].map(n => (
+                        <button key={n} onClick={() => setProcessConfig(c => ({ ...c, maxComparables: n }))}
+                          className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${processConfig.maxComparables === n ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Radio de búsqueda */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 mb-2 block">📍 Radio de búsqueda</label>
+                    <div className="flex gap-2">
+                      {[
+                        { label: '500m', value: 500 },
+                        { label: '1km', value: 1000 },
+                        { label: '2km', value: 2000 },
+                        { label: 'Toda la zona', value: 0 },
+                      ].map(opt => (
+                        <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, searchRadius: opt.value }))}
+                          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.searchRadius === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Rango de superficie */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 mb-2 block">📏 Rango de superficie</label>
+                    <div className="flex gap-2">
+                      {[
+                        { label: '±10%', value: 10 },
+                        { label: '±20%', value: 20 },
+                        { label: '±30%', value: 30 },
+                        { label: 'Cualquiera', value: 0 },
+                      ].map(opt => (
+                        <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, areaRange: opt.value }))}
+                          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.areaRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Antigüedad similar */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 mb-2 block">🏗️ Antigüedad similar</label>
+                    <div className="flex gap-2">
+                      {[
+                        { label: '±5 años', value: 5 },
+                        { label: '±10 años', value: 10 },
+                        { label: '±20 años', value: 20 },
+                        { label: 'Cualquiera', value: 0 },
+                      ].map(opt => (
+                        <button key={opt.value} onClick={() => setProcessConfig(c => ({ ...c, ageRange: opt.value }))}
+                          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${processConfig.ageRange === opt.value ? 'bg-[#D4A745] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Toggles */}
+                  <div className="space-y-3 pt-1">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">🏠 Solo mismo tipo de propiedad</span>
+                        <p className="text-xs text-gray-400">Filtrar por depto, casa, PH, etc.</p>
+                      </div>
+                      <button onClick={() => setProcessConfig(c => ({ ...c, sameTypeOnly: !c.sameTypeOnly }))}
+                        className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.sameTypeOnly ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
+                        <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.sameTypeOnly ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                      </button>
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">📊 Incluir vendidos</span>
+                        <p className="text-xs text-gray-400">Agregar propiedades vendidas como referencia</p>
+                      </div>
+                      <button onClick={() => setProcessConfig(c => ({ ...c, includeSold: !c.includeSold }))}
+                        className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.includeSold ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
+                        <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.includeSold ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                      </button>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* SEMI-AUTO MODE: manual URLs */}
+              {processConfig.mode === 'semi' && (
+                <>
+                  <p className="text-xs text-gray-500">Agregá las propiedades que querés usar como comparables. El sistema las scrapea y usa directamente.</p>
+                  
+                  {/* URL list */}
+                  {processConfig.manualComparables.length > 0 && (
+                    <div className="space-y-2">
+                      {processConfig.manualComparables.map((url, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                          <span className="text-xs font-semibold text-[#D4A745] w-5">{idx + 1}</span>
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-blue-600 truncate hover:underline">{url.replace('https://www.zonaprop.com.ar/', '')}</a>
+                          <button onClick={() => setProcessConfig(c => ({ ...c, manualComparables: c.manualComparables.filter((_, i) => i !== idx) }))}
+                            className="text-red-400 hover:text-red-600 text-sm font-bold px-1">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add URL */}
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={newComparableUrl}
+                      onChange={(e) => setNewComparableUrl(e.target.value)}
+                      placeholder="https://www.zonaprop.com.ar/..."
+                      className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2.5 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newComparableUrl.trim()) {
                           setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
                           setNewComparableUrl('')
                         }
-                      }} className="px-3 py-2 bg-[#D4A745] text-white rounded-lg text-xs font-semibold hover:bg-[#c49a3d]">
-                        +
-                      </button>
-                    </div>
-                    {processConfig.manualComparables.length > 0 && (
-                      <p className="text-xs text-green-600">✅ {processConfig.manualComparables.length} propiedad{processConfig.manualComparables.length > 1 ? 'es' : ''} agregada{processConfig.manualComparables.length > 1 ? 's' : ''}</p>
-                    )}
+                      }}
+                    />
+                    <button onClick={() => {
+                      if (newComparableUrl.trim()) {
+                        setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
+                        setNewComparableUrl('')
+                      }
+                    }} className="px-4 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-semibold hover:bg-[#c49a3d]">
+                      +
+                    </button>
                   </div>
-                )}
-              </div>
 
-              {/* Toggles */}
-              <div className="space-y-3 pt-1">
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">🏠 Solo mismo tipo de propiedad</span>
-                    <p className="text-xs text-gray-400">Filtrar por depto, casa, PH, etc.</p>
-                  </div>
-                  <button onClick={() => setProcessConfig(c => ({ ...c, sameTypeOnly: !c.sameTypeOnly }))}
-                    className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.sameTypeOnly ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
-                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.sameTypeOnly ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
-                  </button>
-                </label>
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">📊 Incluir vendidos</span>
-                    <p className="text-xs text-gray-400">Agregar propiedades vendidas como referencia</p>
-                  </div>
-                  <button onClick={() => setProcessConfig(c => ({ ...c, includeSold: !c.includeSold }))}
-                    className={`w-11 h-6 rounded-full transition-colors relative ${processConfig.includeSold ? 'bg-[#D4A745]' : 'bg-gray-300'}`}>
-                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${processConfig.includeSold ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
-                  </button>
-                </label>
-              </div>
+                  {processConfig.manualComparables.length === 0 && (
+                    <div className="text-center py-6 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-400">Todavía no agregaste propiedades</p>
+                      <p className="text-xs text-gray-300 mt-1">Pegá un link de ZonaProp arriba</p>
+                    </div>
+                  )}
+
+                  {processConfig.manualComparables.length > 0 && (
+                    <p className="text-xs text-green-600 font-medium">✅ {processConfig.manualComparables.length} propiedad{processConfig.manualComparables.length > 1 ? 'es' : ''} seleccionada{processConfig.manualComparables.length > 1 ? 's' : ''}</p>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Modal footer */}
