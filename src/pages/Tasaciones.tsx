@@ -218,8 +218,9 @@ export const Tasaciones = () => {
     client_email: '',
   })
 
-  const SCRAPER_URL = 'https://scraper-star.135.181.24.249.sslip.io'
-  const SCRAPER_HEADERS = { 'Content-Type': 'application/json', 'X-API-Key': 'star_scraper_0ef4b43a2785c724afb3b53d9fa52a952f4ff9960c4598a7' }
+  // API routes proxy (server-side, API key not exposed to browser)
+  const SCRAPER_URL = '/api'
+  const SCRAPER_HEADERS = { 'Content-Type': 'application/json' }
 
   // === All handlers (unchanged) ===
 
@@ -409,7 +410,7 @@ export const Tasaciones = () => {
         const formData = new FormData()
         formData.append('file', file)
         formData.append('fileName', fileName)
-        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, { method: 'POST', headers: { 'X-API-Key': SCRAPER_HEADERS['X-API-Key'] }, body: formData })
+        const uploadResp = await fetch(`${SCRAPER_URL}/upload-evidence-form`, { method: 'POST', body: formData })
         const uploadResult = await uploadResp.json()
         if (!uploadResult.success) throw new Error(uploadResult.error || 'Upload failed')
         newUrls.push(uploadResult.url)
