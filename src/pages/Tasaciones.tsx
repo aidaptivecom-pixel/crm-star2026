@@ -1305,6 +1305,17 @@ export const Tasaciones = () => {
         const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
         const remoteData = (selectedAppraisal as any).property_data || {}
         
+        // Helper to save a single field on blur (no refetch, no page jump)
+        const saveRemoteField = async (key: string, value: any) => {
+          try {
+            const { supabase } = await import('../lib/supabase')
+            const currentData = (selectedAppraisal as any).property_data || {}
+            await (supabase as any).from('appraisals').update({
+              property_data: { ...currentData, [key]: value }
+            }).eq('id', selectedAppraisal.id)
+          } catch (err) { console.error('Error saving field:', err) }
+        }
+        
         const suggestedFields = [
           { key: 'covered_area_m2', label: 'Superficie cubierta (m²)', type: 'number' },
           { key: 'semi_covered_area_m2', label: 'Superficie semicubierta (m²)', type: 'number' },
@@ -1444,15 +1455,13 @@ export const Tasaciones = () => {
                       <label className="text-xs text-gray-600 flex-1 min-w-0">{field.label}</label>
                       <input
                         type={field.type}
-                        value={remoteData[field.key] || ''}
-                        onChange={async (e) => {
+                        key={`${selectedAppraisal.id}-${field.key}`}
+                        defaultValue={remoteData[field.key] || ''}
+                        onBlur={async (e) => {
                           const newVal = field.type === 'number' ? (e.target.value ? Number(e.target.value) : null) : e.target.value
-                          const { supabase } = await import('../lib/supabase')
-                          const currentData = (selectedAppraisal as any).property_data || {}
-                          await (supabase as any).from('appraisals').update({
-                            property_data: { ...currentData, [field.key]: newVal }
-                          }).eq('id', selectedAppraisal.id)
-                          refetch()
+                          if (newVal !== (remoteData[field.key] || null)) {
+                            await saveRemoteField(field.key, newVal)
+                          }
                         }}
                         className="w-28 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
                         placeholder="—"
@@ -1476,14 +1485,12 @@ export const Tasaciones = () => {
                 <p className="text-sm font-semibold text-gray-700 mb-2">💬 Contexto del contacto</p>
                 <textarea
                   placeholder="De dónde vino el lead, por qué quiere tasar (venta, sucesión, crédito), notas..."
-                  value={remoteData.contact_context || ''}
-                  onChange={async (e) => {
-                    const { supabase } = await import('../lib/supabase')
-                    const currentData = (selectedAppraisal as any).property_data || {}
-                    await (supabase as any).from('appraisals').update({
-                      property_data: { ...currentData, contact_context: e.target.value }
-                    }).eq('id', selectedAppraisal.id)
-                    refetch()
+                  key={`${selectedAppraisal.id}-contact_context`}
+                  defaultValue={remoteData.contact_context || ''}
+                  onBlur={async (e) => {
+                    if (e.target.value !== (remoteData.contact_context || '')) {
+                      await saveRemoteField('contact_context', e.target.value)
+                    }
                   }}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 h-20 resize-none focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
                 />
