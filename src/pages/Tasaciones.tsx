@@ -1306,10 +1306,13 @@ export const Tasaciones = () => {
         const remoteData = (selectedAppraisal as any).property_data || {}
         
         // Helper to save a single field on blur (no refetch, no page jump)
+        // Uses a ref-like approach: accumulate pending saves to avoid race conditions
         const saveRemoteField = async (key: string, value: any) => {
           try {
             const { supabase } = await import('../lib/supabase')
-            const currentData = (selectedAppraisal as any).property_data || {}
+            // Re-fetch current property_data to avoid overwriting parallel saves
+            const { data: fresh } = await (supabase as any).from('appraisals').select('property_data').eq('id', selectedAppraisal.id).single()
+            const currentData = fresh?.property_data || {}
             await (supabase as any).from('appraisals').update({
               property_data: { ...currentData, [key]: value }
             }).eq('id', selectedAppraisal.id)
@@ -1323,7 +1326,7 @@ export const Tasaciones = () => {
           { key: 'floor_number', label: 'Piso', type: 'text' },
           { key: 'orientation', label: 'Orientación (N/S/E/O)', type: 'text' },
           { key: 'front_or_back', label: 'Frente / Contrafrente', type: 'text' },
-          { key: 'expenses', label: 'Expensas (ARS)', type: 'number' },
+          { key: 'expensas', label: 'Expensas (ARS)', type: 'number' },
           { key: 'real_condition', label: 'Estado real (detalle)', type: 'text' },
           { key: 'last_renovation', label: 'Última refacción (año)', type: 'text' },
           { key: 'luminosity', label: 'Luminosidad', type: 'text' },
