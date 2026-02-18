@@ -167,7 +167,10 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     ageRange: 10, // ±years
     sameTypeOnly: true,
     includeSold: false,
+    manualComparables: [] as string[], // ZonaProp URLs
   })
+  const [showManualComparables, setShowManualComparables] = useState(false)
+  const [newComparableUrl, setNewComparableUrl] = useState('')
   const touchStartX = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -598,6 +601,53 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Manual comparables (ZonaProp URLs) */}
+              <div>
+                <button onClick={() => setShowManualComparables(!showManualComparables)}
+                  className="flex items-center justify-between w-full text-left">
+                  <label className="text-xs font-semibold text-gray-700">🔗 Agregar propiedades a comparar</label>
+                  {showManualComparables ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                </button>
+                {showManualComparables && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-xs text-gray-400">Pegá URLs de ZonaProp para incluir como comparables</p>
+                    {processConfig.manualComparables.map((url, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-blue-600 truncate hover:underline">{url}</a>
+                        <button onClick={() => setProcessConfig(c => ({ ...c, manualComparables: c.manualComparables.filter((_, i) => i !== idx) }))}
+                          className="text-red-400 hover:text-red-600 text-xs font-bold px-1">✕</button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={newComparableUrl}
+                        onChange={(e) => setNewComparableUrl(e.target.value)}
+                        placeholder="https://www.zonaprop.com.ar/..."
+                        className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-2 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newComparableUrl.trim()) {
+                            setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
+                            setNewComparableUrl('')
+                          }
+                        }}
+                      />
+                      <button onClick={() => {
+                        if (newComparableUrl.trim()) {
+                          setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
+                          setNewComparableUrl('')
+                        }
+                      }} className="px-3 py-2 bg-[#D4A745] text-white rounded-lg text-xs font-semibold hover:bg-[#c49a3d]">
+                        +
+                      </button>
+                    </div>
+                    {processConfig.manualComparables.length > 0 && (
+                      <p className="text-xs text-green-600">✅ {processConfig.manualComparables.length} propiedad{processConfig.manualComparables.length > 1 ? 'es' : ''} agregada{processConfig.manualComparables.length > 1 ? 's' : ''}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Toggles */}
