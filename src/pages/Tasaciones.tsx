@@ -143,7 +143,7 @@ type KanbanColumn = 'nuevas' | 'visitas' | 'proceso' | 'aprobadas' | 'cerradas'
 
 const KANBAN_COLUMNS: { id: KanbanColumn; label: string; icon: string; statuses: AppraisalStatus[] }[] = [
   { id: 'nuevas', label: 'Nuevas', icon: '📥', statuses: ['web_estimate'] },
-  { id: 'visitas', label: 'Visitas', icon: '📅', statuses: ['visit_scheduled', 'visit_completed'] },
+  { id: 'visitas', label: 'Visitas / Remota', icon: '📅', statuses: ['visit_scheduled', 'visit_completed', 'remote_gathering'] },
   { id: 'proceso', label: 'En Proceso', icon: '🔄', statuses: ['processing', 'draft', 'pending_review'] },
   { id: 'aprobadas', label: 'Aprobadas', icon: '✅', statuses: ['approved_by_admin', 'signed'] },
   { id: 'cerradas', label: 'Cerradas', icon: '📤', statuses: ['delivered', 'cancelled'] },
@@ -1299,6 +1299,208 @@ export const Tasaciones = () => {
         )
       }
 
+      // Remote gathering (formal without visit)
+      if (status === 'remote_gathering' as any) {
+        const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
+        const voiceNotes: any[] = (selectedAppraisal as any).property_data?.voice_notes || []
+        const remoteData = (selectedAppraisal as any).property_data || {}
+        
+        const suggestedFields = [
+          { key: 'covered_area_m2', label: 'Superficie cubierta (m²)', type: 'number' },
+          { key: 'semi_covered_area_m2', label: 'Superficie semicubierta (m²)', type: 'number' },
+          { key: 'uncovered_area_m2', label: 'Superficie descubierta (m²)', type: 'number' },
+          { key: 'floor_number', label: 'Piso', type: 'text' },
+          { key: 'orientation', label: 'Orientación (N/S/E/O)', type: 'text' },
+          { key: 'front_or_back', label: 'Frente / Contrafrente', type: 'text' },
+          { key: 'expenses', label: 'Expensas (ARS)', type: 'number' },
+          { key: 'real_condition', label: 'Estado real (detalle)', type: 'text' },
+          { key: 'last_renovation', label: 'Última refacción (año)', type: 'text' },
+          { key: 'luminosity', label: 'Luminosidad', type: 'text' },
+          { key: 'garage_type', label: 'Cochera (cubierta/descubierta/fija/móvil)', type: 'text' },
+          { key: 'storage', label: 'Baulera', type: 'text' },
+          { key: 'view_type', label: 'Vista (abierta/pulmón/calle)', type: 'text' },
+          { key: 'bathrooms', label: 'Cantidad de baños', type: 'number' },
+          { key: 'toilettes', label: 'Toilettes', type: 'number' },
+        ]
+
+        const filledCount = suggestedFields.filter(f => remoteData[f.key]).length
+        const totalDataPoints = suggestedFields.length + 2 // +2 for photos and audios
+        const completionPct = Math.round(((filledCount + (targetPhotos.length > 0 ? 1 : 0) + (voiceNotes.length > 0 ? 1 : 0)) / totalDataPoints) * 100)
+
+        return (
+          <div className="flex flex-col h-full bg-white">
+            {/* Header */}
+            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-white h-[60px] flex items-center overflow-hidden">
+              <h3 className="text-sm font-bold text-gray-900">2. Recopilación remota</h3>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              
+              {/* Completion bar */}
+              <div className="bg-indigo-50 rounded-xl p-3">
+                <div className="flex justify-between text-xs text-indigo-700 mb-1">
+                  <span>Completitud de datos</span>
+                  <span>{completionPct}%</span>
+                </div>
+                <div className="w-full bg-indigo-200 rounded-full h-2">
+                  <div className="bg-indigo-600 h-2 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+                </div>
+                <p className="text-xs text-indigo-600 mt-1">Más datos = tasación más precisa</p>
+              </div>
+
+              {/* Photos */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-3">📸 Fotos de la propiedad ({targetPhotos.length})</p>
+                <p className="text-xs text-gray-500 mb-3">Subí fotos que el dueño haya enviado por WhatsApp, email, etc.</p>
+                {targetPhotos.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {targetPhotos.map((url, idx) => (
+                      <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-200">
+                        <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewPhoto(url)} />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                          <button onClick={() => setPreviewPhoto(url)} className="p-1 bg-white/90 rounded-full"><Eye className="w-3.5 h-3.5 text-gray-700" /></button>
+                          <button onClick={() => handleDeletePhoto(url)} className="p-1 bg-white/90 rounded-full"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input ref={photoInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e.target.files)} />
+                  <button onClick={() => photoInputRef.current?.click()} disabled={uploadingPhotos}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
+                    {uploadingPhotos ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : <><Upload className="w-4 h-4" /> Subir fotos</>}
+                  </button>
+                  {targetPhotos.length > 0 && !(selectedAppraisal as any).property_data?.target_analysis && (
+                    <button onClick={handleAnalyzeTarget} disabled={analyzingTarget}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+                      {analyzingTarget ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando...</> : '🔍 Analizar con IA'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Target Analysis Results (same as visit flow) */}
+              {(selectedAppraisal as any).property_data?.target_analysis && (() => {
+                const ta = (selectedAppraisal as any).property_data.target_analysis
+                const disc = ta.discrepancy
+                const hasDiscrepancy = disc && disc.difference_pct && Math.abs(disc.difference_pct) > 10
+                return (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">🏠 Análisis IA de fotos</p>
+                    {hasDiscrepancy && (
+                      <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 mb-2">
+                        <p className="text-xs font-medium text-amber-800">
+                          ⚠️ Declarado: <span className="font-bold">{disc.declared?.replace(/_/g, ' ') || '—'}</span>, IA detectó: <span className="font-bold">{disc.detected?.replace(/_/g, ' ')}</span>
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${(ta.condition_score || 0) >= 7 ? 'bg-green-100 text-green-700' : (ta.condition_score || 0) >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                        {(ta.condition_detected || ta.condition || '').replace(/_/g, ' ')} — {ta.condition_score}/10
+                      </span>
+                    </div>
+                    {ta.highlights?.length > 0 && <p className="text-xs text-green-600 mb-1">✅ {ta.highlights.join(' · ')}</p>}
+                    {ta.issues?.length > 0 && <p className="text-xs text-orange-600">⚠️ {ta.issues.join(' · ')}</p>}
+                  </div>
+                )
+              })()}
+
+              {/* Voice notes / audios */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">🎙️ Audios / Notas de voz ({voiceNotes.length})</p>
+                <p className="text-xs text-gray-500 mb-3">Audios del dueño describiendo la propiedad, o notas del staff.</p>
+                {voiceNotes.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {voiceNotes.map((note: any, idx: number) => (
+                      <div key={idx} className="bg-white rounded-lg border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Mic className="w-3.5 h-3.5 text-[#D4A745]" />
+                          <span className="text-xs text-gray-500">
+                            {note.timestamp ? new Date(note.timestamp).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : `Nota ${idx + 1}`}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{note.transcription ? note.transcription.slice(0, 120) + (note.transcription.length > 120 ? '...' : '') : 'Sin transcripción'}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input ref={audioInputRef} type="file" accept=".mp3,.m4a,.wav,.ogg,.webm,audio/*" className="hidden" onChange={(e) => handleAudioUpload(e.target.files)} />
+                <button onClick={() => audioInputRef.current?.click()} disabled={uploadingAudio}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors disabled:opacity-50">
+                  {uploadingAudio ? <><Loader2 className="w-4 h-4 animate-spin" /> Transcribiendo...</> : <><Mic className="w-4 h-4" /> Subir audio</>}
+                </button>
+              </div>
+
+              {/* Additional data */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">📋 Datos adicionales</p>
+                <p className="text-xs text-gray-500 mb-3">Completá lo que tengas para mejorar la precisión.</p>
+                <div className="space-y-2">
+                  {suggestedFields.map(field => (
+                    <div key={field.key} className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${remoteData[field.key] ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <label className="text-xs text-gray-600 flex-1 min-w-0">{field.label}</label>
+                      <input
+                        type={field.type}
+                        value={remoteData[field.key] || ''}
+                        onChange={async (e) => {
+                          const newVal = field.type === 'number' ? (e.target.value ? Number(e.target.value) : null) : e.target.value
+                          const { supabase } = await import('../lib/supabase')
+                          const currentData = (selectedAppraisal as any).property_data || {}
+                          await (supabase as any).from('appraisals').update({
+                            property_data: { ...currentData, [field.key]: newVal }
+                          }).eq('id', selectedAppraisal.id)
+                          refetch()
+                        }}
+                        className="w-28 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
+                        placeholder="—"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Documentation */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">📄 Documentación</p>
+                <p className="text-xs text-gray-500 mb-3">Planos, escritura, reglamento (opcional, para el informe).</p>
+                <button className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-[#D4A745] hover:text-[#D4A745] transition-colors">
+                  <Upload className="w-4 h-4" /> Subir documentos
+                </button>
+              </div>
+
+              {/* Context */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">💬 Contexto del contacto</p>
+                <textarea
+                  placeholder="De dónde vino el lead, por qué quiere tasar (venta, sucesión, crédito), notas..."
+                  value={remoteData.contact_context || ''}
+                  onChange={async (e) => {
+                    const { supabase } = await import('../lib/supabase')
+                    const currentData = (selectedAppraisal as any).property_data || {}
+                    await (supabase as any).from('appraisals').update({
+                      property_data: { ...currentData, contact_context: e.target.value }
+                    }).eq('id', selectedAppraisal.id)
+                    refetch()
+                  }}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 h-20 resize-none focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
+              <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} disabled={_convertingToFormal}
+                className="flex-1 py-2 bg-[#D4A745] text-white rounded-xl text-sm font-semibold hover:bg-[#c49a3d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                {_convertingToFormal ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : '📝 Procesar tasación formal'}
+              </button>
+            </div>
+          </div>
+        )
+      }
+
       // Visit evidence (visit_completed)
       if (status === 'visit_completed' || (status === 'processing' && !isWeb)) {
         const targetPhotos: string[] = (selectedAppraisal as any).property_data?.target_photos || []
@@ -1488,8 +1690,10 @@ export const Tasaciones = () => {
                 <button onClick={() => setShowScheduleModal(true)} className="py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
                   📅 Agendar visita
                 </button>
-                <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }} className="py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
-                  🔍 Convertir a Formal
+                <button onClick={async () => {
+                  await handleStatusChange(selectedAppraisal.id, 'remote_gathering' as any)
+                }} className="py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
+                  🔍 Convertir a Formal (sin visita)
                 </button>
               </div>
             </>

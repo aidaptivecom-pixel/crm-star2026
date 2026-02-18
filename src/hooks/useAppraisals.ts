@@ -4,6 +4,7 @@ import type { Appraisal } from '../types/database'
 
 export type AppraisalStatus = 
   | 'web_estimate' 
+  | 'remote_gathering'
   | 'visit_scheduled' 
   | 'visit_completed' 
   | 'processing' 
@@ -16,6 +17,7 @@ export type AppraisalStatus =
 
 export const APPRAISAL_STATUS_CONFIG: Record<AppraisalStatus, { label: string; color: string; bgColor: string }> = {
   web_estimate: { label: 'Web', color: 'text-blue-600', bgColor: 'bg-blue-100' },
+  remote_gathering: { label: 'Remota', color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
   visit_scheduled: { label: 'Agendada', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
   visit_completed: { label: 'Visitada', color: 'text-orange-600', bgColor: 'bg-orange-100' },
   processing: { label: 'En Proceso', color: 'text-gray-600', bgColor: 'bg-gray-100' },
