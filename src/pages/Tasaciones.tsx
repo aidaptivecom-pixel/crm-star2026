@@ -355,7 +355,7 @@ export const Tasaciones = () => {
           max_comparables_to_analyze: processConfig?.maxComparables || 10,
           // Semi-automatic mode
           mode: isSemi ? 'semi' : 'auto',
-          manual_urls: isSemi ? processConfig.manualComparables : undefined,
+          selected_comparables: isSemi ? processConfig.selectedComparables : undefined,
         }),
       })
       const result = await resp.json()

@@ -168,11 +168,57 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     ageRange: 10, // ±years
     sameTypeOnly: true,
     includeSold: false,
-    manualComparables: [] as string[], // ZonaProp URLs
+    manualComparables: [] as string[], // DEPRECATED
+    selectedComparables: [] as any[], // Pre-selected from search
   })
   const [newComparableUrl, setNewComparableUrl] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState('')
   const touchStartX = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const SCRAPER_URL = '/api'
+
+  const handleSearchComparables = async () => {
+    setSearchLoading(true)
+    setSearchError('')
+    setSearchResults([])
+    try {
+      const pd = appraisal?.property_data || {}
+      const resp = await fetch(`${SCRAPER_URL}/search-comparables`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          neighborhood: pd.neighborhood || pd.barrio || appraisal?.address?.split(',')[0] || '',
+          operation: pd.operation_type || 'venta',
+          property_type: pd.property_type === 'casa' ? 'casas' : 'departamentos',
+          pages: 2,
+        }),
+      })
+      const data = await resp.json()
+      if (data.success && data.comparables) {
+        setSearchResults(data.comparables)
+      } else {
+        setSearchError(data.error || 'No se encontraron propiedades')
+      }
+    } catch (err: any) {
+      setSearchError(err.message || 'Error de conexión')
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  const toggleComparable = (comp: any) => {
+    setProcessConfig(c => {
+      const exists = c.selectedComparables.find((s: any) => s.source_id === comp.source_id)
+      if (exists) {
+        return { ...c, selectedComparables: c.selectedComparables.filter((s: any) => s.source_id !== comp.source_id) }
+      } else {
+        return { ...c, selectedComparables: [...c.selectedComparables, comp] }
+      }
+    })
+  }
 
   const extraction = getExtraction(appraisal)
   const photos: string[] = appraisal?.property_data?.target_photos || []
@@ -645,59 +691,83 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
                 </>
               )}
 
-              {/* SEMI-AUTO MODE: manual URLs */}
+              {/* SEMI-AUTO MODE: search & select comparables */}
               {processConfig.mode === 'semi' && (
                 <>
-                  <p className="text-xs text-gray-500">Agregá las propiedades que querés usar como comparables. El sistema las scrapea y usa directamente.</p>
+                  <p className="text-xs text-gray-500">Buscá propiedades del barrio y elegí cuáles usar como comparables.</p>
                   
-                  {/* URL list */}
-                  {processConfig.manualComparables.length > 0 && (
-                    <div className="space-y-2">
-                      {processConfig.manualComparables.map((url, idx) => (
-                        <div key={idx} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                          <span className="text-xs font-semibold text-[#D4A745] w-5">{idx + 1}</span>
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-blue-600 truncate hover:underline">{url.replace('https://www.zonaprop.com.ar/', '')}</a>
-                          <button onClick={() => setProcessConfig(c => ({ ...c, manualComparables: c.manualComparables.filter((_, i) => i !== idx) }))}
-                            className="text-red-400 hover:text-red-600 text-sm font-bold px-1">✕</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Add URL */}
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={newComparableUrl}
-                      onChange={(e) => setNewComparableUrl(e.target.value)}
-                      placeholder="https://www.zonaprop.com.ar/..."
-                      className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-2.5 focus:border-[#D4A745] focus:ring-1 focus:ring-[#D4A745] outline-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && newComparableUrl.trim()) {
-                          setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
-                          setNewComparableUrl('')
-                        }
-                      }}
-                    />
-                    <button onClick={() => {
-                      if (newComparableUrl.trim()) {
-                        setProcessConfig(c => ({ ...c, manualComparables: [...c.manualComparables, newComparableUrl.trim()] }))
-                        setNewComparableUrl('')
-                      }
-                    }} className="px-4 py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-semibold hover:bg-[#c49a3d]">
-                      +
+                  {/* Search button */}
+                  {searchResults.length === 0 && !searchLoading && (
+                    <button onClick={handleSearchComparables}
+                      className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+                      🔍 Buscar propiedades en la zona
                     </button>
-                  </div>
+                  )}
 
-                  {processConfig.manualComparables.length === 0 && (
-                    <div className="text-center py-6 bg-gray-50 rounded-xl">
-                      <p className="text-sm text-gray-400">Todavía no agregaste propiedades</p>
-                      <p className="text-xs text-gray-300 mt-1">Pegá un link de ZonaProp arriba</p>
+                  {/* Loading */}
+                  {searchLoading && (
+                    <div className="text-center py-8">
+                      <div className="w-8 h-8 border-3 border-[#D4A745] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                      <p className="text-sm text-gray-500">Buscando propiedades...</p>
+                      <p className="text-xs text-gray-400 mt-1">Esto puede tardar 15-30 segundos</p>
                     </div>
                   )}
 
-                  {processConfig.manualComparables.length > 0 && (
-                    <p className="text-xs text-green-600 font-medium">✅ {processConfig.manualComparables.length} propiedad{processConfig.manualComparables.length > 1 ? 'es' : ''} seleccionada{processConfig.manualComparables.length > 1 ? 's' : ''}</p>
+                  {/* Error */}
+                  {searchError && (
+                    <div className="text-center py-4 bg-red-50 rounded-xl">
+                      <p className="text-sm text-red-500">{searchError}</p>
+                      <button onClick={handleSearchComparables} className="text-xs text-red-400 underline mt-2">Reintentar</button>
+                    </div>
+                  )}
+
+                  {/* Results grid */}
+                  {searchResults.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">{searchResults.length} propiedades encontradas</p>
+                        <button onClick={handleSearchComparables} className="text-xs text-blue-500 hover:underline">🔄 Buscar de nuevo</button>
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
+                        {searchResults.map((comp: any, idx: number) => {
+                          const isSelected = processConfig.selectedComparables.some((s: any) => s.source_id === comp.source_id)
+                          return (
+                            <div key={comp.source_id || idx} 
+                              onClick={() => toggleComparable(comp)}
+                              className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border-2 ${isSelected ? 'border-[#D4A745] bg-amber-50' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}>
+                              {/* Checkbox */}
+                              <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center ${isSelected ? 'bg-[#D4A745]' : 'border-2 border-gray-300'}`}>
+                                {isSelected && <span className="text-white text-xs font-bold">✓</span>}
+                              </div>
+                              {/* Photo */}
+                              {comp.photos?.[0] ? (
+                                <img src={comp.photos[0]} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                              ) : (
+                                <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-gray-400 text-lg">🏠</span>
+                                </div>
+                              )}
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-gray-800 truncate">{comp.address || 'Sin dirección'}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs font-bold text-green-600">USD {comp.price_usd?.toLocaleString()}</span>
+                                  <span className="text-xs text-gray-400">|</span>
+                                  <span className="text-xs text-gray-600">{comp.total_area_m2}m²</span>
+                                  {comp.rooms && <><span className="text-xs text-gray-400">|</span><span className="text-xs text-gray-600">{comp.rooms} amb</span></>}
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-0.5">USD {comp.price_per_m2?.toLocaleString()}/m²</p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Selection count */}
+                  {processConfig.selectedComparables.length > 0 && (
+                    <p className="text-xs text-green-600 font-medium">✅ {processConfig.selectedComparables.length} propiedad{processConfig.selectedComparables.length > 1 ? 'es' : ''} seleccionada{processConfig.selectedComparables.length > 1 ? 's' : ''}</p>
                   )}
                 </>
               )}
