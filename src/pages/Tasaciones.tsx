@@ -172,6 +172,7 @@ export const Tasaciones = () => {
   const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const [showFormalForm, setShowFormalForm] = useState(false)
   const [showScorePopover, setShowScorePopover] = useState(false)
+  const [userAdjustedValue, setUserAdjustedValue] = useState<number | null>(null)
   const [_formalFormData, setFormalFormData] = useState({
     address: '',
     covered_area_m2: '',
@@ -1783,18 +1784,24 @@ export const Tasaciones = () => {
                     const estimation = aiAnalysis.estimation || {}
                     const min = v.min || (selectedAppraisal as any).estimated_value_min || 0
                     const max = v.max || (selectedAppraisal as any).estimated_value_max || 0
-                    const value = estimation.value || v.value || (selectedAppraisal as any).estimated_value || ((min + max) / 2)
+                    const originalValue = estimation.value || v.value || (selectedAppraisal as any).estimated_value || ((min + max) / 2)
+                    const value = userAdjustedValue ?? originalValue
                     const position = max > min ? ((value - min) / (max - min)) * 100 : 50
                     const reasoning = estimation.positioning_reasoning || aiAnalysis.positioning_reasoning || null
+                    const isAdjusted = userAdjustedValue != null && userAdjustedValue !== originalValue
                     
                     return (
                       <div className="space-y-4">
                         {/* Main value */}
                         <div className="text-center bg-white rounded-xl p-4">
-                          <p className="text-xs text-gray-400 mb-1">Valor de tasación</p>
+                          <p className="text-xs text-gray-400 mb-1">Valor de tasación {isAdjusted ? <span className="text-[#D4A745]">(ajustado)</span> : ''}</p>
                           <p className="text-3xl font-bold text-[#D4A745]">USD {(value / 1000).toFixed(0)}k</p>
-                          {(selectedAppraisal as any).price_per_m2 && (
-                            <p className="text-sm text-gray-400 mt-1">USD {(selectedAppraisal as any).price_per_m2?.toLocaleString()}/m²</p>
+                          {selectedAppraisal?.size_m2 && (
+                            <p className="text-sm text-gray-400 mt-1">USD {Math.round(value / selectedAppraisal.size_m2).toLocaleString()}/m²</p>
+                          )}
+                          {isAdjusted && (
+                            <button onClick={() => setUserAdjustedValue(null)}
+                              className="text-[10px] text-gray-400 hover:text-gray-600 underline mt-1">Volver al original (USD {(originalValue / 1000).toFixed(0)}k)</button>
                           )}
                         </div>
 
@@ -1805,22 +1812,41 @@ export const Tasaciones = () => {
                             <span className="font-medium text-gray-600">Rango de mercado</span>
                             <span>USD {(max / 1000).toFixed(0)}k</span>
                           </div>
-                          {/* Bar */}
-                          <div className="relative h-3 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full">
+                          {/* Bar — clickable to set value */}
+                          <div className="relative h-3 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full cursor-pointer select-none"
+                            onClick={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+                              const newVal = Math.round((min + pct * (max - min)) / 1000) * 1000
+                              setUserAdjustedValue(newVal)
+                            }}
+                            onMouseDown={(e) => {
+                              const bar = e.currentTarget
+                              const move = (ev: MouseEvent) => {
+                                const rect = bar.getBoundingClientRect()
+                                const pct = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width))
+                                const newVal = Math.round((min + pct * (max - min)) / 1000) * 1000
+                                setUserAdjustedValue(newVal)
+                              }
+                              const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up) }
+                              document.addEventListener('mousemove', move)
+                              document.addEventListener('mouseup', up)
+                            }}
+                          >
                             {/* Comparable dots */}
                             {(aiAnalysis.details || []).map((det: any, idx: number) => {
                               const detValue = det.price_usd || 0
                               const detPos = max > min ? ((detValue - min) / (max - min)) * 100 : 50
                               return (
-                                <div key={idx} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-white"
+                                <div key={idx} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-white pointer-events-none"
                                   style={{ left: `${Math.max(2, Math.min(98, detPos))}%` }}
                                   title={`${det.address}: USD ${det.price_usd?.toLocaleString()}`} />
                               )
                             })}
-                            {/* Target value marker */}
-                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
+                            {/* Target value marker — draggable */}
+                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
                               style={{ left: `${Math.max(5, Math.min(95, position))}%` }}>
-                              <div className="w-5 h-5 bg-[#D4A745] rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                              <div className="w-6 h-6 bg-[#D4A745] rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
                                 <div className="w-2 h-2 bg-white rounded-full" />
                               </div>
                             </div>
