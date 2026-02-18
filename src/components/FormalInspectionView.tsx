@@ -190,7 +190,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          neighborhood: pd.neighborhood || pd.barrio || appraisal?.address?.split(',')[0] || '',
+          neighborhood: appraisal?.neighborhood || pd.neighborhood || pd.barrio || '',
           operation: pd.operation_type || 'venta',
           property_type: pd.property_type === 'casa' ? 'casas' : 'departamentos',
           pages: 2,
