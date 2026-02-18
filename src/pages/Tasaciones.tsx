@@ -750,65 +750,96 @@ export const Tasaciones = () => {
         )
       }
 
-      if ((selectedAppraisal as any).ai_analysis) {
-        const analysis = (selectedAppraisal as any).ai_analysis
+      // Always show draft/borrador based on available data
+      {
+        const a = selectedAppraisal as any
+        const hasInspection = !!(a.property_data?.inspection_state)
+        const hasAiAnalysis = !!(a.ai_analysis)
+        const hasWebData = !!(a.neighborhood || a.size_m2 || a.property_type)
+
+        // Compute completeness
+        const fields = [
+          { label: 'Barrio / Zona', value: a.neighborhood, source: 'web' },
+          { label: 'Tipo de propiedad', value: a.property_type, source: 'web' },
+          { label: 'Superficie (m²)', value: a.size_m2, source: 'web' },
+          { label: 'Ambientes', value: a.rooms, source: 'web' },
+          { label: 'Estado / Condición', value: a.condition, source: 'web' },
+          { label: 'Antigüedad', value: a.building_age, source: 'web' },
+          { label: 'Cochera', value: a.has_garage !== null && a.has_garage !== undefined ? (a.has_garage ? 'Sí' : 'No') : null, source: 'web' },
+          { label: 'Dirección completa', value: a.address && !a.address.includes('CABA') ? a.address : null, source: 'web' },
+          { label: 'Datos del cliente', value: a.client_name || a.client_phone ? `${a.client_name || ''} ${a.client_phone || ''}`.trim() : null, source: 'web' },
+          { label: 'Fotos de la propiedad', value: hasInspection ? '✅' : null, source: 'visita' },
+          { label: 'Verificación in-situ', value: hasInspection ? '✅' : null, source: 'visita' },
+          { label: 'Audio / Observaciones', value: a.property_data?.inspection_state?.transcriptions?.length > 0 ? '✅' : null, source: 'visita' },
+        ]
+        const filled = fields.filter(f => f.value).length
+        const pct = Math.round((filled / fields.length) * 100)
+
         return (
           <div className="flex flex-col h-full bg-white overflow-y-auto p-4 space-y-4">
             <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">📄 Borrador de tasación</h3>
-            <div className="bg-[#D4A745]/10 rounded-xl p-4">
-              <p className="text-sm font-semibold text-gray-700 mb-2">Valor estimado</p>
-              {analysis.recalculated ? (
-                <p className="text-xl font-bold text-[#D4A745]">USD {(analysis.recalculated.min / 1000).toFixed(0)}k - {(analysis.recalculated.max / 1000).toFixed(0)}k</p>
-              ) : (
-                <p className="text-sm text-gray-500">Procesando...</p>
+
+            {/* Completeness */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-gray-700">Completitud del borrador</p>
+                <span className={`text-sm font-bold ${pct >= 75 ? 'text-green-600' : pct >= 40 ? 'text-[#D4A745]' : 'text-red-500'}`}>{pct}%</span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${pct >= 75 ? 'bg-green-500' : pct >= 40 ? 'bg-[#D4A745]' : 'bg-red-400'}`} style={{ width: `${pct}%` }} />
+              </div>
+              {!hasInspection && (
+                <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">⚠️ Borrador basado en datos declarados. Se recomienda visita para validar.</p>
               )}
             </div>
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-gray-700">Comparables analizados</p>
-              {(analysis.details || []).map((det: any, idx: number) => (
-                <div key={idx} className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-900">{det.address}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                      {(det.ai_condition || '').replace(/_/g, ' ')} ({det.ai_score}/10)
+
+            {/* Valuation summary if available */}
+            {(a.estimated_value_min || a.estimated_value) && (
+              <div className="bg-[#D4A745]/10 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-1">Valuación {hasAiAnalysis ? 'formal' : 'express (web)'}</p>
+                <p className="text-xl font-bold text-[#D4A745]">
+                  {a.estimated_value_min && a.estimated_value_max
+                    ? `USD ${(a.estimated_value_min / 1000).toFixed(0)}k - ${(a.estimated_value_max / 1000).toFixed(0)}k`
+                    : a.estimated_value ? `USD ${(a.estimated_value / 1000).toFixed(0)}k` : '—'}
+                </p>
+                {a.price_per_m2 && <p className="text-sm text-gray-500 mt-1">USD {a.price_per_m2.toLocaleString()}/m²</p>}
+              </div>
+            )}
+
+            {/* Data fields */}
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Datos relevados</p>
+              {fields.map((f, idx) => (
+                <div key={idx} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
+                  <span className="text-xs text-gray-500">{f.label}</span>
+                  {f.value ? (
+                    <span className="text-xs font-medium text-gray-900 flex items-center gap-1">
+                      {typeof f.value === 'string' && f.value.length > 30 ? f.value.slice(0, 30) + '...' : String(f.value)}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${f.source === 'visita' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>{f.source}</span>
                     </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span>USD {det.price_usd?.toLocaleString()}</span>
-                    <span>{det.total_area_m2}m²</span>
-                    <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
-                  </div>
+                  ) : (
+                    <span className="text-xs text-red-400">❌ Falta</span>
+                  )}
                 </div>
               ))}
             </div>
-            {status === 'draft' && (
-              <button className="w-full py-3 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 flex items-center justify-center gap-2">
-                ✅ Aprobar tasación
+
+            {/* Action buttons */}
+            {(status === 'visit_completed' || status === 'processing' || status === 'web_estimate' || status === 'visit_scheduled') && !hasAiAnalysis && (
+              <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }}
+                className="w-full py-2.5 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d] flex items-center justify-center gap-2">
+                ⚡ Procesar tasación
+              </button>
+            )}
+            {hasAiAnalysis && (
+              <button onClick={() => setPipelinePage(2)}
+                className="w-full py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 flex items-center justify-center gap-2">
+                📊 Ver resultado y comparables
               </button>
             )}
           </div>
         )
       }
-
-      return (
-        <div className="flex flex-col h-full bg-white items-center justify-center p-8 text-center">
-          <div className="bg-gray-100 rounded-full p-4 mb-4">
-            <Calculator className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-base font-semibold text-gray-700 mb-2">Borrador de tasación</h3>
-          <p className="text-sm text-gray-400 mb-4">
-            {status === 'visit_scheduled' ? 'Se generará después de completar la visita' :
-             status === 'visit_completed' ? 'Listo para generar borrador formal' :
-             'Pendiente de procesamiento'}
-          </p>
-          {(status === 'visit_completed' || status === 'processing') && (
-            <button onClick={() => { prepareFormalFormData(selectedAppraisal); setShowFormalForm(true) }}
-              className="py-2.5 px-6 bg-[#D4A745] text-white rounded-lg text-sm font-medium hover:bg-[#c49a3d]">
-              📝 Generar borrador
-            </button>
-          )}
-        </div>
-      )
     }
 
     // ----- Column 2: Detail -----
