@@ -330,10 +330,11 @@ export const Tasaciones = () => {
     }
   }
 
-  const handleConvertToFormal = async (appraisal: Appraisal) => {
+  const handleConvertToFormal = async (appraisal: Appraisal, processConfig?: any) => {
     if (!confirm('¿Convertir esta tasación express a formal? Se analizarán fotos de comparables con IA (~15 seg).')) return
     setConvertingToFormal(true)
     try {
+      const isSemi = processConfig?.mode === 'semi'
       const resp = await fetch(`${SCRAPER_URL}/estimate-formal`, {
         method: 'POST',
         headers: SCRAPER_HEADERS,
@@ -351,7 +352,10 @@ export const Tasaciones = () => {
           building_age: appraisal.building_age,
           amenities: appraisal.amenities,
           appraisal_id: appraisal.id,
-          max_comparables_to_analyze: 10,
+          max_comparables_to_analyze: processConfig?.maxComparables || 10,
+          // Semi-automatic mode
+          mode: isSemi ? 'semi' : 'auto',
+          manual_urls: isSemi ? processConfig.manualComparables : undefined,
         }),
       })
       const result = await resp.json()
@@ -742,7 +746,7 @@ export const Tasaciones = () => {
           <div className="flex flex-col h-full bg-white overflow-hidden">
             <FormalInspectionView
               appraisal={selectedAppraisal}
-              onProcessFormal={() => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal) }}
+              onProcessFormal={(config?: any) => { setShowFormalForm(false); handleConvertToFormal(selectedAppraisal, config) }}
               onClose={() => setShowFormalForm(false)}
               onRefetch={() => refetch({ silent: true })}
               onGoToTasacion={() => setPipelinePage(2)}
