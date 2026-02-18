@@ -171,7 +171,7 @@ export default function FormalInspectionView({ appraisal, onProcessFormal, onClo
     manualComparables: [] as string[], // DEPRECATED
     selectedComparables: [] as any[], // Pre-selected from search
   })
-  const [newComparableUrl, setNewComparableUrl] = useState('')
+  // const [newComparableUrl, setNewComparableUrl] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
