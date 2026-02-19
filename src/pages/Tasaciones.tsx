@@ -819,7 +819,7 @@ export const Tasaciones = () => {
                   <span className="text-xs text-gray-500">{f.label}</span>
                   {f.value ? (
                     <span className="text-xs font-medium text-gray-900 flex items-center gap-1">
-                      {typeof f.value === 'string' && f.value.length > 30 ? f.value.slice(0, 30) + '...' : String(f.value)}
+                      {typeof f.value === 'string' && f.value.length > 30 ? (formatText(f.value) || f.value).slice(0, 30) + '...' : typeof f.value === 'string' ? (formatText(f.value) || f.value) : String(f.value)}
                       <span className={`text-[10px] px-1.5 py-0.5 rounded ${f.source === 'visita' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>{f.source}</span>
                     </span>
                   ) : (
