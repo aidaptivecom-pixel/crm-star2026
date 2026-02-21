@@ -905,12 +905,32 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
     timestamp: new Date().toISOString()
   };
 
-  // Fire and forget — n8n webhook (direct)
-  fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
+  // 1. Generate PDF first, then send webhook with pdf_url
+  fetch(API_BASE + '/api/generate-report', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  }).catch(e => console.warn('Webhook:', e));
+  })
+  .then(r => r.json())
+  .then(report => {
+    payload.pdf_url = report.pdf_url || null;
+    payload.pdf_filename = report.filename || null;
+    // 2. Send to n8n with pdf_url included
+    return fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  })
+  .catch(e => {
+    console.warn('PDF generation failed, sending webhook without PDF:', e);
+    // Fallback: send webhook without PDF so broker still gets notified
+    fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(e2 => console.warn('Webhook fallback:', e2));
+  });
 }
 
 // Convert all native <select> to custom styled dropdowns
