@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const N8N_WEBHOOK_URL = process.env.N8N_TASACION_WEBHOOK_URL;
+  const N8N_WEBHOOK_URL = process.env.N8N_TASACION_WEBHOOK_URL || 'https://aidaptivecore.igreen.com.ar/webhook/tasacion-express';
   
   if (!N8N_WEBHOOK_URL) {
     console.error('N8N_TASACION_WEBHOOK_URL not configured');
