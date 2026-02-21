@@ -814,10 +814,12 @@ function handleUnlock() {
   // Scroll to revealed value
   document.getElementById('valueFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  // Save to Supabase with contact info
-  saveToSupabase(nombre, telefono, document.getElementById('email').value.trim());
+  // Save to Supabase with contact info + trigger WhatsApp delivery
+  const email = document.getElementById('email').value.trim();
+  saveToSupabase(nombre, telefono, email);
+  triggerWhatsAppDelivery(nombre, telefono, email);
 
-  showToast('✅ ¡Tasación desbloqueada!', 3000);
+  showToast('✅ ¡Tasación desbloqueada! Te enviamos el informe por WhatsApp.', 4000);
 }
 
 function saveToSupabase(nombre, telefono, email) {
@@ -868,6 +870,47 @@ function saveToSupabase(nombre, telefono, email) {
       })
     }).catch(e => console.warn('Supabase save:', e));
   } catch (e) { console.warn('Supabase save:', e); }
+}
+
+function triggerWhatsAppDelivery(nombre, telefono, email) {
+  if (!_resultData) return;
+  const est = _resultData.estimation || {};
+  const estimate = est.value || est.avg || 0;
+  const low = est.min || estimate * 0.9;
+  const high = est.max || estimate * 1.1;
+  
+  // Normalize phone: ensure 549 prefix for Argentina
+  let phone = telefono.replace(/[\s\-\(\)]/g, '');
+  if (phone.startsWith('15')) phone = '11' + phone.slice(2);
+  if (!phone.startsWith('+') && !phone.startsWith('54')) phone = '549' + phone;
+  if (phone.startsWith('+')) phone = phone.slice(1);
+  if (phone.startsWith('54') && !phone.startsWith('549')) phone = '549' + phone.slice(2);
+
+  const payload = {
+    ref_id: refId,
+    client_name: nombre,
+    client_phone: phone,
+    client_email: email || null,
+    neighborhood: document.getElementById('barrio').value,
+    property_type: document.getElementById('tipo').value,
+    address: document.getElementById('direccion').value || (document.getElementById('barrio').value + ', CABA'),
+    size_m2: parseFloat(document.getElementById('superficie').value),
+    rooms: parseInt(document.getElementById('ambientes').value) || null,
+    estimated_value: estimate,
+    estimated_value_min: low,
+    estimated_value_max: high,
+    price_per_m2: est.price_per_m2 || null,
+    comparables_count: _resultData.comparables_count || null,
+    confidence: _resultConfidence,
+    timestamp: new Date().toISOString()
+  };
+
+  // Fire and forget — n8n webhook
+  fetch('/api/tasacion-webhook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(e => console.warn('Webhook:', e));
 }
 
 // Convert all native <select> to custom styled dropdowns
