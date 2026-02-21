@@ -905,8 +905,8 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
     timestamp: new Date().toISOString()
   };
 
-  // Fire and forget — n8n webhook
-  fetch('/api/tasacion-webhook', {
+  // Fire and forget — n8n webhook (direct)
+  fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
