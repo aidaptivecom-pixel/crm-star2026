@@ -35,6 +35,24 @@ h1,h2,h3,h4{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-style
 .precision-bar{height:4px;background:var(--dark3);border-radius:4px;overflow:hidden}
 .precision-fill{height:100%;width:25%;background:linear-gradient(90deg,var(--gold),#f0d078);border-radius:4px;transition:width .5s ease}
 
+/* Blurred value gate */
+.value-blurred-wrap{position:relative;text-align:center}
+.blurred-value{filter:blur(12px);-webkit-filter:blur(12px);user-select:none;pointer-events:none;opacity:.7}
+.blur-lock-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:36px;z-index:2;filter:none;animation:pulse-lock 2s ease-in-out infinite}
+@keyframes pulse-lock{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.9}50%{transform:translate(-50%,-50%) scale(1.1);opacity:1}}
+
+/* Contact gate */
+.contact-gate{max-width:760px;margin:0 auto;padding:32px;background:var(--dark2);border-radius:16px;border:1px solid rgba(212,167,69,.2);margin-top:24px}
+.gate-header{text-align:center;margin-bottom:24px}
+.gate-header h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-style:italic;text-transform:uppercase;font-size:22px;color:var(--gold);margin-bottom:8px}
+.gate-header p{color:rgba(255,255,255,.6);font-size:14px;line-height:1.5}
+.btn-unlock{width:100%;margin-top:16px;font-size:16px;padding:18px;background:var(--gold);border:none;border-radius:8px;color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-style:italic;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all .2s;font-size:18px}
+.btn-unlock:hover{background:#e8c96a;transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,167,69,.3)}
+
+/* Unlock animation */
+.result-value.unlocked{animation:reveal .6s ease-out}
+@keyframes reveal{from{filter:blur(12px);opacity:.7}to{filter:blur(0);opacity:1}}
+
 /* Form */
 .form-section{max-width:760px;margin:0 auto;padding:32px 32px 56px}
 .field-group{margin-bottom:24px}
@@ -280,26 +298,6 @@ select option{background:#fff;color:#1a1a1a}
       </div>
     </div>
 
-    <!-- Contact -->
-    <div class="contact-section">
-      <h3>📩 Recibí el informe completo</h3>
-      <p>Dejá tus datos y recibí el informe por WhatsApp</p>
-      <div class="field-group">
-        <label>Nombre</label>
-        <input type="text" id="nombre" placeholder="Tu nombre">
-      </div>
-      <div class="field-row">
-        <div class="field-group">
-          <label>Teléfono</label>
-          <input type="tel" id="telefono" placeholder="11 2345-6789">
-        </div>
-        <div class="field-group">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="tu@email.com">
-        </div>
-      </div>
-    </div>
-
     <button type="submit" class="btn-primary" id="submitBtn">TASAR MI PROPIEDAD</button>
   </form>
 
@@ -310,12 +308,25 @@ select option{background:#fff;color:#1a1a1a}
   </div>
 </section>
 
-<!-- Results -->
+<!-- Results: Teaser (always visible after submit) -->
 <section class="results" id="results">
   <div class="result-card">
     <div class="result-ref" id="resultRef">REF: STR-00000</div>
-    <div class="result-value" id="resultValue">USD 000.000</div>
-    <div class="result-range" id="resultRange">Rango de mercado: USD 000.000 - USD 000.000</div>
+    
+    <!-- Blurred value (visible in teaser) -->
+    <div id="valueBlurred" class="value-blurred-wrap">
+      <div class="result-value blurred-value" aria-hidden="true">USD 188.000</div>
+      <div class="result-range blurred-value" aria-hidden="true">Rango de mercado: USD 170.000 - USD 206.000</div>
+      <div class="blur-lock-icon">🔒</div>
+    </div>
+    
+    <!-- Real value (hidden until unlock) -->
+    <div id="valueFull" style="display:none">
+      <div class="result-value" id="resultValue">USD 000.000</div>
+      <div class="result-range" id="resultRange">Rango de mercado: USD 000.000 - USD 000.000</div>
+    </div>
+
+    <!-- Stats: always visible -->
     <div class="result-stats">
       <div class="stat"><div class="stat-value" id="resultPm2">—</div><div class="stat-label">USD / m²</div></div>
       <div class="stat"><div class="stat-value" id="resultComps">—</div><div class="stat-label">Comparables</div></div>
@@ -324,10 +335,34 @@ select option{background:#fff;color:#1a1a1a}
       <div class="confidence-label">Nivel de confianza: <span id="confText">—</span></div>
       <div class="confidence-bar"><div class="confidence-fill" id="confFill" style="width:0;background:var(--gold)"></div></div>
     </div>
-    <p class="disclaimer">* Valores estimados basados en propiedades similares publicadas en la zona. Una tasación formal con visita permite obtener un valor más preciso.</p>
   </div>
 
-  <div class="ctas">
+  <!-- Gate: Contact form to unlock -->
+  <div id="contactGate" class="contact-gate">
+    <div class="gate-header">
+      <h3>📊 Tu tasación está lista</h3>
+      <p>Ingresá tu teléfono para ver el valor estimado y recibir el informe completo por WhatsApp</p>
+    </div>
+    <div class="field-group">
+      <label>Nombre</label>
+      <input type="text" id="nombre" placeholder="Tu nombre" required>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Teléfono <span style="color:var(--gold)">*</span></label>
+        <input type="tel" id="telefono" placeholder="11 2345-6789" required>
+      </div>
+      <div class="field-group">
+        <label>Email <span style="font-size:11px;color:rgba(255,255,255,.4)">(opcional)</span></label>
+        <input type="email" id="email" placeholder="tu@email.com">
+      </div>
+    </div>
+    <button type="button" class="btn-primary btn-unlock" onclick="handleUnlock()">VER MI TASACIÓN COMPLETA</button>
+  </div>
+
+  <!-- CTAs (hidden until unlock) -->
+  <div id="ctasSection" class="ctas" style="display:none">
+    <p class="disclaimer">* Valores estimados basados en propiedades similares publicadas en la zona. Una tasación formal con visita permite obtener un valor más preciso.</p>
     <a class="btn-wa btn-wa-primary" id="ctaFormal" href="#" target="_blank">
       <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.396 0-4.6-.832-6.34-2.221l-.442-.362-3.081 1.033 1.033-3.081-.362-.442A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
       ¿Querés una tasación formal? Hablá con nosotros
@@ -529,41 +564,6 @@ async function handleSubmit(e) {
     }
 
     showResults(data);
-
-    // Save to Supabase
-    try {
-      const SB = 'https://wuoptaejdobinsmmkmoq.supabase.co';
-      const SK = 'sb_publishable_71JeldswzCokzfErELwMyw_yJLMz9gz';
-      const est = data.estimation || {};
-      await fetch(SB + '/rest/v1/appraisals', {
-        method: 'POST',
-        headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({
-          neighborhood: body.neighborhood,
-          property_type: (body.property_type || 'departamentos').replace(/s$/, ''),
-          address: document.getElementById('direccion').value || (body.neighborhood + ', CABA'),
-          size_m2: body.total_area_m2,
-          rooms: body.rooms || null,
-          has_garage: body.has_garage || false,
-          condition: body.condition || null,
-          building_age: body.building_age || null,
-          amenities: body.amenities || [],
-          property_data: { bathrooms: body.bathrooms || null, floors: body.floors || 1, has_gas: body.has_gas !== undefined ? body.has_gas : true, has_private_terrace: body.has_private_terrace || false, has_private_garden: body.has_private_garden || false, has_private_elevator: false, garage_count: body.garage_count || 0, source: 'web_express', ref_id: refId },
-          client_name: document.getElementById('nombre')?.value || null,
-          client_phone: document.getElementById('telefono')?.value || null,
-          client_email: document.getElementById('email')?.value || null,
-          status: 'web_estimate',
-          type: 'market_valuation',
-          city: 'CABA',
-          estimated_value: est.value || null,
-          estimated_value_min: est.min || null,
-          estimated_value_max: est.max || null,
-          price_per_m2: est.price_per_m2 || null,
-          zone_average_price: est.price_per_m2_base || est.price_per_m2 || null,
-          comparables_used: data.comparables_count || null,
-        })
-      });
-    } catch (e) { console.warn('Supabase save:', e); }
   } catch (err) {
     showToast('Error al conectar. Intentá de nuevo en unos segundos.');
     console.error(err);
@@ -573,7 +573,11 @@ async function handleSubmit(e) {
   }
 }
 
+// Store result data globally for unlock
+let _resultData = null;
+
 function showResults(data) {
+  _resultData = data;
   const results = document.getElementById('results');
   const est = data.estimation || {};
   const estimate = est.value || est.avg || data.estimate || 0;
@@ -583,9 +587,12 @@ function showResults(data) {
   const comps = data.comparables_count || '—';
   const confidence = data.confidence || Math.min(90, (parseInt(document.getElementById('precisionPct').textContent) || 30) + 20);
 
+  // Set real values (hidden)
   document.getElementById('resultRef').textContent = 'REF: ' + refId;
   document.getElementById('resultValue').textContent = fmtUSD(estimate);
   document.getElementById('resultRange').textContent = 'Rango de mercado: ' + fmtUSD(low) + ' – ' + fmtUSD(high);
+  
+  // Show stats (always visible — these are the hook)
   document.getElementById('resultPm2').textContent = fmtUSD(pm2);
   document.getElementById('resultComps').textContent = comps;
 
@@ -594,12 +601,101 @@ function showResults(data) {
   document.getElementById('confFill').style.background = confPct > 70 ? '#25D366' : confPct > 40 ? 'var(--gold)' : '#e74c3c';
   document.getElementById('confText').textContent = confPct + '%';
 
+  // Prepare CTAs (hidden until unlock)
   const waBase = 'https://wa.me/5491135772057?text=';
   document.getElementById('ctaFormal').href = waBase + encodeURIComponent('Hola! Hice una tasación express en la web (Ref: ' + refId + ') y me gustaría una tasación formal.');
   document.getElementById('ctaVisita').href = waBase + encodeURIComponent('Hola! Hice una tasación express (Ref: ' + refId + ') y me gustaría agendar una visita.');
 
+  // Show teaser (blurred value + stats + gate)
+  document.getElementById('valueBlurred').style.display = '';
+  document.getElementById('valueFull').style.display = 'none';
+  document.getElementById('contactGate').style.display = '';
+  document.getElementById('ctasSection').style.display = 'none';
+
   results.classList.add('show');
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function handleUnlock() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const telefono = document.getElementById('telefono').value.trim();
+
+  if (!nombre) {
+    showToast('Ingresá tu nombre', 3000);
+    document.getElementById('nombre').focus();
+    return;
+  }
+  if (!telefono || telefono.length < 6) {
+    showToast('Ingresá un teléfono válido', 3000);
+    document.getElementById('telefono').focus();
+    return;
+  }
+
+  // Hide blurred, show real values with animation
+  document.getElementById('valueBlurred').style.display = 'none';
+  document.getElementById('valueFull').style.display = '';
+  document.getElementById('resultValue').classList.add('unlocked');
+  
+  // Hide gate, show CTAs
+  document.getElementById('contactGate').style.display = 'none';
+  document.getElementById('ctasSection').style.display = '';
+
+  // Scroll to revealed value
+  document.getElementById('valueFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Save to Supabase with contact info
+  saveToSupabase(nombre, telefono, document.getElementById('email').value.trim());
+
+  showToast('✅ ¡Tasación desbloqueada!', 3000);
+}
+
+function saveToSupabase(nombre, telefono, email) {
+  if (!_resultData) return;
+  const est = _resultData.estimation || {};
+  const body = document.getElementById('tasarForm');
+  
+  try {
+    const SB = 'https://wuoptaejdobinsmmkmoq.supabase.co';
+    const SK = 'sb_publishable_71JeldswzCokzfErELwMyw_yJLMz9gz';
+    
+    fetch(SB + '/rest/v1/appraisals', {
+      method: 'POST',
+      headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        neighborhood: document.getElementById('barrio').value,
+        property_type: (document.getElementById('tipo').value || 'departamentos').replace(/s$/, ''),
+        address: document.getElementById('direccion').value || (document.getElementById('barrio').value + ', CABA'),
+        size_m2: parseFloat(document.getElementById('superficie').value),
+        rooms: parseInt(document.getElementById('ambientes').value) || null,
+        has_garage: document.getElementById('cocheraToggle').classList.contains('on'),
+        condition: document.getElementById('estado') ? document.getElementById('estado').value || null : null,
+        building_age: document.getElementById('antiguedad') && document.getElementById('antiguedad').value ? parseInt(document.getElementById('antiguedad').value) : null,
+        amenities: Array.from(document.querySelectorAll('.chip.selected')).map(c => c.textContent),
+        property_data: {
+          bathrooms: document.getElementById('banos') && document.getElementById('banos').value ? parseInt(document.getElementById('banos').value) : null,
+          floors: document.getElementById('pisos') && document.getElementById('pisos').value ? parseInt(document.getElementById('pisos').value) : 1,
+          has_gas: document.getElementById('gasToggle').classList.contains('on'),
+          has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
+          has_private_garden: document.getElementById('verdeToggle').classList.contains('on'),
+          garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
+          source: 'web_express_gated',
+          ref_id: refId
+        },
+        client_name: nombre,
+        client_phone: telefono,
+        client_email: email || null,
+        status: 'web_estimate',
+        type: 'market_valuation',
+        city: 'CABA',
+        estimated_value: est.value || null,
+        estimated_value_min: est.min || null,
+        estimated_value_max: est.max || null,
+        price_per_m2: est.price_per_m2 || null,
+        zone_average_price: est.price_per_m2_base || est.price_per_m2 || null,
+        comparables_used: _resultData.comparables_count || null,
+      })
+    }).catch(e => console.warn('Supabase save:', e));
+  } catch (e) { console.warn('Supabase save:', e); }
 }
 
 // Convert all native <select> to custom styled dropdowns

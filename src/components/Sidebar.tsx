@@ -105,7 +105,8 @@ export const Sidebar = ({ onNavigate, onLogout, onCollapse, userName, userRole }
             {matchesSearch('Emprendimientos') && <NavItem to="/emprendimientos" icon={Building2} label="Emprendimientos" onNavigate={onNavigate} />}
             {matchesSearch('Propiedades') && <NavItem to="/propiedades" icon={HomeIcon} label="Propiedades" onNavigate={onNavigate} />}
             {matchesSearch('Tasaciones') && <NavItem to="/tasaciones" icon={Calculator} label="Tasaciones" onNavigate={onNavigate} />}
-            {matchesSearch('Tasación Web') && <NavItem to="/tasacion-web" icon={Calculator} label="Tasación Web" onNavigate={onNavigate} />}
+            {/* Tasación Web: oculta del sidebar — la página embebida sigue en public/tasacion-embed.html y la ruta /tasacion-web sigue activa si se necesita */}
+            {/* {matchesSearch('Tasación Web') && <NavItem to="/tasacion-web" icon={Calculator} label="Tasación Web" onNavigate={onNavigate} />} */}
           </nav>
         </div>
         )}
