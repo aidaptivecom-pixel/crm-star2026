@@ -221,11 +221,29 @@ select option{background:#fff;color:#1a1a1a}
         <input type="number" id="superficie" placeholder="Ej: 65" min="10" max="2000" required>
       </div>
       <div class="field-group">
+        <label>Sup. cubierta (m²) <span style="font-size:11px;color:rgba(255,255,255,.4)">(opcional)</span></label>
+        <input type="number" id="supCubierta" placeholder="Ej: 55" min="10" max="2000">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
         <label>Ambientes</label>
         <select id="ambientes" required>
           <option value="">Seleccioná</option>
           <option value="1">1</option><option value="2">2</option><option value="3">3</option>
           <option value="4">4</option><option value="5">5</option><option value="6">6+</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Piso / Altura</label>
+        <select id="piso">
+          <option value="">Seleccioná</option>
+          <option value="pb">Planta baja</option>
+          <option value="1-5">1° a 5°</option>
+          <option value="6-10">6° a 10°</option>
+          <option value="11-15">11° a 15°</option>
+          <option value="16+">16° o más</option>
         </select>
       </div>
     </div>
@@ -260,10 +278,13 @@ select option{background:#fff;color:#1a1a1a}
           </select>
         </div>
         <div class="field-group">
-          <label>Pisos / Niveles</label>
-          <select id="pisos">
+          <label>Orientación</label>
+          <select id="orientacion">
             <option value="">—</option>
-            <option value="1">Simple</option><option value="2">Dúplex</option><option value="3">Tríplex</option>
+            <option value="frente">Frente</option>
+            <option value="contrafrente">Contrafrente</option>
+            <option value="lateral">Lateral</option>
+            <option value="interno">Interno</option>
           </select>
         </div>
       </div>
@@ -280,9 +301,8 @@ select option{background:#fff;color:#1a1a1a}
       </div>
 
       <div style="display:flex;flex-wrap:wrap;gap:20px;margin-bottom:20px">
-        <div class="toggle-row"><div class="toggle" id="gasToggle" onclick="toggleSwitch(this)"></div><span>Gas natural</span></div>
+        <div class="toggle-row"><div class="toggle" id="balconToggle" onclick="toggleSwitch(this)"></div><span>Balcón</span></div>
         <div class="toggle-row"><div class="toggle" id="terrazaToggle" onclick="toggleSwitch(this)"></div><span>Terraza propia</span></div>
-        <div class="toggle-row"><div class="toggle" id="verdeToggle" onclick="toggleSwitch(this)"></div><span>Espacio verde</span></div>
       </div>
 
       <div class="field-group">
@@ -483,15 +503,16 @@ function updatePrecision() {
   if (document.getElementById('barrio').value) filled++;
   if (document.getElementById('tipo').value) filled++;
   if (document.getElementById('superficie').value) filled++;
+  if (document.getElementById('supCubierta').value) filled++;
   if (document.getElementById('ambientes').value) filled++;
+  if (document.getElementById('piso').value) filled++;
   if (document.getElementById('estado').value) filled++;
   if (document.getElementById('antiguedad').value) filled++;
   if (document.getElementById('banos').value) filled++;
-  if (document.getElementById('pisos').value) filled++;
+  if (document.getElementById('orientacion').value) filled++;
   if (document.getElementById('cocheraToggle').classList.contains('on')) filled++;
-  if (document.getElementById('gasToggle').classList.contains('on')) filled++;
+  if (document.getElementById('balconToggle').classList.contains('on')) filled++;
   if (document.getElementById('terrazaToggle').classList.contains('on')) filled++;
-  if (document.getElementById('verdeToggle').classList.contains('on')) filled++;
   document.querySelectorAll('.chip.selected').forEach(() => filled++);
   const pct = Math.min(100, Math.round((filled / total) * 100));
   document.getElementById('precisionPct').textContent = pct + '%';
@@ -533,12 +554,13 @@ async function handleSubmit(e) {
     condition: condMap[document.getElementById('estado').value] || undefined,
     building_age: document.getElementById('antiguedad').value ? parseInt(document.getElementById('antiguedad').value) : undefined,
     bathrooms: document.getElementById('banos').value ? parseInt(document.getElementById('banos').value) : undefined,
-    floors: document.getElementById('pisos').value ? parseInt(document.getElementById('pisos').value) : undefined,
+    covered_area_m2: document.getElementById('supCubierta').value ? parseFloat(document.getElementById('supCubierta').value) : undefined,
+    floor_level: document.getElementById('piso').value || undefined,
+    orientation: document.getElementById('orientacion').value || undefined,
     has_garage: document.getElementById('cocheraToggle').classList.contains('on'),
     garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
-    has_gas: document.getElementById('gasToggle').classList.contains('on'),
+    has_balcony: document.getElementById('balconToggle').classList.contains('on'),
     has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
-    has_private_garden: document.getElementById('verdeToggle').classList.contains('on'),
     amenities: amenities.length ? amenities : undefined,
     address: document.getElementById('direccion').value || undefined,
     ref_id: refId
@@ -673,10 +695,11 @@ function saveToSupabase(nombre, telefono, email) {
         amenities: Array.from(document.querySelectorAll('.chip.selected')).map(c => c.textContent),
         property_data: {
           bathrooms: document.getElementById('banos') && document.getElementById('banos').value ? parseInt(document.getElementById('banos').value) : null,
-          floors: document.getElementById('pisos') && document.getElementById('pisos').value ? parseInt(document.getElementById('pisos').value) : 1,
-          has_gas: document.getElementById('gasToggle').classList.contains('on'),
+          covered_area_m2: document.getElementById('supCubierta').value ? parseFloat(document.getElementById('supCubierta').value) : null,
+          floor_level: document.getElementById('piso').value || null,
+          orientation: document.getElementById('orientacion').value || null,
+          has_balcony: document.getElementById('balconToggle').classList.contains('on'),
           has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
-          has_private_garden: document.getElementById('verdeToggle').classList.contains('on'),
           garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
           source: 'web_express_gated',
           ref_id: refId
