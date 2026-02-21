@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/extract-brochure.js": {
+      "maxDuration": 120
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/tasacion-embed.html", "destination": "/tasacion-embed.html" },

@@ -11,27 +11,58 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'Anthropic API key not configured on server' })
 
   try {
-    const { images, prompt } = req.body
+    const { imageUrls, images, prompt } = req.body
 
-    if (!images || !Array.isArray(images) || images.length === 0) {
-      return res.status(400).json({ error: 'images array required' })
-    }
     if (!prompt) {
       return res.status(400).json({ error: 'prompt required' })
     }
 
-    // Build content array with images + prompt
+    // Support both URL-based (new) and base64 (legacy) modes
     const content = []
-    for (const img of images) {
-      content.push({
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: 'image/jpeg',
-          data: img,
-        },
-      })
+
+    if (imageUrls && Array.isArray(imageUrls) && imageUrls.length > 0) {
+      // New mode: download images from URLs and convert to base64
+      for (let i = 0; i < imageUrls.length; i++) {
+        try {
+          const imgRes = await fetch(imageUrls[i])
+          if (!imgRes.ok) {
+            console.warn(`Failed to download image ${i + 1}: ${imgRes.status}`)
+            continue
+          }
+          const arrayBuffer = await imgRes.arrayBuffer()
+          const base64 = Buffer.from(arrayBuffer).toString('base64')
+          content.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: 'image/jpeg',
+              data: base64,
+            },
+          })
+        } catch (err) {
+          console.warn(`Error downloading image ${i + 1}:`, err.message)
+        }
+      }
+    } else if (images && Array.isArray(images) && images.length > 0) {
+      // Legacy mode: base64 images sent directly (small PDFs)
+      for (const img of images) {
+        content.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: 'image/jpeg',
+            data: img,
+          },
+        })
+      }
+    } else {
+      return res.status(400).json({ error: 'imageUrls or images array required' })
     }
+
+    if (content.length === 0) {
+      return res.status(400).json({ error: 'No images could be loaded' })
+    }
+
     content.push({ type: 'text', text: prompt })
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {

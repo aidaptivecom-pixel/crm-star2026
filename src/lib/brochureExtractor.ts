@@ -202,22 +202,93 @@ export async function uploadBrochureToStorage(file: File): Promise<string> {
 }
 
 /**
- * Send PDF page images to Claude Vision API to extract brochure data
+ * Upload rendered page images to Supabase Storage (temp folder)
+ * Returns array of public URLs
+ */
+async function uploadTempImages(
+  images: string[],
+  onProgress?: (step: string) => void
+): Promise<{ urls: string[]; tempPaths: string[] }> {
+  if (!supabase) throw new Error('Supabase no configurado')
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token || supabaseAnonKey
+
+  const batchId = `temp-${Date.now()}`
+  const urls: string[] = []
+  const tempPaths: string[] = []
+
+  for (let i = 0; i < images.length; i++) {
+    if (i % 10 === 0) onProgress?.(`Subiendo imágenes ${i + 1}/${images.length}...`)
+
+    const blob = await fetch(`data:image/jpeg;base64,${images[i]}`).then(r => r.blob())
+    const filePath = `temp/${batchId}/page-${i + 1}.jpg`
+
+    const res = await fetch(`${supabaseUrl}/storage/v1/object/brochures/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true',
+      },
+      body: blob,
+    })
+
+    if (!res.ok) {
+      console.warn(`Failed to upload page ${i + 1}:`, await res.text())
+      continue
+    }
+
+    urls.push(`${supabaseUrl}/storage/v1/object/public/brochures/${filePath}`)
+    tempPaths.push(filePath)
+  }
+
+  if (urls.length === 0) throw new Error('No se pudo subir ninguna imagen temporal')
+
+  return { urls, tempPaths }
+}
+
+/**
+ * Clean up temporary images from storage
+ */
+async function cleanupTempImages(tempPaths: string[]): Promise<void> {
+  if (!supabase || tempPaths.length === 0) return
+  try {
+    await supabase.storage.from('brochures').remove(tempPaths)
+  } catch (err) {
+    console.warn('No se pudieron limpiar imágenes temporales:', err)
+  }
+}
+
+/**
+ * Send PDF page image URLs to Claude Vision API to extract brochure data
  */
 export async function extractProjectDataWithVision(
-  images: string[]
-): Promise<BrochureExtractionResult> {
-  // Call our serverless backend (API key is safe on server side)
+  images: string[],
+  onProgress?: (step: string) => void
+): Promise<{ result: BrochureExtractionResult; tempPaths: string[] }> {
+  // Upload images to storage first to avoid Vercel body size limit
+  onProgress?.('Subiendo imágenes para análisis...')
+  const { urls, tempPaths } = await uploadTempImages(images, onProgress)
+
+  onProgress?.('Enviando a IA para extracción...')
+
+  // Call serverless backend with URLs instead of base64
   const response = await fetch('/api/extract-brochure', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      images,
+      imageUrls: urls,
       prompt: VISION_EXTRACTION_PROMPT,
     }),
   })
 
   if (!response.ok) {
+    // Clean up temp images on error
+    await cleanupTempImages(tempPaths)
     const errorData = await response.json().catch(() => ({}))
     throw new Error(
       `Error de extracción (${response.status}): ${errorData?.error || response.statusText}`
@@ -227,18 +298,26 @@ export async function extractProjectDataWithVision(
   const data = await response.json()
   const responseText = data.content?.[0]?.text
 
-  if (!responseText) throw new Error('Respuesta vacía de Claude')
+  if (!responseText) {
+    await cleanupTempImages(tempPaths)
+    throw new Error('Respuesta vacía de Claude')
+  }
 
   // Try to parse JSON from the response
+  let result: BrochureExtractionResult
   try {
-    return JSON.parse(responseText)
+    result = JSON.parse(responseText)
   } catch {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
+      result = JSON.parse(jsonMatch[0])
+    } else {
+      await cleanupTempImages(tempPaths)
+      throw new Error('No se pudo extraer datos estructurados del brochure. Respuesta: ' + responseText.substring(0, 200))
     }
-    throw new Error('No se pudo extraer datos estructurados del brochure. Respuesta: ' + responseText.substring(0, 200))
   }
+
+  return { result, tempPaths }
 }
 
 /**
@@ -309,9 +388,9 @@ export async function processBrochure(
     throw new Error('No se pudieron renderizar las páginas del PDF.')
   }
 
-  // Step 2: Send to Claude Vision
+  // Step 2: Send to Claude Vision (uploads to storage first, then sends URLs)
   onProgress?.('Analizando con IA (visión)...')
-  const data = await extractProjectDataWithVision(images)
+  const { result: data, tempPaths } = await extractProjectDataWithVision(images, onProgress)
 
   // Step 3: Try to upload PDF (non-blocking)
   let brochureUrl = ''
@@ -332,6 +411,9 @@ export async function processBrochure(
       console.warn('No se pudieron subir las imágenes:', err)
     }
   }
+
+  // Step 5: Clean up temp images
+  await cleanupTempImages(tempPaths)
 
   return { data, brochureUrl, imageUrls }
 }
