@@ -449,8 +449,9 @@ const API_BASE = '';
   if(pct !== 100) document.documentElement.style.zoom = (pct/100);
 })();
 
-// Ref ID
-const refId = 'STR-' + String(Math.floor(10000 + Math.random() * 90000));
+// Ref ID — will be replaced by DB-generated ref_code after INSERT
+let refId = 'STR-' + String(Math.floor(10000 + Math.random() * 90000));
+let appraisalId = null;
 
 // Toast
 function showToast(msg, ms) {
@@ -814,26 +815,29 @@ function handleUnlock() {
   // Scroll to revealed value
   document.getElementById('valueFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  // Save to Supabase with contact info + trigger WhatsApp delivery
+  // Save to Supabase first (get appraisal_id + ref_code), then trigger WhatsApp delivery
   const email = document.getElementById('email').value.trim();
-  saveToSupabase(nombre, telefono, email);
-  triggerWhatsAppDelivery(nombre, telefono, email);
-
   showToast('✅ ¡Tasación desbloqueada! Te enviamos el informe por WhatsApp.', 4000);
+  saveToSupabase(nombre, telefono, email).then(() => {
+    triggerWhatsAppDelivery(nombre, telefono, email);
+    // Update CTAs with DB-generated ref_code
+    const waBase = 'https://wa.me/5491131291774?text=';
+    document.getElementById('ctaFormal').href = waBase + encodeURIComponent('Hola! Hice una tasación express en la web (Ref: ' + refId + ') y me gustaría una tasación formal.');
+    document.getElementById('ctaVisita').href = waBase + encodeURIComponent('Hola! Hice una tasación express (Ref: ' + refId + ') y me gustaría agendar una visita.');
+  });
 }
 
-function saveToSupabase(nombre, telefono, email) {
+async function saveToSupabase(nombre, telefono, email) {
   if (!_resultData) return;
   const est = _resultData.estimation || {};
-  const body = document.getElementById('tasarForm');
   
   try {
     const SB = 'https://wuoptaejdobinsmmkmoq.supabase.co';
     const SK = 'sb_publishable_71JeldswzCokzfErELwMyw_yJLMz9gz';
     
-    fetch(SB + '/rest/v1/appraisals', {
+    const resp = await fetch(SB + '/rest/v1/appraisals', {
       method: 'POST',
-      headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
       body: JSON.stringify({
         neighborhood: document.getElementById('barrio').value,
         property_type: (document.getElementById('tipo').value || 'departamentos').replace(/s$/, ''),
@@ -853,7 +857,6 @@ function saveToSupabase(nombre, telefono, email) {
           has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
           garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
           source: 'web_express_gated',
-          ref_id: refId
         },
         client_name: nombre,
         client_phone: telefono,
@@ -868,7 +871,15 @@ function saveToSupabase(nombre, telefono, email) {
         zone_average_price: est.price_per_m2_base || est.price_per_m2 || null,
         comparables_used: _resultData.comparables_count || null,
       })
-    }).catch(e => console.warn('Supabase save:', e));
+    });
+    const rows = await resp.json();
+    if (Array.isArray(rows) && rows.length > 0) {
+      appraisalId = rows[0].id;
+      if (rows[0].ref_code) {
+        refId = rows[0].ref_code;
+        document.getElementById('resultRef').textContent = 'REF: ' + refId;
+      }
+    }
   } catch (e) { console.warn('Supabase save:', e); }
 }
 
@@ -887,6 +898,7 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
   if (phone.startsWith('54') && !phone.startsWith('549')) phone = '549' + phone.slice(2);
 
   const payload = {
+    appraisal_id: appraisalId,
     ref_id: refId,
     client_name: nombre,
     client_phone: phone,
