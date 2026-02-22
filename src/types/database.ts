@@ -231,6 +231,7 @@ export interface Database {
           notes: string | null
           photos: Json | null
           pdf_url: string | null
+          ref_code: string | null
           assigned_agent_id: string | null
           visit_scheduled_at: string | null
           visited_at: string | null

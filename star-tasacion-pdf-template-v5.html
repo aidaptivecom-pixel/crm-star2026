@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es" style="background:#0D1117">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+@page { size: A4; margin: 0; background: #0D1117; }
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+}
+body{font-family:'Inter',sans-serif;background:#0D1117;color:#fff;width:800px;margin:0 auto;padding:0}
+
+/* PAGE 1 */
+.page{min-height:1122px;position:relative;background:#0D1117;overflow:hidden}
+.page-break{page-break-after:always}
+
+/* HEADER */
+.header-top{display:flex;justify-content:space-between;align-items:center;padding:40px 48px 24px}
+.header-ref{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:2px}
+.header-date{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px}
+.header-title-bar{text-align:center;padding:0 48px 32px;border-bottom:2px solid #D4A745}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;font-style:italic;text-transform:uppercase;color:#D4A745;letter-spacing:2px}
+.header-client{font-size:17px;color:rgba(255,255,255,.7);margin-top:6px}
+.header-client strong{color:#fff;font-weight:600}
+
+/* HERO */
+.hero{text-align:center;padding:36px 48px;background:linear-gradient(145deg,#161B22,#1C2333);margin:36px 48px;border-radius:16px;border:1px solid rgba(212,167,69,.15)}
+.hero-label{font-size:13px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:14px}
+.hero-value{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:700;color:#D4A745;line-height:1}
+.hero-range{font-size:17px;color:rgba(255,255,255,.55);margin-top:14px}
+.hero-range span{color:rgba(255,255,255,.8)}
+
+/* STATS */
+.stats{display:flex;gap:18px;padding:0 48px;margin-bottom:40px}
+.stat{flex:1;background:rgba(255,255,255,.03);padding:22px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,.04)}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:600;color:#fff}
+.stat-label{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px}
+
+/* SECTIONS */
+.section{padding:0 48px;margin-bottom:36px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;font-style:italic;text-transform:uppercase;color:#D4A745;letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+
+/* DETAILS */
+.details-list{}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:rgba(255,255,255,.45);font-size:15px;font-weight:400}
+.detail-value{font-weight:500;font-size:16px;color:#fff;text-align:right}
+
+/* CONFIDENCE */
+.confidence-wrap{margin-top:10px}
+.confidence-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.confidence-text{font-size:15px;color:rgba(255,255,255,.55)}
+.confidence-pct{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:600}
+.confidence-bar{height:10px;background:#1C2333;border-radius:5px;overflow:hidden}
+.confidence-fill{height:100%;border-radius:5px}
+
+/* COMPARABLES TABLE */
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;text-align:left;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.comp-table td{font-size:14px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.comp-table tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+.comp-price{color:#D4A745;font-weight:600}
+.comp-pm2{color:rgba(255,255,255,.6);font-size:13px}
+.comp-sim{font-size:13px;font-weight:600}
+.comp-sim.high{color:#25D366}
+.comp-sim.med{color:#D4A745}
+
+/* METHODOLOGY */
+.methodology p{font-size:14px;color:rgba(255,255,255,.45);line-height:1.8}
+
+/* DISCLAIMER */
+.disclaimer{padding:0 48px;margin-top:24px}
+.disclaimer p{font-size:11px;color:rgba(255,255,255,.25);font-style:italic;line-height:1.6;border-top:1px solid rgba(255,255,255,.04);padding-top:16px}
+
+/* FOOTER */
+.footer{padding:32px 48px;margin-top:24px;border-top:1px solid rgba(212,167,69,.15)}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-left{text-align:left}
+.footer-right{display:flex;align-items:center}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;font-style:italic;text-transform:uppercase;color:#D4A745;letter-spacing:2px}
+.footer-info{font-size:13px;color:rgba(255,255,255,.35);margin-top:8px;line-height:1.7}
+.footer-info a{color:rgba(255,255,255,.5);text-decoration:none}
+.footer-socials{margin-top:12px}
+.footer-social-btn{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-size:14px;opacity:.6}
+.footer-cta{display:inline-block;padding:14px 36px;background:#25D366;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:1px;border-radius:6px;text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1 ==================== -->
+<div class="page page-break">
+
+  <div class="header-top">
+    <div>
+      <img src="https://wuoptaejdobinsmmkmoq.supabase.co/storage/v1/object/public/tasaciones/assets/star-logo.png" alt="Star Real Estate" style="height:56px;object-fit:contain">
+    </div>
+    <div style="text-align:right">
+      <div class="header-ref">REF: STR-84721</div>
+      <div class="header-date">21 de febrero de 2026</div>
+    </div>
+  </div>
+
+  <div class="header-title-bar">
+    <div class="header-title">Informe de Tasación Express</div>
+    <div class="header-client">Preparado para: <strong>Juan Pérez</strong></div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">Valor Estimado de Mercado</div>
+    <div class="hero-value">USD 193.500</div>
+    <div class="hero-range">Rango: <span>USD 169.780</span> – <span>USD 224.900</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">USD 2.977</div>
+      <div class="stat-label">Precio / m²</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Comparables</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">78%</div>
+      <div class="stat-label">Confianza</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Datos de la Propiedad</div>
+    <div class="details-list">
+      <div class="detail-row"><span class="detail-label">Ubicación</span><span class="detail-value">Thames 2100, Palermo</span></div>
+      <div class="detail-row"><span class="detail-label">Barrio</span><span class="detail-value">Palermo</span></div>
+      <div class="detail-row"><span class="detail-label">Tipo</span><span class="detail-value">Departamento</span></div>
+      <div class="detail-row"><span class="detail-label">Superficie Total</span><span class="detail-value">65 m²</span></div>
+      <div class="detail-row"><span class="detail-label">Ambientes</span><span class="detail-value">3</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Nivel de Confianza</div>
+    <div class="confidence-wrap">
+      <div class="confidence-info">
+        <span class="confidence-text">Basado en 5 propiedades comparables en Palermo</span>
+        <span class="confidence-pct" style="color:#25D366">78%</span>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" style="width:78%;background:#25D366"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== PAGE 2 ==================== -->
+<div class="page">
+
+  <div style="padding:40px 48px 0">
+    <img src="https://wuoptaejdobinsmmkmoq.supabase.co/storage/v1/object/public/tasaciones/assets/star-logo.png" alt="Star Real Estate" style="height:32px;object-fit:contain;opacity:.4">
+  </div>
+
+  <div class="section" style="margin-top:24px">
+    <div class="section-title">Propiedades Comparables</div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Dirección</th>
+          <th>Sup.</th>
+          <th>Amb.</th>
+          <th>Precio</th>
+          <th>USD/m²</th>
+          <th>Similitud</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Palermo Nuevo, Palermo</td>
+          <td>77 m²</td>
+          <td>3</td>
+          <td class="comp-price">USD 230.000</td>
+          <td class="comp-pm2">2.987</td>
+          <td><span class="comp-sim high">92%</span></td>
+        </tr>
+        <tr>
+          <td>Palermo Hollywood, Palermo</td>
+          <td>78 m²</td>
+          <td>3</td>
+          <td class="comp-price">USD 269.900</td>
+          <td class="comp-pm2">3.460</td>
+          <td><span class="comp-sim high">88%</span></td>
+        </tr>
+        <tr>
+          <td>Palermo, Capital Federal</td>
+          <td>79 m²</td>
+          <td>4</td>
+          <td class="comp-price">USD 220.000</td>
+          <td class="comp-pm2">2.785</td>
+          <td><span class="comp-sim high">85%</span></td>
+        </tr>
+        <tr>
+          <td>Palermo, Capital Federal</td>
+          <td>69 m²</td>
+          <td>2</td>
+          <td class="comp-price">USD 225.000</td>
+          <td class="comp-pm2">3.261</td>
+          <td><span class="comp-sim med">76%</span></td>
+        </tr>
+        <tr>
+          <td>Palermo Hollywood, Palermo</td>
+          <td>83 m²</td>
+          <td>3</td>
+          <td class="comp-price">USD 323.100</td>
+          <td class="comp-pm2">3.893</td>
+          <td><span class="comp-sim med">71%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section methodology">
+    <div class="section-title">Metodología</div>
+    <p>Valuación realizada mediante análisis comparativo de mercado (ACM), basado en propiedades similares activamente publicadas en portales inmobiliarios de Argentina. Se seleccionaron las 5 propiedades con mayor similitud en ubicación, superficie, tipología y cantidad de ambientes. El nivel de confianza refleja la cantidad y consistencia de datos comparables disponibles.</p>
+  </div>
+
+  <div class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">Star Real Estate</div>
+        <div class="footer-info">
+          <a href="https://www.starargentina.com" style="color:rgba(255,255,255,.5);text-decoration:none">starargentina.com.ar</a><br>
+          Buenos Aires
+        </div>
+        <div class="footer-socials">
+          <a href="https://www.instagram.com/star.realestate_/" class="footer-social-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            <span>@star.realestate_</span>
+          </a>
+        </div>
+      </div>
+      <div class="footer-right">
+        <a href="https://wa.me/5491162148113?text=Hola!%20Vi%20mi%20informe%20de%20tasaci%C3%B3n%20y%20me%20interesa%20una%20tasaci%C3%B3n%20profesional." class="footer-cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" style="vertical-align:middle;margin-right:8px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Solicitar Tasación Profesional</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <p>* Tasación express orientativa basada en publicaciones activas en portales inmobiliarios. No constituye avalúo profesional. Los valores pueden variar según estado del inmueble y condiciones de mercado. Para una valuación profesional, contacte a Star Real Estate.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
