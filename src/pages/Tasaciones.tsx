@@ -2886,6 +2886,12 @@ ${estimation.positioning_reasoning ? '<p style="font-size:13px;color:#555;margin
                         <Phone className="w-4 h-4" /><span>WhatsApp</span>
                       </button>
                     )}
+                    {appraisal.pdf_url && (
+                      <a href={appraisal.pdf_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <FileText className="w-4 h-4" /><span>Ver PDF</span>
+                      </a>
+                    )}
                     <button onClick={(e) => { e.stopPropagation(); setSelectedId(appraisal.id); setMobileTab('detail') }}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-600 hover:text-[#D4A745] hover:bg-[#D4A745]/5 rounded-lg transition-colors">
                       <ArrowUpRight className="w-4 h-4" /><span>Ver más</span>
