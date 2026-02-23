@@ -912,7 +912,7 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
     estimated_value_max: high,
     price_per_m2: est.price_per_m2 || null,
     comparables_count: _resultData.comparables_count || null,
-    comparables: _resultData.comparables || [],
+    comparables: _resultData.comparables_used || _resultData.comparables || [],
     confidence: _resultConfidence,
     timestamp: new Date().toISOString()
   };
