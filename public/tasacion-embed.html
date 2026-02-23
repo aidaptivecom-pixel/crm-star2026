@@ -413,13 +413,14 @@ select option{background:#fff;color:#1a1a1a}
   <!-- CTAs (hidden until unlock) -->
   <div id="ctasSection" class="ctas" style="display:none">
     <p class="disclaimer">* Valores estimados basados en propiedades similares publicadas en la zona. Una tasación formal con visita permite obtener un valor más preciso.</p>
-    <a class="btn-wa btn-wa-primary" id="ctaFormal" href="#" target="_blank">
-      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.396 0-4.6-.832-6.34-2.221l-.442-.362-3.081 1.033 1.033-3.081-.362-.442A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+    <div id="ctaConfirmation" style="text-align:center;padding:20px 24px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);border-radius:12px">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;font-style:italic;text-transform:uppercase;color:#25D366;margin-bottom:6px">¡Te enviamos el informe por WhatsApp!</div>
+      <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Revisá tu WhatsApp para ver el PDF completo con el detalle de la tasación. Si tenés dudas, respondé ese mensaje.</p>
+    </div>
+    <a class="btn-wa btn-wa-outline" id="ctaFormal" href="#" target="_blank" style="margin-top:12px">
+      <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.396 0-4.6-.832-6.34-2.221l-.442-.362-3.081 1.033 1.033-3.081-.362-.442A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
       ¿Querés una tasación formal? Hablá con nosotros
-    </a>
-    <a class="btn-wa btn-wa-outline" id="ctaVisita" href="#" target="_blank">
-      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.396 0-4.6-.832-6.34-2.221l-.442-.362-3.081 1.033 1.033-3.081-.362-.442A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-      Agendá una visita
     </a>
   </div>
 </section>
@@ -820,10 +821,9 @@ function handleUnlock() {
   showToast('✅ ¡Tasación desbloqueada! Te enviamos el informe por WhatsApp.', 4000);
   saveToSupabase(nombre, telefono, email).then(() => {
     triggerWhatsAppDelivery(nombre, telefono, email);
-    // Update CTAs with DB-generated ref_code
+    // Update CTA with DB-generated ref_code
     const waBase = 'https://wa.me/5491131291774?text=';
     document.getElementById('ctaFormal').href = waBase + encodeURIComponent('Hola! Hice una tasación express en la web (Ref: ' + refId + ') y me gustaría una tasación formal.');
-    document.getElementById('ctaVisita').href = waBase + encodeURIComponent('Hola! Hice una tasación express (Ref: ' + refId + ') y me gustaría agendar una visita.');
   });
 }
 
@@ -913,36 +913,17 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
     estimated_value_max: high,
     price_per_m2: est.price_per_m2 || null,
     comparables_count: _resultData.comparables_count || null,
+    comparables: _resultData.comparables || [],
     confidence: _resultConfidence,
     timestamp: new Date().toISOString()
   };
 
-  // 1. Generate PDF first, then send webhook with pdf_url
-  fetch(API_BASE + '/api/generate-report', {
+  // Send directly to n8n webhook (n8n generates PDF via Gotenberg)
+  fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  })
-  .then(r => r.json())
-  .then(report => {
-    payload.pdf_url = report.pdf_url || null;
-    payload.pdf_filename = report.filename || null;
-    // 2. Send to n8n with pdf_url included
-    return fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  })
-  .catch(e => {
-    console.warn('PDF generation failed, sending webhook without PDF:', e);
-    // Fallback: send webhook without PDF so broker still gets notified
-    fetch('https://star.igreen.com.ar/webhook/tasacion-express', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(e2 => console.warn('Webhook fallback:', e2));
-  });
+  }).catch(e => console.warn('Webhook error:', e));
 }
 
 // Convert all native <select> to custom styled dropdowns
