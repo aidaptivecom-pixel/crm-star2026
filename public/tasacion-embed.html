@@ -914,6 +914,17 @@ function triggerWhatsAppDelivery(nombre, telefono, email) {
     comparables_count: _resultData.comparables_count || null,
     comparables: _resultData.comparables_used || _resultData.comparables || [],
     confidence: _resultConfidence,
+    confidence_breakdown: _resultData.confidence_breakdown || null,
+    // Property details for PDF
+    condition: document.getElementById('estado').value ? {'A estrenar':'a_estrenar','Muy bueno':'muy_bueno','Bueno':'bueno','Regular':'regular','A reciclar':'malo'}[document.getElementById('estado').value] : null,
+    building_age: document.getElementById('antiguedad').value || null,
+    floor_level: document.getElementById('piso').value || null,
+    bathrooms: document.getElementById('banos').value || null,
+    has_garage: document.getElementById('cocheraToggle').classList.contains('on'),
+    garage_count: document.getElementById('cocheraCant').value ? parseInt(document.getElementById('cocheraCant').value) : 0,
+    has_balcony: document.getElementById('balconToggle').classList.contains('on'),
+    has_private_terrace: document.getElementById('terrazaToggle').classList.contains('on'),
+    orientation: document.getElementById('orientacion').value || null,
     timestamp: new Date().toISOString()
   };
 
