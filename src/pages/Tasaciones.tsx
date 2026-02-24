@@ -172,7 +172,11 @@ export const Tasaciones = () => {
   const [expandedVoiceNote, setExpandedVoiceNote] = useState<number | null>(null)
   const [showFormalForm, setShowFormalForm] = useState(false)
   const [showScorePopover, setShowScorePopover] = useState(false)
-  const [userAdjustedValue, setUserAdjustedValue] = useState<number | null>(null)
+  const [_userAdjustedValue, _setUserAdjustedValue] = useState<number | null>(null)
+  const [selectedZP, setSelectedZP] = useState<Set<number>>(new Set())
+  const [selectedRI, setSelectedRI] = useState<Set<number>>(new Set())
+  const [strategicPriceM2, setStrategicPriceM2] = useState<string>('')
+  const [comparablesInitialized, setComparablesInitialized] = useState<string | null>(null)
   const [_formalFormData, setFormalFormData] = useState({
     address: '',
     covered_area_m2: '',
@@ -368,7 +372,10 @@ export const Tasaciones = () => {
           estimated_value_max: result.valuation?.max || result.max,
           estimated_value_avg: result.valuation?.avg || result.avg,
           price_per_m2: result.valuation?.price_per_m2 || result.price_per_m2,
-          ai_analysis: result.ai_analysis,
+          ai_analysis: {
+            ...result.ai_analysis,
+            ri_report: result.ri_report || null,
+          },
           comparables_used: result.comparables_used || result.ai_analysis?.details,
         }).eq('id', appraisal.id)
         refetch()
@@ -1757,12 +1764,85 @@ export const Tasaciones = () => {
     // Col 4: Resultado de tasación
     const renderResultColumn = () => {
       const aiAnalysis = (selectedAppraisal as any)?.ai_analysis
+      const zpComparables: any[] = aiAnalysis?.details || []
+      const riReport = aiAnalysis?.ri_report || null
+      const riComparables: any[] = riReport?.comparables || []
+      const areaM2 = selectedAppraisal?.size_m2 || 0
+
+      // Initialize selections when appraisal changes
+      if (aiAnalysis && comparablesInitialized !== selectedAppraisal?.id) {
+        const zpSet = new Set<number>()
+        zpComparables.forEach((_: any, i: number) => zpSet.add(i))
+        setSelectedZP(zpSet)
+        const riSet = new Set<number>()
+        riComparables.forEach((_: any, i: number) => riSet.add(i))
+        setSelectedRI(riSet)
+        setStrategicPriceM2('')
+        setComparablesInitialized(selectedAppraisal?.id || null)
+      }
+
+      // Calculate averages from selected comparables
+      const zpSelected = zpComparables.filter((_: any, i: number) => selectedZP.has(i))
+      const riSelected = riComparables.filter((_: any, i: number) => selectedRI.has(i))
+      const zpAvgM2 = zpSelected.length > 0
+        ? Math.round(zpSelected.reduce((sum: number, c: any) => sum + (c.original_price_per_m2 || c.price_per_m2 || (c.price_usd && c.total_area_m2 ? c.price_usd / c.total_area_m2 : 0)), 0) / zpSelected.length)
+        : 0
+      const riAvgM2 = riSelected.length > 0
+        ? Math.round(riSelected.reduce((sum: number, c: any) => sum + (c.price_per_m2 || c.precio_m2 || (c.price_usd && c.total_area_m2 ? c.price_usd / c.total_area_m2 : 0)), 0) / riSelected.length)
+        : riReport?.valor_m2_usd || 0
+      const stratM2 = strategicPriceM2 ? parseFloat(strategicPriceM2) : 0
+      const stratTotal = stratM2 && areaM2 ? Math.round(stratM2 * areaM2) : 0
+
+      const toggleZP = (idx: number) => {
+        setSelectedZP(prev => {
+          const next = new Set(prev)
+          if (next.has(idx)) next.delete(idx); else next.add(idx)
+          return next
+        })
+      }
+      const toggleRI = (idx: number) => {
+        setSelectedRI(prev => {
+          const next = new Set(prev)
+          if (next.has(idx)) next.delete(idx); else next.add(idx)
+          return next
+        })
+      }
+
+      // Comparable row renderer
+      const CompRow = ({ comp, idx, selected, onToggle, color }: { comp: any; idx: number; selected: boolean; onToggle: () => void; color: 'zp' | 'ri' }) => {
+        const priceM2 = comp.original_price_per_m2 || comp.price_per_m2 || comp.precio_m2 || (comp.price_usd && comp.total_area_m2 ? Math.round(comp.price_usd / comp.total_area_m2) : 0)
+        const priceUsd = comp.price_usd || comp.precio || 0
+        const area = comp.total_area_m2 || comp.superficie || 0
+        const addr = comp.address || comp.direccion || `Comparable ${idx + 1}`
+        return (
+          <div className={`flex items-center gap-2.5 px-3 py-2.5 border-b border-gray-100 last:border-b-0 transition-all cursor-pointer ${selected ? 'hover:bg-gray-50' : 'opacity-40 hover:opacity-60'}`} onClick={onToggle}>
+            <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center text-xs font-bold ${selected ? (color === 'zp' ? 'bg-blue-500 text-white' : 'bg-green-500 text-white') : 'border-2 border-gray-300'}`}>
+              {selected && '✓'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-gray-800 truncate">{addr}</p>
+              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500">
+                <span className="font-semibold text-gray-700">USD {priceUsd.toLocaleString()}</span>
+                <span>·</span>
+                <span>{area}m²</span>
+                {comp.rooms && <><span>·</span><span>{comp.rooms} amb</span></>}
+                {color === 'ri' && <span className="text-green-600 font-medium">Vendido</span>}
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="text-xs font-bold text-gray-700">{priceM2.toLocaleString()}</p>
+              <p className="text-[9px] text-gray-400">USD/m²</p>
+            </div>
+          </div>
+        )
+      }
+
       return (
         <div className="flex flex-col h-full bg-white">
           <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white h-[60px] flex flex-col justify-center overflow-hidden">
             <h3 className="text-sm font-bold text-gray-900">4. Resultado de tasación</h3>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {!aiAnalysis ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -1773,153 +1853,149 @@ export const Tasaciones = () => {
               </div>
             ) : (
               <>
-                {/* Valuation card with positioning bar */}
-                <div className="bg-gradient-to-r from-[#D4A745]/10 to-[#D4A745]/5 rounded-xl p-5 border border-[#D4A745]/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-gray-900">⚡ Valuación</h3>
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700">✅ Procesada</span>
+                {/* Summary strip: Piso | Valor Estratégico | Techo */}
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-[9px] uppercase tracking-wide font-semibold text-gray-400">🟢 Piso (RI)</p>
+                    <p className="text-base font-extrabold text-green-600 mt-0.5">USD {riAvgM2.toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-400">/m² · {riSelected.length} comp.</p>
                   </div>
-                  {(() => {
-                    const v = aiAnalysis.recalculated || aiAnalysis.valuation || aiAnalysis
-                    const estimation = aiAnalysis.estimation || {}
-                    const min = v.min || (selectedAppraisal as any).estimated_value_min || 0
-                    const max = v.max || (selectedAppraisal as any).estimated_value_max || 0
-                    const originalValue = estimation.value || v.value || (selectedAppraisal as any).estimated_value || ((min + max) / 2)
-                    const value = userAdjustedValue ?? originalValue
-                    const position = max > min ? ((value - min) / (max - min)) * 100 : 50
-                    const reasoning = estimation.positioning_reasoning || aiAnalysis.positioning_reasoning || null
-                    const isAdjusted = userAdjustedValue != null && userAdjustedValue !== originalValue
-                    
-                    return (
-                      <div className="space-y-4">
-                        {/* Main value */}
-                        <div className="text-center bg-white rounded-xl p-4">
-                          <p className="text-xs text-gray-400 mb-1">Valor de tasación {isAdjusted ? <span className="text-[#D4A745]">(ajustado)</span> : ''}</p>
-                          <p className="text-3xl font-bold text-[#D4A745]">USD {(value / 1000).toFixed(0)}k</p>
-                          {selectedAppraisal?.size_m2 && (
-                            <p className="text-sm text-gray-400 mt-1">USD {Math.round(value / selectedAppraisal.size_m2).toLocaleString()}/m²</p>
-                          )}
-                          {isAdjusted && (
-                            <button onClick={() => setUserAdjustedValue(null)}
-                              className="text-[10px] text-gray-400 hover:text-gray-600 underline mt-1">Volver al original (USD {(originalValue / 1000).toFixed(0)}k)</button>
-                          )}
-                        </div>
+                  <div className="flex-1 rounded-xl p-3 text-center border-2 border-[#D4A745] bg-[#D4A745]/5">
+                    <p className="text-[9px] uppercase tracking-wide font-semibold text-gray-400">⭐ Valor estratégico</p>
+                    <p className="text-base font-extrabold text-[#D4A745] mt-0.5">USD {stratM2 ? stratM2.toLocaleString() : '—'}</p>
+                    <p className="text-[10px] text-gray-400">/m² · manual</p>
+                  </div>
+                  <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-[9px] uppercase tracking-wide font-semibold text-gray-400">🔵 Techo (ZP)</p>
+                    <p className="text-base font-extrabold text-blue-600 mt-0.5">USD {zpAvgM2.toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-400">/m² · {zpSelected.length} comp.</p>
+                  </div>
+                </div>
 
-                        {/* Positioning bar */}
-                        <div className="bg-white rounded-xl p-4">
-                          <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                            <span>USD {(min / 1000).toFixed(0)}k</span>
-                            <span className="font-medium text-gray-600">Rango de mercado</span>
-                            <span>USD {(max / 1000).toFixed(0)}k</span>
-                          </div>
-                          {/* Bar — clickable to set value */}
-                          <div className="relative h-3 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full cursor-pointer select-none"
-                            onClick={(e) => {
-                              const rect = e.currentTarget.getBoundingClientRect()
-                              const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-                              const newVal = Math.round((min + pct * (max - min)) / 1000) * 1000
-                              setUserAdjustedValue(newVal)
-                            }}
-                            onMouseDown={(e) => {
-                              const bar = e.currentTarget
-                              const move = (ev: MouseEvent) => {
-                                const rect = bar.getBoundingClientRect()
-                                const pct = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width))
-                                const newVal = Math.round((min + pct * (max - min)) / 1000) * 1000
-                                setUserAdjustedValue(newVal)
-                              }
-                              const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up) }
-                              document.addEventListener('mousemove', move)
-                              document.addEventListener('mouseup', up)
-                            }}
-                          >
-                            {/* Comparable dots */}
-                            {(aiAnalysis.details || []).map((det: any, idx: number) => {
-                              const detValue = det.price_usd || 0
-                              const detPos = max > min ? ((detValue - min) / (max - min)) * 100 : 50
-                              return (
-                                <div key={idx} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-white pointer-events-none"
-                                  style={{ left: `${Math.max(2, Math.min(98, detPos))}%` }}
-                                  title={`${det.address}: USD ${det.price_usd?.toLocaleString()}`} />
-                              )
-                            })}
-                            {/* Target value marker — draggable */}
-                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
-                              style={{ left: `${Math.max(5, Math.min(95, position))}%` }}>
-                              <div className="w-6 h-6 bg-[#D4A745] rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
+                {/* Valuation card */}
+                <div className="bg-gradient-to-r from-[#D4A745]/10 to-[#D4A745]/5 rounded-xl p-4 border border-[#D4A745]/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-gray-900">⚡ Valuación</span>
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700">✅ Procesada</span>
+                  </div>
+                  <div className="text-center bg-white rounded-xl p-4">
+                    <p className="text-[11px] text-gray-400 mb-1">Valor de tasación {stratM2 ? <span className="text-[#D4A745] font-semibold">(estratégico)</span> : ''}</p>
+                    <p className="text-3xl font-extrabold text-[#D4A745]">
+                      {stratTotal ? `USD ${(stratTotal / 1000).toFixed(0)}k` : 'Ingresá USD/m²'}
+                    </p>
+                    {stratTotal > 0 && areaM2 > 0 && (
+                      <p className="text-sm text-gray-400 mt-1">USD {stratM2.toLocaleString()}/m² · {areaM2}m²</p>
+                    )}
+                  </div>
+
+                  {/* Range bar: RI (piso) ←→ ZP (techo) */}
+                  {riAvgM2 > 0 && zpAvgM2 > 0 && (
+                    <div className="bg-white rounded-xl p-4 mt-3">
+                      <div className="flex items-center justify-between text-[11px] text-gray-400 mb-2">
+                        <span>USD {riAvgM2.toLocaleString()}/m²</span>
+                        <span className="font-medium text-gray-600">Rango de mercado</span>
+                        <span>USD {zpAvgM2.toLocaleString()}/m²</span>
+                      </div>
+                      <div className="relative h-3.5 bg-gradient-to-r from-green-200 via-yellow-100 to-blue-200 rounded-full">
+                        {/* RI comparable dots */}
+                        {riSelected.map((c: any, i: number) => {
+                          const pm2 = c.price_per_m2 || c.precio_m2 || 0
+                          const pos = zpAvgM2 > riAvgM2 ? ((pm2 - riAvgM2) / (zpAvgM2 - riAvgM2)) * 100 : 50
+                          return <div key={`ri${i}`} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-green-500 rounded-full border border-white pointer-events-none" style={{ left: `${Math.max(2, Math.min(98, pos))}%` }} />
+                        })}
+                        {/* ZP comparable dots */}
+                        {zpSelected.map((c: any, i: number) => {
+                          const pm2 = c.original_price_per_m2 || c.price_per_m2 || 0
+                          const pos = zpAvgM2 > riAvgM2 ? ((pm2 - riAvgM2) / (zpAvgM2 - riAvgM2)) * 100 : 50
+                          return <div key={`zp${i}`} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full border border-white pointer-events-none" style={{ left: `${Math.max(2, Math.min(98, pos))}%` }} />
+                        })}
+                        {/* Strategic value marker */}
+                        {stratM2 > 0 && (() => {
+                          const pos = zpAvgM2 > riAvgM2 ? ((stratM2 - riAvgM2) / (zpAvgM2 - riAvgM2)) * 100 : 50
+                          return (
+                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none" style={{ left: `${Math.max(5, Math.min(95, pos))}%` }}>
+                              <div className="w-6 h-6 bg-[#D4A745] rounded-full border-2 border-white shadow-lg flex items-center justify-center">
                                 <div className="w-2 h-2 bg-white rounded-full" />
                               </div>
                             </div>
-                          </div>
-                          {/* Position label */}
-                          <div className="mt-2 text-center">
-                            <span className="text-xs font-medium text-[#D4A745]">
-                              {position < 30 ? '📉 Por debajo del mercado' : position < 45 ? '↙️ Debajo del promedio' : position < 55 ? '⚖️ En el promedio' : position < 70 ? '↗️ Por encima del promedio' : '📈 Segmento premium'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* AI Reasoning */}
-                        {reasoning && (
-                          <div className="bg-white rounded-xl p-4">
-                            <p className="text-xs font-semibold text-gray-700 mb-1">🧠 Análisis</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">{reasoning}</p>
-                          </div>
-                        )}
+                          )
+                        })()}
                       </div>
-                    )
-                  })()}
+                      <div className="flex gap-4 justify-center mt-2.5 text-[10px] text-gray-500">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> RI (vendidos)</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" /> ZP (publicados)</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#D4A745] inline-block" /> Valor estratégico</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Comparables */}
-                <div className="bg-white rounded-xl border border-gray-200">
-                  <div className="p-4 border-b border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-900">🏘️ Comparables analizados ({(aiAnalysis.details || []).length})</h3>
+                {/* Manual USD/m² input */}
+                <div className="rounded-xl p-4 border-2 border-dashed border-[#D4A745] bg-white">
+                  <p className="text-xs font-bold text-gray-900 mb-0.5">💰 Valor estratégico USD/m²</p>
+                  <p className="text-[11px] text-gray-400 mb-3">Definí el valor entre piso (RI) y techo (ZP)</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-500">USD</span>
+                    <input
+                      type="number"
+                      value={strategicPriceM2}
+                      onChange={(e) => setStrategicPriceM2(e.target.value)}
+                      placeholder={riAvgM2 && zpAvgM2 ? `${riAvgM2} - ${zpAvgM2}` : 'Ej: 3100'}
+                      className="flex-1 px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-[#D4A745] transition-colors"
+                    />
+                    <span className="text-xs text-gray-400">/m²</span>
                   </div>
-                  <div className="divide-y divide-gray-100">
-                    {(aiAnalysis.details || []).map((det: any, idx: number) => (
-                      <div key={idx} className="p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <span className="text-sm font-medium text-gray-900 truncate">{det.address || `Comparable ${idx + 1}`}</span>
-                            {det.source_url && (
-                              <a href={det.source_url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 hover:underline">
-                                🔗 ZonaProp
-                              </a>
-                            )}
-                          </div>
-                          <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded ${det.ai_score >= 8 ? 'bg-green-100 text-green-700' : det.ai_score >= 6 ? 'bg-blue-100 text-blue-700' : det.ai_score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
-                            {det.ai_score ? `${det.ai_score}/10` : '—'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
-                          <span className="font-medium text-gray-700">USD {det.price_usd?.toLocaleString()}</span>
-                          <span>{det.total_area_m2}m²</span>
-                          <span>USD {det.original_price_per_m2?.toLocaleString()}/m²</span>
-                          {det.ai_condition && <span className={`capitalize font-medium ${det.ai_condition === 'bueno' || det.ai_condition === 'muy_bueno' || det.ai_condition === 'excelente' ? 'text-green-600' : det.ai_condition === 'regular' ? 'text-yellow-600' : 'text-red-600'}`}>{det.ai_condition.replace(/_/g, ' ')}</span>}
-                        </div>
-                        {/* Highlights & Issues */}
-                        {((det.highlights && det.highlights.length > 0) || (det.issues && det.issues.length > 0)) && (
-                          <div className="mt-1.5 space-y-1">
-                            {(det.highlights || []).map((h: string, i: number) => (
-                              <p key={`h${i}`} className="text-xs text-green-600 flex items-start gap-1.5">
-                                <span className="flex-shrink-0">✅</span> {h}
-                              </p>
-                            ))}
-                            {(det.issues || []).map((issue: string, i: number) => (
-                              <p key={`i${i}`} className="text-xs text-orange-500 flex items-start gap-1.5">
-                                <span className="flex-shrink-0">⚠️</span> {issue}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  {stratTotal > 0 && (
+                    <div className="mt-2 px-3 py-2 bg-gray-50 rounded-lg text-[11px] text-gray-600">
+                      Valor total: <strong className="text-[#D4A745]">USD {stratTotal.toLocaleString()}</strong> ({stratM2.toLocaleString()} × {areaM2}m²)
+                    </div>
+                  )}
+                </div>
+
+                {/* ZonaProp comparables */}
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-3 py-2.5 border-b border-gray-100 flex items-center justify-between">
+                    <h4 className="text-[13px] font-bold text-gray-900 flex items-center gap-1.5">
+                      🔵 ZonaProp
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{zpComparables.length}</span>
+                    </h4>
+                    <span className="text-[11px] text-gray-500">Prom: <strong className="text-gray-800">USD {zpAvgM2.toLocaleString()}/m²</strong></span>
                   </div>
+                  {zpComparables.map((comp: any, idx: number) => (
+                    <CompRow key={`zp-${idx}`} comp={comp} idx={idx} selected={selectedZP.has(idx)} onToggle={() => toggleZP(idx)} color="zp" />
+                  ))}
+                  {zpComparables.length === 0 && (
+                    <div className="px-4 py-6 text-center text-xs text-gray-400">Sin comparables de ZonaProp</div>
+                  )}
+                </div>
+
+                {/* RI comparables */}
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-3 py-2.5 border-b border-gray-100 flex items-center justify-between">
+                    <h4 className="text-[13px] font-bold text-gray-900 flex items-center gap-1.5">
+                      🟢 Reporte Inmobiliario
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-600">{riComparables.length}</span>
+                    </h4>
+                    <span className="text-[11px] text-gray-500">Prom: <strong className="text-gray-800">USD {riAvgM2.toLocaleString()}/m²</strong></span>
+                  </div>
+                  {riComparables.map((comp: any, idx: number) => (
+                    <CompRow key={`ri-${idx}`} comp={comp} idx={idx} selected={selectedRI.has(idx)} onToggle={() => toggleRI(idx)} color="ri" />
+                  ))}
+                  {riComparables.length === 0 && !riReport && (
+                    <div className="px-4 py-6 text-center text-xs text-gray-400">Sin datos de Reporte Inmobiliario</div>
+                  )}
+                  {riComparables.length === 0 && riReport && (
+                    <div className="px-4 py-4 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Valor RI global: <strong className="text-green-600">USD {(riReport.valor_ri_usd || 0).toLocaleString()}</strong></p>
+                      <p className="text-[11px] text-gray-400">USD {(riReport.valor_m2_usd || 0).toLocaleString()}/m² · {riReport.comparables_count || 0} comparables</p>
+                    </div>
+                  )}
                 </div>
               </>
             )}
           </div>
+
+          {/* Footer */}
           <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex gap-3 h-[56px] items-center">
             <button onClick={() => setPipelinePage(1)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
               ← Relevamiento
