@@ -770,19 +770,61 @@ export const Tasaciones = () => {
         const hasAiAnalysis = !!(a.ai_analysis)
 
         // Compute completeness
+        const pd = a.property_data || {}
+        const extraction = (() => {
+          const voiceNotes = pd.voice_notes || []
+          let merged: any = {}
+          for (const vn of voiceNotes) {
+            if (vn.extraction) {
+              merged = { ...merged, ...vn.extraction, form_fields: { ...(merged.form_fields || {}), ...(vn.extraction.form_fields || {}) } }
+            }
+          }
+          return merged
+        })()
+        const ff = extraction.form_fields || {}
+        const getField = (field: string) => ff[field] ?? pd[field] ?? a[field] ?? null
+        const boolLabel = (val: any) => val === true ? 'Sí' : val === false ? 'No' : null
+        const fieldSource = (field: string) => ff[field] != null ? 'audio' : pd[field] != null ? 'visita' : 'web'
+
         const fields = [
+          // Datos generales
+          { label: 'Dirección completa', value: a.address && !a.address.includes('CABA') ? a.address : null, source: 'web' },
           { label: 'Barrio / Zona', value: a.neighborhood, source: 'web' },
           { label: 'Tipo de propiedad', value: a.property_type, source: 'web' },
-          { label: 'Superficie (m²)', value: a.size_m2, source: 'web' },
+          { label: 'Superficie total (m²)', value: a.size_m2, source: 'web' },
+          { label: 'Sup. cubierta (m²)', value: getField('covered_area_m2'), source: fieldSource('covered_area_m2') },
+          { label: 'Sup. semicubierta (m²)', value: getField('semi_covered_area_m2'), source: fieldSource('semi_covered_area_m2') },
+          { label: 'Sup. descubierta (m²)', value: getField('uncovered_area_m2'), source: fieldSource('uncovered_area_m2') },
           { label: 'Ambientes', value: a.rooms, source: 'web' },
+          { label: 'Baños', value: getField('bathrooms'), source: fieldSource('bathrooms') },
+          { label: 'Antigüedad (años)', value: a.building_age, source: 'web' },
+          { label: 'Piso del depto', value: getField('floor_number'), source: fieldSource('floor_number') },
+          { label: 'Pisos del edificio', value: getField('floors'), source: fieldSource('floors') },
+          { label: 'Orientación', value: getField('orientation'), source: fieldSource('orientation') },
+          { label: 'Cochera', value: a.has_garage != null ? (a.has_garage ? `Sí (${getField('garage_count') || 1})` : 'No') : null, source: 'web' },
+          { label: 'Expensas', value: getField('expensas') ? `$${getField('expensas').toLocaleString()}` : null, source: fieldSource('expensas') },
           { label: 'Estado / Condición', value: a.condition, source: 'web' },
-          { label: 'Antigüedad', value: a.building_age, source: 'web' },
-          { label: 'Cochera', value: a.has_garage !== null && a.has_garage !== undefined ? (a.has_garage ? 'Sí' : 'No') : null, source: 'web' },
-          { label: 'Dirección completa', value: a.address && !a.address.includes('CABA') ? a.address : null, source: 'web' },
+          // Instalaciones
+          { label: 'Gas natural', value: boolLabel(getField('has_gas')), source: fieldSource('has_gas') },
+          { label: 'Calefacción', value: getField('heating_type'), source: fieldSource('heating_type') },
+          { label: 'Aire acondicionado', value: boolLabel(getField('has_ac')), source: fieldSource('has_ac') },
+          { label: 'Ascensor', value: boolLabel(getField('has_elevator')), source: fieldSource('has_elevator') },
+          { label: 'Baulera', value: boolLabel(getField('has_storage')), source: fieldSource('has_storage') },
+          // Amenities
+          { label: 'Amenities', value: (a.amenities || []).length > 0 ? a.amenities.join(', ') : null, source: 'web' },
+          // Estado general (de audio/extracción)
+          { label: 'Humedad', value: extraction.humidity_detected, source: 'audio' },
+          { label: 'Ventilación', value: extraction.ventilation, source: 'audio' },
+          { label: 'Luminosidad', value: extraction.natural_light, source: 'audio' },
+          { label: 'Ruido exterior', value: extraction.noise_level, source: 'audio' },
+          { label: 'Vista', value: extraction.view, source: 'audio' },
+          { label: 'Tipo de construcción', value: extraction.construction_type, source: 'audio' },
+          { label: 'Renovaciones', value: extraction.renovations, source: 'audio' },
+          // Evidencia
           { label: 'Datos del cliente', value: a.client_name || a.client_phone ? `${a.client_name || ''} ${a.client_phone || ''}`.trim() : null, source: 'web' },
-          { label: 'Fotos de la propiedad', value: hasInspection ? '✅' : null, source: 'visita' },
+          { label: 'Fotos de la propiedad', value: (pd.target_photos || []).length > 0 ? `✅ ${pd.target_photos.length} fotos` : null, source: 'visita' },
           { label: 'Verificación in-situ', value: hasInspection ? '✅' : null, source: 'visita' },
-          { label: 'Audio / Observaciones', value: a.property_data?.inspection_state?.transcriptions?.length > 0 ? '✅' : null, source: 'visita' },
+          { label: 'Audio / Observaciones', value: (pd.voice_notes || []).length > 0 ? `✅ ${pd.voice_notes.length} audio(s)` : null, source: 'visita' },
         ]
         const filled = fields.filter(f => f.value).length
         const pct = Math.round((filled / fields.length) * 100)
