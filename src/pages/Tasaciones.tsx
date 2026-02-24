@@ -177,6 +177,25 @@ export const Tasaciones = () => {
   const [selectedRI, setSelectedRI] = useState<Set<number>>(new Set())
   const [strategicPriceM2, setStrategicPriceM2] = useState<string>('')
   const [comparablesInitialized, setComparablesInitialized] = useState<string | null>(null)
+  const [showCoefficients, setShowCoefficients] = useState(false)
+  const DEFAULT_COEFFICIENTS: Record<string, { label: string; pct: number; enabled: boolean; category: string }> = {
+    garage: { label: 'Cochera', pct: 6, enabled: false, category: 'Extras' },
+    private_terrace: { label: 'Terraza privada', pct: 4, enabled: false, category: 'Extras' },
+    pool: { label: 'Pileta', pct: 3, enabled: false, category: 'Amenities' },
+    storage: { label: 'Baulera', pct: 1.5, enabled: false, category: 'Extras' },
+    high_floor: { label: 'Piso alto (>7°)', pct: 4, enabled: false, category: 'Ubicación' },
+    open_view: { label: 'Vista abierta', pct: 4.5, enabled: false, category: 'Ubicación' },
+    north_orientation: { label: 'Orientación Norte/NE', pct: 2, enabled: false, category: 'Ubicación' },
+    elevator: { label: 'Ascensor', pct: 2, enabled: false, category: 'Instalaciones' },
+    ac: { label: 'Aire acondicionado', pct: 1.5, enabled: false, category: 'Instalaciones' },
+    premium_condition: { label: 'Estado premium (a estrenar/excelente)', pct: 8, enabled: false, category: 'Estado' },
+    good_condition: { label: 'Muy buen estado', pct: 4, enabled: false, category: 'Estado' },
+    recent_renovation: { label: 'Renovación reciente', pct: 5, enabled: false, category: 'Estado' },
+    sum_gym: { label: 'SUM + Gimnasio', pct: 2.5, enabled: false, category: 'Amenities' },
+    security_24: { label: 'Seguridad 24hs', pct: 2, enabled: false, category: 'Amenities' },
+    low_expenses: { label: 'Expensas bajas (vs zona)', pct: 2, enabled: false, category: 'Financiero' },
+  }
+  const [coefficients, setCoefficients] = useState<Record<string, { label: string; pct: number; enabled: boolean; category: string }>>(DEFAULT_COEFFICIENTS)
   const [_formalFormData, setFormalFormData] = useState({
     address: '',
     covered_area_m2: '',
@@ -1835,6 +1854,19 @@ export const Tasaciones = () => {
       const stratM2 = strategicPriceM2 ? parseFloat(strategicPriceM2) : 0
       const stratTotal = stratM2 && areaM2 ? Math.round(stratM2 * areaM2) : 0
 
+      // Coefficients calculation
+      const enabledCoeffs = Object.entries(coefficients).filter(([_, c]) => c.enabled)
+      const totalAdjustmentPct = enabledCoeffs.reduce((sum, [_, c]) => sum + c.pct, 0)
+      const baseAvgM2 = riAvgM2 > 0 && zpAvgM2 > 0 ? Math.round((riAvgM2 + zpAvgM2) / 2) : (zpAvgM2 || riAvgM2)
+      const adjustedM2 = baseAvgM2 > 0 ? Math.round(baseAvgM2 * (1 + totalAdjustmentPct / 100)) : 0
+
+      const toggleCoeff = (key: string) => {
+        setCoefficients(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }))
+      }
+      const updateCoeffPct = (key: string, pct: number) => {
+        setCoefficients(prev => ({ ...prev, [key]: { ...prev[key], pct } }))
+      }
+
       const toggleZP = (idx: number) => {
         setSelectedZP(prev => {
           const next = new Set(prev)
@@ -1972,6 +2004,94 @@ export const Tasaciones = () => {
                   )}
                 </div>
 
+                {/* Coefficients */}
+                {baseAvgM2 > 0 && (
+                  <div className="rounded-xl border border-gray-200 overflow-hidden">
+                    <button
+                      onClick={() => setShowCoefficients(!showCoefficients)}
+                      className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold text-gray-900">📐 Coeficientes de ajuste</span>
+                        {enabledCoeffs.length > 0 && (
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#D4A745]/15 text-[#D4A745]">
+                            {totalAdjustmentPct > 0 ? '+' : ''}{totalAdjustmentPct.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-gray-400 text-xs">{showCoefficients ? '▲' : '▼'}</span>
+                    </button>
+
+                    {/* Summary strip always visible */}
+                    {enabledCoeffs.length > 0 && !showCoefficients && (
+                      <div className="px-3 pb-2.5 flex flex-wrap gap-1">
+                        {enabledCoeffs.map(([key, c]) => (
+                          <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">
+                            {c.label} +{c.pct}%
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Adjusted value strip */}
+                    {enabledCoeffs.length > 0 && (
+                      <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <span className="text-[11px] text-gray-500">Base USD {baseAvgM2.toLocaleString()}/m² → Ajustado</span>
+                        <span className="text-[13px] font-bold text-[#D4A745]">USD {adjustedM2.toLocaleString()}/m²</span>
+                      </div>
+                    )}
+
+                    {showCoefficients && (
+                      <div className="border-t border-gray-100">
+                        <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                          <p className="text-[10px] text-gray-500">Activá los coeficientes que aplican a esta propiedad. El % se ajusta tocando el valor.</p>
+                        </div>
+                        {(() => {
+                          const categories = [...new Set(Object.values(coefficients).map(c => c.category))]
+                          return categories.map(cat => (
+                            <div key={cat}>
+                              <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{cat}</p>
+                              </div>
+                              {Object.entries(coefficients)
+                                .filter(([_, c]) => c.category === cat)
+                                .map(([key, c]) => (
+                                  <div key={key} className={`flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-0 transition-colors ${c.enabled ? 'bg-green-50/50' : ''}`}>
+                                    <div
+                                      onClick={() => toggleCoeff(key)}
+                                      className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center text-xs font-bold cursor-pointer transition-colors ${c.enabled ? 'bg-green-500 text-white' : 'border-2 border-gray-300 hover:border-gray-400'}`}
+                                    >
+                                      {c.enabled && '✓'}
+                                    </div>
+                                    <span className={`flex-1 text-xs ${c.enabled ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>{c.label}</span>
+                                    <div className="flex items-center gap-1">
+                                      {c.enabled && (
+                                        <>
+                                          <button
+                                            onClick={() => updateCoeffPct(key, Math.max(0.5, c.pct - 0.5))}
+                                            className="w-5 h-5 rounded bg-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-300 flex items-center justify-center"
+                                          >−</button>
+                                          <span className="text-xs font-bold text-green-600 w-10 text-center">+{c.pct}%</span>
+                                          <button
+                                            onClick={() => updateCoeffPct(key, Math.min(20, c.pct + 0.5))}
+                                            className="w-5 h-5 rounded bg-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-300 flex items-center justify-center"
+                                          >+</button>
+                                        </>
+                                      )}
+                                      {!c.enabled && (
+                                        <span className="text-[11px] text-gray-400">+{c.pct}%</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Manual USD/m² input */}
                 <div className="rounded-xl p-4 border-2 border-dashed border-[#D4A745] bg-white">
                   <p className="text-xs font-bold text-gray-900 mb-0.5">💰 Valor estratégico USD/m²</p>
@@ -1982,7 +2102,7 @@ export const Tasaciones = () => {
                       type="number"
                       value={strategicPriceM2}
                       onChange={(e) => setStrategicPriceM2(e.target.value)}
-                      placeholder={riAvgM2 && zpAvgM2 ? `${riAvgM2} - ${zpAvgM2}` : 'Ej: 3100'}
+                      placeholder={adjustedM2 > 0 ? `Sugerido: ${adjustedM2}` : riAvgM2 && zpAvgM2 ? `${riAvgM2} - ${zpAvgM2}` : 'Ej: 3100'}
                       className="flex-1 px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-[#D4A745] transition-colors"
                     />
                     <span className="text-xs text-gray-400">/m²</span>
